@@ -120,7 +120,6 @@ function startWorkout() {
           weight: prev ? prev.weight : 0,
           reps: prev ? prev.reps : ex.defaultReps,
           done: false,
-          isWarmup: false,
           isPR: false
         });
       }
@@ -205,7 +204,7 @@ function renderExerciseCard(exIdx) {
   var allDone = true;
   for (var i = 0; i < exData.sets.length; i++) {
     var s = exData.sets[i];
-    if (s.done && !s.isWarmup) todayVol += (s.weight || 0) * (s.reps || 0);
+    if (s.done) todayVol += (s.weight || 0) * (s.reps || 0);
     if (!s.done) allDone = false;
   }
 
@@ -214,7 +213,7 @@ function renderExerciseCard(exIdx) {
   var lastVol = 0;
   if (lastSets) {
     for (var i = 0; i < lastSets.length; i++) {
-      if (!lastSets[i].isWarmup) lastVol += (lastSets[i].weight || 0) * (lastSets[i].reps || 0);
+      lastVol += (lastSets[i].weight || 0) * (lastSets[i].reps || 0);
     }
   }
 
@@ -256,7 +255,6 @@ function renderExerciseCard(exIdx) {
           '<th class="st-set">세트</th>' +
           '<th class="st-kg">KG</th>' +
           '<th class="st-reps">횟수</th>' +
-          '<th class="st-w">W</th>' +
           '<th class="st-chk"></th>' +
         '</tr></thead>' +
         '<tbody>';
@@ -284,7 +282,6 @@ function renderSetRow(exIdx, setIdx) {
 
   var rowClass = 'set-row';
   if (setData.done) rowClass += ' set-done';
-  if (setData.isWarmup) rowClass += ' set-warmup';
   if (setData.isPR) rowClass += ' set-pr';
 
   var html =
@@ -307,10 +304,6 @@ function renderSetRow(exIdx, setIdx) {
           'inputmode="numeric" ' +
           'onfocus="this.select()">' +
         (prev ? '<span class="prev-val">' + prev.reps + '</span>' : '') +
-      '</td>' +
-      '<td>' +
-        '<button class="warmup-btn' + (setData.isWarmup ? ' active' : '') + '" ' +
-          'onclick="toggleWarmup(' + exIdx + ',' + setIdx + ')">W</button>' +
       '</td>' +
       '<td>' +
         '<button class="set-check-btn' + (setData.done ? ' done' : '') + '" ' +
@@ -345,8 +338,8 @@ function completeSet(exIdx, setIdx) {
   setData.done = !setData.done; // 토글
 
   if (setData.done) {
-    // PR 판정 (워밍업이 아닐 때만)
-    if (!setData.isWarmup && w > 0 && r > 0) {
+    // PR 판정
+    if (w > 0 && r > 0) {
       var prResult = checkPR(exData.exerciseId, w, r, _currentSession.id);
       setData.isPR = prResult.isPR;
 
@@ -385,18 +378,10 @@ function completeCardio(exIdx) {
   var input = document.getElementById('cardioMin-' + exIdx);
   var min = parseInt(input.value) || 0;
 
-  if (!exData.sets[0]) exData.sets[0] = { weight: 0, reps: 0, done: false, isWarmup: false, isPR: false };
+  if (!exData.sets[0]) exData.sets[0] = { weight: 0, reps: 0, done: false, isPR: false };
   exData.sets[0].reps = min; // reps에 분 저장
   exData.sets[0].done = !exData.sets[0].done;
 
-  autoSaveSession();
-  renderExerciseCards();
-}
-
-function toggleWarmup(exIdx, setIdx) {
-  var setData = _currentSession.exercises[exIdx].sets[setIdx];
-  setData.isWarmup = !setData.isWarmup;
-  if (setData.isWarmup) setData.isPR = false; // 워밍업이면 PR 해제
   autoSaveSession();
   renderExerciseCards();
 }
@@ -408,7 +393,6 @@ function addSet(exIdx) {
     weight: lastSet ? lastSet.weight : 0,
     reps: lastSet ? lastSet.reps : 0,
     done: false,
-    isWarmup: false,
     isPR: false
   });
   renderExerciseCards();
@@ -491,7 +475,7 @@ function autoSaveSession() {
       if (s.done) {
         var v = (s.weight || 0) * (s.reps || 0);
         vol += v;
-        if (!s.isWarmup) volEx += v;
+        volEx += v;
       }
     }
   }

@@ -534,17 +534,13 @@ input {
   width: 40px;
 }
 
-.st-kg, .st-reps, .st-w {
+.st-kg, .st-reps {
   flex: 1;
 }
 
 .set-row.set-done {
   background: #f9f9f9;
   opacity: 0.8;
-}
-
-.set-row.set-warmup {
-  background: #fff9e6;
 }
 
 .set-row.set-pr {
@@ -575,21 +571,6 @@ input {
   font-size: 10px;
   color: #999;
   margin-top: 2px;
-}
-
-.warmup-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: #f0f0f0;
-  color: #666;
-  font-weight: 600;
-  font-size: 11px;
-}
-
-.warmup-btn.active {
-  background: #ffd700;
-  color: #333;
 }
 
 .set-check-btn {
