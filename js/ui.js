@@ -64,7 +64,7 @@ function renderWeekSummary() {
 function renderStreak() {
   var streak = getStreak();
   var el = document.getElementById('streakNum');
-  if (el) el.textContent = streak + '일';
+  if (el) el.textContent = streak;
 }
 
 function renderRecentPRs() {

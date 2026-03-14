@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>운동 기록 - Workout Tracker</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -69,15 +69,28 @@
     <!-- 탭바 -->
     <nav class="tab-bar">
       <button class="tab-item on" onclick="showScreen('home')">
-        <span class="tab-icon">🏠</span>
+        <svg class="tab-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12l9-8 9 8v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8z"/>
+          <path d="M9 17v-5h6v5"/>
+        </svg>
         <span class="tab-label">홈</span>
       </button>
       <button class="tab-item" onclick="showScreen('workout')">
-        <span class="tab-icon">💪</span>
+        <svg class="tab-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6" cy="12" r="2"/>
+          <circle cx="18" cy="12" r="2"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+          <rect x="4" y="10" width="2" height="4"/>
+          <rect x="18" y="10" width="2" height="4"/>
+        </svg>
         <span class="tab-label">운동</span>
       </button>
       <button class="tab-item" onclick="showScreen('stats')">
-        <span class="tab-icon">📊</span>
+        <svg class="tab-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="14" width="3" height="8"/>
+          <rect x="10.5" y="8" width="3" height="14"/>
+          <rect x="18" y="4" width="3" height="18"/>
+        </svg>
         <span class="tab-label">통계</span>
       </button>
     </nav>
