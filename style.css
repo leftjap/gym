@@ -1,5 +1,17 @@
 /* ═══ style.css — 운동 기록 앱 스타일 ═══ */
 
+/* ── 컬러 변수 (모노톤 + 블루 포인트) ── */
+:root {
+  --dark: #2D2D2D;        /* 메인 (거의 검은색) */
+  --gray: #6C6C6C;        /* 서브 */
+  --light-gray: #F0F0F0;  /* 라이트 그레이 */
+  --bg-gray: #F5F5F5;     /* 배경 */
+  --var(--white): #FFFFFF;       /* 화이트 */
+  --border-gray: #E0E0E0; /* 보더 */
+  --blue: #4A90D9;        /* 포인트 블루 */
+  --icon-inactive: #AAAAAA; /* 비활성 아이콘 */
+}
+
 /* ── 리셋 ── */
 * {
   margin: 0;
@@ -14,8 +26,8 @@ html, body {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #f9f9f9;
-  color: #333;
+  background: var(--bg-gray);
+  color: var(--dark);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -61,9 +73,9 @@ input {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: var(--var(--white));
+  color: var(--dark);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   z-index: 10;
 }
 
@@ -82,8 +94,9 @@ input {
 
 .wh-timer {
   font-size: 20px;
-  font-weight: bold;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+  color: var(--blue);
 }
 
 .wh-tag {
@@ -91,15 +104,16 @@ input {
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
-  color: white;
-  background: rgba(255,255,255,0.3);
+  color: var(--dark);
+  background: var(--light-gray);
 }
 
 .wh-btn {
   padding: 6px 12px;
   border-radius: 4px;
+  color: var(--dark);
   background: rgba(255,255,255,0.2);
-  color: white;
+  color: var(--white);
   font-weight: 600;
   font-size: 12px;
 }
@@ -127,7 +141,7 @@ input {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 12px;
-  color: #222;
+  color: var(--dark);
 }
 
 /* ── 주간 요약 ── */
@@ -139,7 +153,7 @@ input {
 }
 
 .today-stat {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 12px;
   text-align: center;
@@ -149,28 +163,29 @@ input {
 .stat-num {
   font-size: 18px;
   font-weight: 700;
-  color: #667eea;
+  color: var(--blue);
   margin-bottom: 4px;
 }
 
 .stat-unit {
   font-size: 11px;
-  color: #999;
+  color: var(--icon-inactive);
 }
 
 /* ── 스트릭 ── */
 .streak-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--dark);
   border-radius: 8px;
   padding: 20px;
   text-align: center;
-  color: white;
+  color: var(--var(--white));
 }
 
 .streak-label {
   font-size: 12px;
   opacity: 0.9;
   margin-bottom: 8px;
+  font-weight: 400;
 }
 
 .streak-badge {
@@ -179,7 +194,7 @@ input {
 }
 
 .streak-badge span {
-  color: #ffd700;
+  color: var(--blue);
 }
 
 /* ── PR 카드 ── */
@@ -193,7 +208,7 @@ input {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -211,24 +226,24 @@ input {
 
 .pr-name {
   font-weight: 600;
-  color: #222;
+  color: var(--dark);
   margin-bottom: 2px;
 }
 
 .pr-detail {
   font-size: 12px;
-  color: #666;
+  color: var(--gray);
 }
 
 .pr-date {
   font-size: 11px;
-  color: #999;
+  color: var(--icon-inactive);
   flex-shrink: 0;
 }
 
 /* ── 캘린더 ── */
 .calendar {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -245,8 +260,8 @@ input {
   width: 32px;
   height: 32px;
   border-radius: 4px;
-  background: #f0f0f0;
-  color: #333;
+  background: var(--light-gray);
+  color: var(--dark);
   font-size: 18px;
   display: flex;
   align-items: center;
@@ -254,12 +269,12 @@ input {
 }
 
 .cal-nav:active {
-  background: #e0e0e0;
+  background: var(--border-gray);
 }
 
 .cal-title {
   font-weight: 600;
-  color: #222;
+  color: var(--dark);
 }
 
 .cal-grid {
@@ -273,7 +288,7 @@ input {
   text-align: center;
   font-size: 11px;
   font-weight: 600;
-  color: #999;
+  color: var(--icon-inactive);
   padding: 4px 0;
 }
 
@@ -287,8 +302,8 @@ input {
   font-size: 12px;
   position: relative;
   cursor: pointer;
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-gray);
+  border: 1px solid var(--border-gray);
 }
 
 .cal-day.empty {
@@ -298,14 +313,14 @@ input {
 }
 
 .cal-day.today {
-  background: #667eea;
-  color: white;
+  background: var(--blue);
+  color: var(--white);
   font-weight: 600;
   border: none;
 }
 
 .cal-day.has-workout {
-  background: white;
+  background: var(--white);
 }
 
 .cal-day-num {
@@ -326,7 +341,7 @@ input {
 }
 
 .day-detail {
-  background: #f9f9f9;
+  background: var(--bg-gray);
   border-radius: 8px;
   padding: 12px;
   margin-top: 12px;
@@ -335,12 +350,12 @@ input {
 .day-detail-title {
   font-weight: 600;
   font-size: 13px;
-  color: #222;
+  color: var(--dark);
   margin-bottom: 8px;
 }
 
 .day-session {
-  background: white;
+  background: var(--white);
   border-radius: 6px;
   padding: 8px;
   margin-bottom: 4px;
@@ -348,13 +363,13 @@ input {
 
 .day-session-tags {
   font-size: 12px;
-  color: #666;
+  color: var(--gray);
   margin-bottom: 4px;
 }
 
 .day-session-stats {
   font-size: 11px;
-  color: #999;
+  color: var(--icon-inactive);
 }
 
 /* ── 운동 화면 ── */
@@ -370,12 +385,12 @@ input {
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: #222;
+  color: var(--dark);
 }
 
 .part-selector-sub {
   font-size: 13px;
-  color: #999;
+  color: var(--icon-inactive);
   margin-bottom: 16px;
 }
 
@@ -387,10 +402,10 @@ input {
 }
 
 .part-tag {
-  padding: 12px 8px;
+  padding: 12px 16px;
   border-radius: 8px;
-  background: var(--bg, #f0f0f0);
-  color: var(--c, #333);
+  background: var(--light-gray);
+  color: var(--dark);
   font-weight: 600;
   font-size: 13px;
   border: 2px solid transparent;
@@ -398,8 +413,8 @@ input {
 }
 
 .part-tag.selected {
-  border-color: var(--c, #667eea);
-  background: white;
+  background: var(--dark);
+  color: var(--var(--white));
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
@@ -414,7 +429,7 @@ input {
   display: inline-block;
   padding: 6px 12px;
   border-radius: 20px;
-  color: white;
+  color: var(--white);
   font-size: 12px;
   font-weight: 600;
 }
@@ -423,21 +438,21 @@ input {
   width: 100%;
   padding: 14px;
   border-radius: 8px;
-  background: #667eea;
-  color: white;
+  background: var(--blue);
+  color: var(--white);
   font-weight: 600;
   font-size: 16px;
   transition: all 0.2s ease;
 }
 
 .start-workout-btn:disabled {
-  background: #ccc;
-  color: #999;
+  background: var(--border-gray);
+  color: var(--icon-inactive);
   cursor: not-allowed;
 }
 
 .start-workout-btn:active:not(:disabled) {
-  background: #5568d3;
+  background: var(--blue);
 }
 
 /* ── 종목 네비게이션 ── */
@@ -446,7 +461,7 @@ input {
   gap: 8px;
   overflow-x: auto;
   padding: 12px 16px;
-  background: white;
+  background: var(--white);
   margin: 12px 0;
   border-radius: 8px;
   -webkit-overflow-scrolling: touch;
@@ -457,12 +472,12 @@ input {
 }
 
 .exercise-nav::-webkit-scrollbar-track {
-  background: #f0f0f0;
+  background: var(--light-gray);
   border-radius: 2px;
 }
 
 .exercise-nav::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--border-gray);
   border-radius: 2px;
 }
 
@@ -471,11 +486,11 @@ input {
   padding: 0 16px;
   border-radius: 18px;
   border: 1.5px solid #ddd;
-  background: white;
-  color: #333;
+  background: var(--white);
+  color: var(--dark);
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
+  var(--white)-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
@@ -486,20 +501,20 @@ input {
 }
 
 .ex-nav-btn.active {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
+  background: var(--blue);
+  color: var(--white);
+  border-color: var(--blue);
 }
 
 .ex-nav-btn.done {
-  background: #f0f0f0;
-  color: #999;
+  background: var(--light-gray);
+  color: var(--icon-inactive);
   border-color: #ddd;
 }
 
 /* ── 종목 카드 ── */
 .ex-card {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   margin-bottom: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -533,17 +548,17 @@ input {
 
 .ex-card-name {
   font-weight: 600;
-  color: #222;
+  color: var(--dark);
   margin-bottom: 2px;
 }
 
 .ex-card-vol {
   font-size: 12px;
-  color: #666;
+  color: var(--gray);
 }
 
 .ex-card-vol-prev {
-  color: #999;
+  color: var(--icon-inactive);
   font-size: 11px;
 }
 
@@ -553,7 +568,7 @@ input {
 
 .ex-card-body {
   padding: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--light-gray);
 }
 
 .ex-card-body.collapsed {
@@ -569,22 +584,22 @@ input {
 }
 
 .set-table thead {
-  background: #f9f9f9;
+  background: var(--bg-gray);
 }
 
 .set-table th {
   padding: 8px 4px;
   text-align: center;
   font-weight: 600;
-  color: #999;
+  color: var(--icon-inactive);
   font-size: 11px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-gray);
 }
 
 .set-table td {
   padding: 8px 4px;
   text-align: center;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-gray);
 }
 
 .st-set, .st-chk {
@@ -596,7 +611,7 @@ input {
 }
 
 .set-row.set-done {
-  background: #f9f9f9;
+  background: var(--bg-gray);
   opacity: 0.8;
 }
 
@@ -606,27 +621,27 @@ input {
 
 .set-num {
   font-weight: 600;
-  color: #999;
+  color: var(--icon-inactive);
 }
 
 .set-input {
   width: 100%;
   padding: 6px 4px;
   text-align: center;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-gray);
   border-radius: 4px;
-  background: white;
+  background: var(--white);
 }
 
 .set-input.filled {
-  background: #f9f9f9;
-  border-color: #999;
+  background: var(--bg-gray);
+  border-color: var(--icon-inactive);
 }
 
 .prev-val {
   display: block;
   font-size: 10px;
-  color: #999;
+  color: var(--icon-inactive);
   margin-top: 2px;
 }
 
@@ -634,32 +649,33 @@ input {
   width: 32px;
   height: 32px;
   border-radius: 4px;
-  background: #f0f0f0;
-  color: #666;
+  background: var(--border-gray);
+  color: transparent;
   font-weight: 600;
   font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .set-check-btn.done {
-  background: #34c759;
-  color: white;
+  background: var(--blue);
+  color: var(--var(--white));
 }
 
 .add-set-btn {
   width: 100%;
   padding: 10px;
   border-radius: 6px;
-  background: #f0f0f0;
-  color: #666;
+  background: var(--light-gray);
+  color: var(--gray);
   font-weight: 600;
   font-size: 13px;
 }
 
 .add-set-btn:active {
-  background: #e0e0e0;
+  background: var(--border-gray);
 }
 
 /* ── 유산소 입력 ── */
@@ -672,7 +688,7 @@ input {
 .cardio-min-input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-gray);
   border-radius: 6px;
   font-size: 16px;
   text-align: center;
@@ -680,7 +696,7 @@ input {
 }
 
 .cardio-label {
-  color: #666;
+  color: var(--gray);
   font-weight: 600;
 }
 
@@ -695,7 +711,7 @@ input {
 }
 
 .rest-timer {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 16px;
   text-align: center;
@@ -705,13 +721,13 @@ input {
 }
 
 .rest-timer.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue) 100%);
+  color: var(--white);
 }
 
 .rest-timer.done {
   background: #34c759;
-  color: white;
+  color: var(--white);
 }
 
 .rest-timer-num {
@@ -736,12 +752,12 @@ input {
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: #222;
+  color: var(--dark);
 }
 
 .summary-tags {
   font-size: 13px;
-  color: #666;
+  color: var(--gray);
   margin-bottom: 16px;
 }
 
@@ -753,7 +769,7 @@ input {
 }
 
 .summary-stat {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -762,7 +778,7 @@ input {
 .summary-stat-num {
   font-size: 18px;
   font-weight: 700;
-  color: #667eea;
+  color: var(--blue);
   margin-bottom: 4px;
 }
 
@@ -787,12 +803,12 @@ input {
 
 .summary-stat-label {
   font-size: 11px;
-  color: #999;
+  color: var(--icon-inactive);
 }
 
 .summary-detail {
   font-size: 12px;
-  color: #666;
+  color: var(--gray);
   margin-bottom: 16px;
 }
 
@@ -815,7 +831,7 @@ input {
   align-items: center;
   gap: 8px;
   padding: 8px;
-  background: white;
+  background: var(--white);
   border-radius: 6px;
   margin-bottom: 4px;
   font-size: 13px;
@@ -828,25 +844,25 @@ input {
 .summary-pr-name {
   flex: 1;
   text-align: left;
-  color: #222;
+  color: var(--dark);
 }
 
 .summary-pr-val {
   font-weight: 600;
-  color: #666;
+  color: var(--gray);
 }
 
 .summary-home-btn {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
-  background: #667eea;
-  color: white;
+  background: var(--blue);
+  color: var(--white);
   font-weight: 600;
 }
 
 .summary-home-btn:active {
-  background: #5568d3;
+  background: var(--blue);
 }
 
 .finish-btn {
@@ -854,7 +870,7 @@ input {
   padding: 14px;
   border-radius: 8px;
   background: #34c759;
-  color: white;
+  color: var(--white);
   font-weight: 600;
   font-size: 16px;
   margin-bottom: 12px;
@@ -875,15 +891,15 @@ input {
   flex: 1;
   padding: 10px;
   border-radius: 6px;
-  background: #f0f0f0;
-  color: #666;
+  background: var(--light-gray);
+  color: var(--gray);
   font-weight: 600;
   font-size: 13px;
 }
 
 .period-tab.active {
-  background: #667eea;
-  color: white;
+  background: var(--blue);
+  color: var(--white);
 }
 
 .period-cards {
@@ -894,7 +910,7 @@ input {
 }
 
 .period-card {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 12px;
   text-align: center;
@@ -904,7 +920,7 @@ input {
 .period-card-num {
   font-size: 20px;
   font-weight: 700;
-  color: #667eea;
+  color: var(--blue);
   margin-bottom: 4px;
 }
 
@@ -915,7 +931,7 @@ input {
 
 .period-card-label {
   font-size: 11px;
-  color: #999;
+  color: var(--icon-inactive);
 }
 
 /* ── 히스토리 ── */
@@ -926,7 +942,7 @@ input {
 }
 
 .history-item {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -942,7 +958,7 @@ input {
 
 .hi-date {
   font-weight: 600;
-  color: #222;
+  color: var(--dark);
   font-size: 13px;
 }
 
@@ -956,17 +972,17 @@ input {
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
-  white-space: nowrap;
+  var(--white)-space: nowrap;
 }
 
 .hi-summary {
   font-size: 12px;
-  color: #666;
+  color: var(--gray);
 }
 
 /* ── 인바디 ── */
 .inbody-section {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -982,8 +998,8 @@ input {
 .inbody-add-btn {
   padding: 6px 12px;
   border-radius: 6px;
-  background: #667eea;
-  color: white;
+  background: var(--blue);
+  color: var(--white);
   font-weight: 600;
   font-size: 12px;
 }
@@ -996,7 +1012,7 @@ input {
 }
 
 .inbody-item {
-  background: #f9f9f9;
+  background: var(--bg-gray);
   border-radius: 6px;
   padding: 12px;
   text-align: center;
@@ -1004,14 +1020,14 @@ input {
 
 .inbody-label {
   font-size: 11px;
-  color: #999;
+  color: var(--icon-inactive);
   margin-bottom: 4px;
 }
 
 .inbody-val {
   font-size: 16px;
   font-weight: 700;
-  color: #667eea;
+  color: var(--blue);
 }
 
 .inbody-val small {
@@ -1022,7 +1038,7 @@ input {
 .inbody-empty {
   text-align: center;
   padding: 20px;
-  color: #999;
+  color: var(--icon-inactive);
   font-size: 13px;
 }
 
@@ -1037,32 +1053,32 @@ input {
 }
 
 .inbody-history-item {
-  background: #f9f9f9;
+  background: var(--bg-gray);
   border-radius: 6px;
   padding: 10px;
 }
 
 .inbody-history-date {
   font-size: 11px;
-  color: #999;
+  color: var(--icon-inactive);
   margin-bottom: 4px;
 }
 
 .inbody-history-data {
   font-size: 12px;
-  color: #222;
+  color: var(--dark);
   font-weight: 600;
 }
 
 .inbody-form {
-  background: #f9f9f9;
+  background: var(--bg-gray);
   border-radius: 8px;
   padding: 16px;
   margin-top: 16px;
 }
 
 .inbody-form-content {
-  background: white;
+  background: var(--white);
   border-radius: 8px;
   padding: 16px;
 }
@@ -1071,7 +1087,7 @@ input {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: #222;
+  color: var(--dark);
 }
 
 .form-group {
@@ -1083,19 +1099,19 @@ input {
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 6px;
-  color: #222;
+  color: var(--dark);
 }
 
 .form-group input {
   width: 100%;
   padding: 10px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-gray);
   border-radius: 6px;
   font-size: 14px;
 }
 
 .form-group input:focus {
-  border-color: #667eea;
+  border-color: var(--blue);
 }
 
 .form-actions {
@@ -1108,8 +1124,8 @@ input {
   flex: 1;
   padding: 10px;
   border-radius: 6px;
-  background: #f0f0f0;
-  color: #666;
+  background: var(--light-gray);
+  color: var(--gray);
   font-weight: 600;
 }
 
@@ -1117,21 +1133,21 @@ input {
   flex: 1;
   padding: 10px;
   border-radius: 6px;
-  background: #667eea;
-  color: white;
+  background: var(--blue);
+  color: var(--white);
   font-weight: 600;
 }
 
 .btn-save:active {
-  background: #5568d3;
+  background: var(--blue);
 }
 
 .chart-placeholder {
   text-align: center;
   padding: 20px;
-  color: #999;
+  color: var(--icon-inactive);
   font-size: 13px;
-  background: #f9f9f9;
+  background: var(--bg-gray);
   border-radius: 6px;
   margin-top: 12px;
 }
@@ -1140,7 +1156,7 @@ input {
 .empty-msg {
   text-align: center;
   padding: 20px;
-  color: #999;
+  color: var(--icon-inactive);
   font-size: 13px;
 }
 
@@ -1151,7 +1167,7 @@ input {
   left: 16px;
   right: 16px;
   background: #ffd700;
-  color: #333;
+  color: var(--dark);
   padding: 12px 16px;
   border-radius: 8px;
   font-weight: 600;
@@ -1177,8 +1193,8 @@ input {
   right: 0;
   display: flex;
   height: 60px;
-  background: white;
-  border-top: 1px solid #e0e0e0;
+  background: var(--var(--white));
+  border-top: 1px solid var(--border-gray);
   z-index: 15;
 }
 
@@ -1189,13 +1205,14 @@ input {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: #999;
+  color: var(--icon-inactive);
   font-size: 11px;
   transition: color 0.2s ease;
+  font-weight: 400;
 }
 
 .tab-item.on {
-  color: #667eea;
+  color: var(--dark);
 }
 
 .tab-icon {
