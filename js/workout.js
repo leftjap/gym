@@ -5,6 +5,7 @@ var _selectedParts = [];
 var _restTimer = null;        // {endTime, intervalId}
 var _workoutStartTime = null;
 var _restAnimFrame = null;
+var _currentExerciseIndex = 0;  // 현재 보고 있는 종목 인덱스
 
 // ══ 화면 진입 ══
 function renderWorkoutScreen() {
@@ -133,6 +134,7 @@ function startWorkout() {
   }
 
   updateWorkoutHeader(true);
+  _currentExerciseIndex = 0;
   renderExerciseCards();
   startWorkoutTimer();
 }
@@ -177,17 +179,67 @@ function renderExerciseCards() {
   var container = document.getElementById('workoutContent');
   if (!container || !_currentSession) return;
 
+  // 유효한 인덱스 확인
+  if (_currentExerciseIndex >= _currentSession.exercises.length) {
+    _currentExerciseIndex = _currentSession.exercises.length - 1;
+  }
+  if (_currentExerciseIndex < 0) _currentExerciseIndex = 0;
+
   var html = '';
 
-  for (var i = 0; i < _currentSession.exercises.length; i++) {
-    html += renderExerciseCard(i);
-  }
+  // 현재 종목 카드만 렌더링
+  html += '<div id="exercise-cards">' + renderExerciseCard(_currentExerciseIndex) + '</div>';
+
+  // 종목 네비게이션 버튼바
+  html += renderExerciseNav();
 
   // 운동 완료 버튼
   html += '<button class="finish-btn" onclick="finishWorkout()">운동 완료 💪</button>';
   html += '<div style="height:100px"></div>';
 
   container.innerHTML = html;
+}
+
+// ══ 종목 네비게이션 버튼바 ══
+function renderExerciseNav() {
+  var html = '<div class="exercise-nav">';
+
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    var exData = _currentSession.exercises[i];
+    var meta = getExercise(exData.exerciseId);
+    var name = meta ? meta.name : exData.exerciseId;
+
+    // 모든 세트 완료 여부
+    var allDone = true;
+    for (var j = 0; j < exData.sets.length; j++) {
+      if (!exData.sets[j].done) {
+        allDone = false;
+        break;
+      }
+    }
+
+    var btnClass = 'ex-nav-btn';
+    if (i === _currentExerciseIndex) {
+      btnClass += ' active';
+    } else if (allDone) {
+      btnClass += ' done';
+    }
+
+    var btnContent = name;
+    if (allDone) btnContent = '✓ ' + name;
+
+    html += '<button class="' + btnClass + '" onclick="switchExercise(' + i + ')">' + btnContent + '</button>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+// ══ 종목 전환 ══
+function switchExercise(exIdx) {
+  if (exIdx < 0 || exIdx >= _currentSession.exercises.length) return;
+  _currentExerciseIndex = exIdx;
+  renderExerciseCards();
 }
 
 function renderExerciseCard(exIdx) {
@@ -515,6 +567,7 @@ function finishWorkout() {
   _currentSession = null;
   _selectedParts = [];
   _workoutStartTime = null;
+  _currentExerciseIndex = 0;
 }
 
 // ══ 운동 완료 요약 ══
@@ -600,6 +653,7 @@ function restoreSession() {
     _currentSession = saved;
     _selectedParts = saved.tags.slice();
     _workoutStartTime = saved.startTime;
+    _currentExerciseIndex = 0;
     return true;
   }
   return false;
