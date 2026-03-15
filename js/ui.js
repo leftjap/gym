@@ -30,8 +30,8 @@ function startWorkoutFlow() {
 
 // ══ 홈 화면 ══
 function renderHome() {
-  renderWeekCal();
   renderSummaryMsg();
+  renderWeekCal();
   renderLastWorkoutCard();
 }
 
@@ -81,6 +81,9 @@ function renderSummaryMsg() {
   }
 
   el.innerHTML =
+    '<button class="summary-cal-btn" onclick="showScreen(\'stats\')">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' +
+    '</button>' +
     '<div class="summary-msg-main">' + mainText + '</div>' +
     '<div class="summary-msg-sub">' + subText + '</div>';
 }
@@ -193,9 +196,6 @@ function renderWeekCal() {
   var dows = ['월', '화', '수', '목', '금', '토', '일'];
 
   var html = '';
-  html += '<button class="summary-cal-btn" onclick="showScreen(\'stats\')">';
-  html += '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
-  html += '</button>';
   html += '<div class="week-cal">';
   for (var i = 0; i < 7; i++) {
     var d = new Date(weekStart);
