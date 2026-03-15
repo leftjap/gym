@@ -1197,10 +1197,14 @@ input {
 .app-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: calc(max(12px, env(safe-area-inset-top)) + 8px) 16px 12px 16px;
+  justify-content: flex-end;
+  padding: calc(max(12px, env(safe-area-inset-top)) + 4px) 16px 4px 16px;
   background: var(--dark);
   border-bottom: none;
+}
+
+.app-header-spacer {
+  flex: 1;
 }
 
 .header-btn {
@@ -1213,47 +1217,19 @@ input {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.4);
 }
 
 .header-btn:active {
   background: rgba(255,255,255,0.1);
 }
 
-.month-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.month-nav-btn {
-  background: none;
-  border: none;
-  font-size: 16px;
-  color: rgba(255,255,255,0.6);
-  cursor: pointer;
-  padding: 4px 6px;
-}
-
-.month-nav-btn:active {
-  opacity: 0.6;
-}
-
-.month-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--white);
-  min-width: 50px;
-  text-align: center;
-}
-
 /* ── 요약 메시지 ── */
 .summary-msg {
-  padding: 16px;
-  margin: 8px 0;
-  background: var(--white);
-  border-radius: 8px;
-  margin: 0 16px 8px 16px;
+  padding: 16px 20px;
+  margin: 0 0 0 0;
+  background: transparent;
+  border-radius: 0;
 }
 
 .summary-msg-main {
@@ -1267,12 +1243,22 @@ input {
 }
 
 .summary-msg-main strong {
-  color: var(--blue);
+  color: #e87461;
 }
 
 .summary-msg-sub {
   font-size: 13px;
   color: var(--gray);
+}
+
+.summary-msg-sub .vol-up {
+  color: #e87461;
+  font-weight: 600;
+}
+
+.summary-msg-sub .vol-down {
+  color: var(--blue);
+  font-weight: 600;
 }
 
 /* ── 직전 운동 카드 ── */
@@ -1484,7 +1470,7 @@ input {
 .week-cal-container {
   background: var(--dark);
   border-radius: 0;
-  padding: 4px 16px 16px 16px;
+  padding: 0 12px 20px 12px;
   margin: 0;
   box-shadow: none;
 }
@@ -1492,7 +1478,7 @@ input {
 .week-cal {
   display: flex;
   justify-content: space-between;
-  gap: 2px;
+  gap: 0;
 }
 
 .week-day {
@@ -1500,10 +1486,10 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 0;
   cursor: pointer;
-  padding: 4px 0 0 0;
-  border-radius: 8px;
+  padding: 6px 0 0 0;
+  border-radius: 10px;
   transition: background 0.15s ease;
 }
 
@@ -1512,47 +1498,58 @@ input {
 }
 
 .week-day-dow {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 6px;
 }
 
 .week-day-num {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.8);
-  border-radius: 12px;
-  transition: all 0.2s ease;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  border-radius: 14px;
+  transition: all 0.25s ease;
+  position: relative;
 }
 
+/* 오늘: 떠오르는 효과 (neumorphism) */
 .week-day.today .week-day-num {
   background: var(--white);
   color: var(--dark);
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
   box-shadow:
-    -4px -4px 8px rgba(255,255,255,0.15),
-    4px 4px 12px rgba(0,0,0,0.4),
-    0 0 0 1px rgba(255,255,255,0.05);
-  transform: translate(-1px, -2px) scale(1.05);
+    -6px -6px 12px rgba(255,255,255,0.08),
+    6px 6px 16px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -1px 0 rgba(0,0,0,0.05);
+  transform: translateY(-3px);
 }
 
+/* 선택된 날 (오늘 아닌) */
 .week-day.selected:not(.today) .week-day-num {
-  background: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.1);
   color: var(--white);
 }
 
+/* 볼륨 숫자 */
 .week-day-vol {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(255,255,255,0.3);
-  height: 12px;
-  line-height: 12px;
-  margin-top: 1px;
+  color: rgba(255,255,255,0.25);
+  height: 16px;
+  line-height: 16px;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
 }
 
 .week-day-vol.empty {

@@ -52,7 +52,6 @@ function renderSummaryMsg() {
   var subText = '';
 
   if (isWeekStart && thisWeekVol === 0) {
-    // 월요일이고 이번주 기록이 없으면 지난주 보여주기
     if (lastWeekTotal > 0) {
       mainText = '지난주 총 <strong>' + formatNum(lastWeekTotal) + 'kg</strong> 들었어요';
     } else {
@@ -62,14 +61,13 @@ function renderSummaryMsg() {
   } else if (thisWeekVol > 0) {
     mainText = '이번 주 총 <strong>' + formatNum(thisWeekVol) + 'kg</strong> 들었어요';
 
-    // 지난주 같은 시점과 비교
     var diff = thisWeekVol - lastWeekVol;
     if (lastWeekVol === 0) {
       subText = '이번 주도 꾸준히 하고 있어요!';
     } else if (diff > 0) {
-      subText = '지난주보다 <strong>' + formatNum(diff) + 'kg</strong> 더 들고 있어요';
+      subText = '지난주보다 <span class="vol-up">' + formatNum(diff) + 'kg 더</span> 들고 있어요';
     } else if (diff < 0) {
-      subText = '지난주보다 ' + formatNum(Math.abs(diff)) + 'kg 덜 들고 있어요';
+      subText = '지난주보다 <span class="vol-down">' + formatNum(Math.abs(diff)) + 'kg 덜</span> 들고 있어요';
     } else {
       subText = '지난주와 같은 페이스예요!';
     }
