@@ -147,3 +147,326 @@ function getExercisesByPart(partId) {
 function getBodyPart(id) {
   return BODY_PARTS.find(function(p) { return p.id === id; });
 }
+
+// ── 더미 데이터 (개발용) ──
+function initDummyData() {
+  if (L(K.sessions) && L(K.sessions).length > 0) return;
+
+  var sessions = [
+    {
+      id: 'demo_1',
+      date: '2026-03-03',
+      startTime: new Date('2026-03-03T18:00:00').getTime(),
+      endTime: new Date('2026-03-03T19:05:00').getTime(),
+      tags: ['lower', 'daily', 'interval'],
+      exercises: [
+        { exerciseId: 'leg_extension', sortOrder: 0, sets: [
+          { weight: 20, reps: 15, done: true, isPR: false, restSec: 90 },
+          { weight: 30, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 10, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'leg_curl', sortOrder: 1, sets: [
+          { weight: 20, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 25, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 30, reps: 10, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'barbell_squat', sortOrder: 2, sets: [
+          { weight: 40, reps: 10, done: true, isPR: false, restSec: 120 },
+          { weight: 50, reps: 8, done: true, isPR: false, restSec: 120 },
+          { weight: 60, reps: 6, done: true, isPR: true, restSec: 120 },
+          { weight: 60, reps: 6, done: true, isPR: false, restSec: 120 }
+        ]},
+        { exerciseId: 'barbell_curl', sortOrder: 3, sets: [
+          { weight: 15, reps: 12, done: true, isPR: false, restSec: 60 },
+          { weight: 20, reps: 10, done: true, isPR: false, restSec: 60 },
+          { weight: 20, reps: 10, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'situp', sortOrder: 4, sets: [
+          { weight: 0, reps: 20, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 20, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 20, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'running', sortOrder: 5, sets: [
+          { weight: 0, reps: 15, done: true, isPR: false, restSec: 0 }
+        ]}
+      ],
+      totalVolume: 3540,
+      totalCalories: 320,
+      durationMin: 65,
+      memo: ''
+    },
+    {
+      id: 'demo_2',
+      date: '2026-03-05',
+      startTime: new Date('2026-03-05T18:30:00').getTime(),
+      endTime: new Date('2026-03-05T19:40:00').getTime(),
+      tags: ['chest', 'back', 'daily', 'interval'],
+      exercises: [
+        { exerciseId: 'incline_bench', sortOrder: 0, sets: [
+          { weight: 30, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 8, done: true, isPR: false, restSec: 90 },
+          { weight: 50, reps: 6, done: true, isPR: true, restSec: 90 },
+          { weight: 50, reps: 6, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'lat_pulldown', sortOrder: 1, sets: [
+          { weight: 30, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 10, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'seated_row', sortOrder: 2, sets: [
+          { weight: 30, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 35, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 10, done: true, isPR: true, restSec: 90 }
+        ]},
+        { exerciseId: 'face_pull', sortOrder: 3, sets: [
+          { weight: 15, reps: 15, done: true, isPR: false, restSec: 60 },
+          { weight: 15, reps: 15, done: true, isPR: false, restSec: 60 },
+          { weight: 20, reps: 12, done: true, isPR: true, restSec: 60 }
+        ]},
+        { exerciseId: 'barbell_curl', sortOrder: 4, sets: [
+          { weight: 20, reps: 12, done: true, isPR: false, restSec: 60 },
+          { weight: 20, reps: 12, done: true, isPR: false, restSec: 60 },
+          { weight: 25, reps: 10, done: true, isPR: true, restSec: 60 }
+        ]},
+        { exerciseId: 'situp', sortOrder: 5, sets: [
+          { weight: 0, reps: 25, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 25, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 25, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'running', sortOrder: 6, sets: [
+          { weight: 0, reps: 15, done: true, isPR: false, restSec: 0 }
+        ]}
+      ],
+      totalVolume: 3755,
+      totalCalories: 345,
+      durationMin: 70,
+      memo: ''
+    },
+    {
+      id: 'demo_3',
+      date: '2026-03-08',
+      startTime: new Date('2026-03-08T10:00:00').getTime(),
+      endTime: new Date('2026-03-08T11:10:00').getTime(),
+      tags: ['lower', 'shoulder', 'daily', 'interval'],
+      exercises: [
+        { exerciseId: 'leg_extension', sortOrder: 0, sets: [
+          { weight: 25, reps: 15, done: true, isPR: false, restSec: 90 },
+          { weight: 35, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 45, reps: 10, done: true, isPR: true, restSec: 90 },
+          { weight: 45, reps: 10, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'leg_curl', sortOrder: 1, sets: [
+          { weight: 25, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 30, reps: 12, done: true, isPR: true, restSec: 90 },
+          { weight: 30, reps: 10, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'leg_press', sortOrder: 2, sets: [
+          { weight: 80, reps: 10, done: true, isPR: false, restSec: 120 },
+          { weight: 100, reps: 8, done: true, isPR: false, restSec: 120 },
+          { weight: 120, reps: 8, done: true, isPR: true, restSec: 120 },
+          { weight: 120, reps: 6, done: true, isPR: false, restSec: 120 }
+        ]},
+        { exerciseId: 'overhead_press', sortOrder: 3, sets: [
+          { weight: 20, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 25, reps: 8, done: true, isPR: false, restSec: 90 },
+          { weight: 30, reps: 6, done: true, isPR: true, restSec: 90 },
+          { weight: 30, reps: 6, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'side_lateral', sortOrder: 4, sets: [
+          { weight: 5, reps: 15, done: true, isPR: false, restSec: 60 },
+          { weight: 7, reps: 12, done: true, isPR: false, restSec: 60 },
+          { weight: 7, reps: 12, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'barbell_curl', sortOrder: 5, sets: [
+          { weight: 20, reps: 12, done: true, isPR: false, restSec: 60 },
+          { weight: 25, reps: 10, done: true, isPR: false, restSec: 60 },
+          { weight: 25, reps: 10, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'situp', sortOrder: 6, sets: [
+          { weight: 0, reps: 25, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 25, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 30, done: true, isPR: true, restSec: 60 }
+        ]},
+        { exerciseId: 'running', sortOrder: 7, sets: [
+          { weight: 0, reps: 15, done: true, isPR: false, restSec: 0 }
+        ]}
+      ],
+      totalVolume: 5765,
+      totalCalories: 390,
+      durationMin: 70,
+      memo: ''
+    },
+    {
+      id: 'demo_4',
+      date: '2026-03-10',
+      startTime: new Date('2026-03-10T18:00:00').getTime(),
+      endTime: new Date('2026-03-10T19:15:00').getTime(),
+      tags: ['chest', 'back', 'daily', 'interval'],
+      exercises: [
+        { exerciseId: 'incline_bench', sortOrder: 0, sets: [
+          { weight: 30, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 8, done: true, isPR: false, restSec: 90 },
+          { weight: 50, reps: 7, done: true, isPR: true, restSec: 90 },
+          { weight: 50, reps: 6, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'barbell_row', sortOrder: 1, sets: [
+          { weight: 30, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 8, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 8, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'deadlift', sortOrder: 2, sets: [
+          { weight: 50, reps: 8, done: true, isPR: false, restSec: 120 },
+          { weight: 60, reps: 6, done: true, isPR: false, restSec: 120 },
+          { weight: 70, reps: 5, done: true, isPR: true, restSec: 120 }
+        ]},
+        { exerciseId: 'lat_pulldown', sortOrder: 3, sets: [
+          { weight: 35, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 45, reps: 10, done: true, isPR: true, restSec: 90 },
+          { weight: 45, reps: 10, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'barbell_curl', sortOrder: 4, sets: [
+          { weight: 25, reps: 12, done: true, isPR: true, restSec: 60 },
+          { weight: 25, reps: 10, done: true, isPR: false, restSec: 60 },
+          { weight: 25, reps: 10, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'situp', sortOrder: 5, sets: [
+          { weight: 0, reps: 30, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 30, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 30, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'running', sortOrder: 6, sets: [
+          { weight: 0, reps: 15, done: true, isPR: false, restSec: 0 }
+        ]}
+      ],
+      totalVolume: 4385,
+      totalCalories: 360,
+      durationMin: 75,
+      memo: ''
+    },
+    {
+      id: 'demo_5',
+      date: '2026-03-12',
+      startTime: new Date('2026-03-12T18:00:00').getTime(),
+      endTime: new Date('2026-03-12T19:00:00').getTime(),
+      tags: ['lower', 'daily', 'interval'],
+      exercises: [
+        { exerciseId: 'leg_extension', sortOrder: 0, sets: [
+          { weight: 25, reps: 15, done: true, isPR: false, restSec: 90 },
+          { weight: 35, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 45, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 50, reps: 8, done: true, isPR: true, restSec: 90 }
+        ]},
+        { exerciseId: 'leg_curl', sortOrder: 1, sets: [
+          { weight: 25, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 30, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 35, reps: 10, done: true, isPR: true, restSec: 90 }
+        ]},
+        { exerciseId: 'barbell_squat', sortOrder: 2, sets: [
+          { weight: 40, reps: 10, done: true, isPR: false, restSec: 120 },
+          { weight: 60, reps: 8, done: true, isPR: true, restSec: 120 },
+          { weight: 60, reps: 8, done: true, isPR: false, restSec: 120 },
+          { weight: 60, reps: 6, done: true, isPR: false, restSec: 120 }
+        ]},
+        { exerciseId: 'barbell_curl', sortOrder: 3, sets: [
+          { weight: 25, reps: 12, done: true, isPR: false, restSec: 60 },
+          { weight: 25, reps: 12, done: true, isPR: false, restSec: 60 },
+          { weight: 25, reps: 10, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'situp', sortOrder: 4, sets: [
+          { weight: 0, reps: 30, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 30, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 30, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'running', sortOrder: 5, sets: [
+          { weight: 0, reps: 15, done: true, isPR: false, restSec: 0 }
+        ]}
+      ],
+      totalVolume: 4475,
+      totalCalories: 340,
+      durationMin: 60,
+      memo: ''
+    },
+    {
+      id: 'demo_6',
+      date: '2026-03-14',
+      startTime: new Date('2026-03-14T18:30:00').getTime(),
+      endTime: new Date('2026-03-14T19:45:00').getTime(),
+      tags: ['chest', 'back', 'daily', 'interval'],
+      exercises: [
+        { exerciseId: 'incline_bench', sortOrder: 0, sets: [
+          { weight: 35, reps: 10, done: true, isPR: true, restSec: 90 },
+          { weight: 45, reps: 8, done: true, isPR: true, restSec: 90 },
+          { weight: 55, reps: 5, done: true, isPR: true, restSec: 90 },
+          { weight: 50, reps: 7, done: true, isPR: false, restSec: 90 }
+        ]},
+        { exerciseId: 'seated_row', sortOrder: 1, sets: [
+          { weight: 35, reps: 12, done: true, isPR: false, restSec: 90 },
+          { weight: 40, reps: 10, done: true, isPR: false, restSec: 90 },
+          { weight: 45, reps: 10, done: true, isPR: true, restSec: 90 }
+        ]},
+        { exerciseId: 'face_pull', sortOrder: 2, sets: [
+          { weight: 20, reps: 15, done: true, isPR: true, restSec: 60 },
+          { weight: 20, reps: 15, done: true, isPR: false, restSec: 60 },
+          { weight: 20, reps: 12, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'deadlift', sortOrder: 3, sets: [
+          { weight: 60, reps: 6, done: true, isPR: false, restSec: 120 },
+          { weight: 70, reps: 5, done: true, isPR: false, restSec: 120 },
+          { weight: 80, reps: 4, done: true, isPR: true, restSec: 120 }
+        ]},
+        { exerciseId: 'barbell_curl', sortOrder: 4, sets: [
+          { weight: 25, reps: 12, done: true, isPR: false, restSec: 60 },
+          { weight: 30, reps: 8, done: true, isPR: true, restSec: 60 },
+          { weight: 25, reps: 10, done: true, isPR: false, restSec: 60 }
+        ]},
+        { exerciseId: 'situp', sortOrder: 5, sets: [
+          { weight: 0, reps: 30, done: true, isPR: false, restSec: 60 },
+          { weight: 0, reps: 30, done: true, isPR: false, restSec: 60 },
+          { weight: 5, reps: 20, done: true, isPR: true, restSec: 60 }
+        ]},
+        { exerciseId: 'running', sortOrder: 6, sets: [
+          { weight: 0, reps: 15, done: true, isPR: false, restSec: 0 }
+        ]}
+      ],
+      totalVolume: 4910,
+      totalCalories: 375,
+      durationMin: 75,
+      memo: ''
+    }
+  ];
+
+  // PR 기록 생성
+  var prs = {};
+  for (var i = 0; i < sessions.length; i++) {
+    var sess = sessions[i];
+    for (var j = 0; j < sess.exercises.length; j++) {
+      var ex = sess.exercises[j];
+      for (var k = 0; k < ex.sets.length; k++) {
+        var set = ex.sets[k];
+        if (set.isPR && set.weight > 0) {
+          if (!prs[ex.exerciseId]) prs[ex.exerciseId] = { exerciseId: ex.exerciseId, records: [] };
+          prs[ex.exerciseId].records.push({
+            weight: set.weight,
+            reps: set.reps,
+            volume: set.weight * set.reps,
+            estimated1RM: Math.round(set.weight * (1 + set.reps / 30) * 10) / 10,
+            date: sess.date,
+            sessionId: sess.id
+          });
+        }
+      }
+    }
+  }
+
+  // 인바디 기록
+  var inbody = [
+    { id: 'ib_demo_1', date: '2026-02-15', weight: 76.2, bodyFatPct: 19.5, muscleMass: 32.8, memo: '' },
+    { id: 'ib_demo_2', date: '2026-03-01', weight: 75.5, bodyFatPct: 18.8, muscleMass: 33.1, memo: '' },
+    { id: 'ib_demo_3', date: '2026-03-15', weight: 75.0, bodyFatPct: 18.2, muscleMass: 33.4, memo: '' }
+  ];
+
+  S(K.sessions, sessions);
+  S(K.prs, Object.values(prs));
+  S(K.inbody, inbody);
+}

@@ -8,7 +8,7 @@
 </head>
 <body>
   <div id="app">
-    <!-- 헤더 -->
+    <!-- 운동 진행 헤더 (숨겨진 상태) -->
     <header id="workoutHeader" class="workout-header" style="display:none;">
       <div class="wh-left">
         <span class="wh-timer" id="workoutTimer">00:00</span>
@@ -22,79 +22,48 @@
     <!-- 휴식 타이머 -->
     <div id="restTimerBar" class="rest-timer-bar"></div>
 
-    <!-- 스크린 컨테이너 -->
-    <main class="screens-container">
-      <!-- 홈 화면 -->
-      <div id="screen-home" class="screen active">
-        <section class="home-section">
-          <div id="weekSummary" class="week-summary"></div>
-          <div class="streak-section">
-            <div class="streak-label">연속 운동</div>
-            <div class="streak-badge"><span id="streakNum">0</span>일</div>
-          </div>
-        </section>
-
-        <section class="home-section">
-          <div class="section-title">최근 개인 기록</div>
-          <div id="recentPRs" class="recent-prs"></div>
-        </section>
-
-        <section class="home-section">
-          <div id="calendar" class="calendar"></div>
-        </section>
+    <!-- 메인 화면 (싱글 스크롤) -->
+    <main id="main-view" class="main-view">
+      <!-- 헤더: 햄버거 | 월 전환 | 달력 -->
+      <div class="app-header">
+        <button class="header-btn hamburger" aria-label="메뉴">☰</button>
+        <div class="month-nav">
+          <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
+          <span class="month-title" id="monthTitle">3월</span>
+          <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <button class="header-btn calendar-icon" aria-label="달력">📅</button>
       </div>
 
-      <!-- 운동 화면 -->
-      <div id="screen-workout" class="screen">
-        <div id="workoutContent" class="workout-content"></div>
-      </div>
+      <!-- 요약 메시지 -->
+      <div id="summaryMsg" class="summary-msg"></div>
 
-      <!-- 통계 화면 -->
-      <div id="screen-stats" class="screen">
-        <section class="stats-section">
-          <div id="periodStats" class="period-stats"></div>
-        </section>
+      <!-- 히어로 카드 -->
+      <div id="heroCard" class="hero-card"></div>
 
-        <section class="stats-section">
-          <div class="section-title">운동 기록</div>
-          <div id="historyList" class="history-list"></div>
-        </section>
+      <!-- 주간 캘린더 -->
+      <div id="weekCal" class="week-cal-container"></div>
 
-        <section class="stats-section">
-          <div id="inbodySection" class="inbody-section"></div>
-        </section>
+      <!-- 월간 캘린더 -->
+      <div id="monthCal" class="month-cal-container"></div>
+
+      <!-- 바텀시트 (숨겨진 상태) -->
+      <div id="bottomSheetOverlay" class="bottom-sheet-overlay" style="display:none;" onclick="closeBottomSheet()"></div>
+      <div id="bottomSheet" class="bottom-sheet" style="display:none;">
+        <div class="bottom-sheet-handle"></div>
+        <button class="bottom-sheet-close" onclick="closeBottomSheet()">✕</button>
+        <div id="bottomSheetContent" class="bottom-sheet-content"></div>
       </div>
     </main>
 
-    <!-- 탭바 -->
-    <nav class="tab-bar">
-      <button class="tab-item on" onclick="showScreen('home')">
-        <svg class="tab-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12l9-8 9 8v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8z"/>
-          <path d="M9 17v-5h6v5"/>
-        </svg>
-        <span class="tab-label">홈</span>
-      </button>
-      <button class="tab-item" onclick="showScreen('workout')">
-        <svg class="tab-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="6" cy="12" r="2"/>
-          <circle cx="18" cy="12" r="2"/>
-          <line x1="8" y1="12" x2="16" y2="12"/>
-          <rect x="4" y="10" width="2" height="4"/>
-          <rect x="18" y="10" width="2" height="4"/>
-        </svg>
-        <span class="tab-label">운동</span>
-      </button>
-      <button class="tab-item" onclick="showScreen('stats')">
-        <svg class="tab-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="14" width="3" height="8"/>
-          <rect x="10.5" y="8" width="3" height="14"/>
-          <rect x="18" y="4" width="3" height="18"/>
-        </svg>
-        <span class="tab-label">통계</span>
-      </button>
-    </nav>
+    <!-- 운동 진행 화면 (숨겨진 상태) -->
+    <div id="screen-workout" class="screen">
+      <div id="workoutContent" class="workout-content"></div>
+    </div>
   </div>
+
+  <!-- 운동 시작 버튼 (고정) -->
+  <button class="start-workout" onclick="startWorkoutFlow()">운동 시작</button>
 
   <!-- JS 파일들 -->
   <script src="js/storage.js"></script>

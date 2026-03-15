@@ -1,108 +1,195 @@
-/* ═══ ui.js — 화면 전환, 대시보드, 캘린더 ═══ */
+/* ═══ ui.js — 메인 화면, 캘린더, 화면 전환 ═══ */
 
-var activeScreen = 'home';
-var _calendarYM = getYM(); // 캘린더 현재 월
+var _currentYM = getYM(); // 현재 선택된 월
+var _bottomSheetOpen = false;
 
 // ══ 화면 전환 ══
 function showScreen(screenId) {
-  activeScreen = screenId;
-  var screens = document.querySelectorAll('.screen');
-  for (var i = 0; i < screens.length; i++) {
-    screens[i].classList.remove('active');
-  }
-  document.getElementById('screen-' + screenId).classList.add('active');
+  var mainView = document.getElementById('main-view');
+  var workoutScreen = document.getElementById('screen-workout');
+  var workoutHeader = document.getElementById('workoutHeader');
 
-  // 탭바 활성화
-  var tabs = document.querySelectorAll('.tab-item');
-  for (var i = 0; i < tabs.length; i++) {
-    tabs[i].classList.remove('on');
+  if (screenId === 'home') {
+    mainView.style.display = 'block';
+    workoutScreen.style.display = 'none';
+    workoutHeader.style.display = 'none';
+    renderHome();
+    window.scrollTo(0, 0);
+  } else if (screenId === 'workout') {
+    mainView.style.display = 'none';
+    workoutScreen.style.display = 'block';
+    workoutHeader.style.display = 'flex';
+    renderWorkoutScreen();
   }
-  var tabMap = { home: 0, workout: 1, stats: 2 };
-  if (tabMap[screenId] !== undefined) {
-    tabs[tabMap[screenId]].classList.add('on');
-  }
+}
 
-  // 화면별 렌더
-  if (screenId === 'home') renderHome();
-  else if (screenId === 'workout') renderWorkoutScreen();
-  else if (screenId === 'stats') renderStats();
-
-  window.scrollTo(0, 0);
+function startWorkoutFlow() {
+  showScreen('workout');
 }
 
 // ══ 홈 화면 ══
 function renderHome() {
-  renderWeekSummary();
-  renderStreak();
-  renderRecentPRs();
-  renderCalendar(_calendarYM);
+  renderSummaryMsg();
+  renderHeroCard();
+  renderWeekCal();
+  renderMonthCal();
 }
 
-function renderWeekSummary() {
-  var s = getWeekSummary();
-  var el = document.getElementById('weekSummary');
+// ══ 요약 메시지 ══
+function renderSummaryMsg() {
+  var el = document.getElementById('summaryMsg');
   if (!el) return;
+
+  var summary = getMonthSummary(_currentYM);
+  var vol = summary.volume;
+  var [y, m] = _currentYM.split('-').map(Number);
+
+  var volumeText = vol > 0 ? '<strong>' + formatNum(vol) + 'kg</strong>' : '0kg';
+  var subText = vol === 0
+    ? '아직 운동 기록이 없습니다'
+    : '계속해서 운동해보세요!';
+
   el.innerHTML =
-    '<div class="today-stat">' +
-      '<div class="stat-num">' + s.count + '</div>' +
-      '<div class="stat-unit">운동 횟수</div>' +
-    '</div>' +
-    '<div class="today-stat">' +
-      '<div class="stat-num">' + formatNum(s.volume) + '</div>' +
-      '<div class="stat-unit">총 볼륨 kg</div>' +
-    '</div>' +
-    '<div class="today-stat">' +
-      '<div class="stat-num">' + formatDuration(s.duration) + '</div>' +
-      '<div class="stat-unit">운동 시간</div>' +
-    '</div>' +
-    '<div class="today-stat">' +
-      '<div class="stat-num">' + formatNum(s.calories) + '</div>' +
-      '<div class="stat-unit">kcal</div>' +
-    '</div>';
+    '<div class="summary-msg-main">' + m + '월에는 ' + volumeText + ' 들었어요</div>' +
+    '<div class="summary-msg-sub">' + subText + '</div>';
 }
 
-function renderStreak() {
-  var streak = getStreak();
-  var el = document.getElementById('streakNum');
-  if (el) el.textContent = streak;
-}
-
-function renderRecentPRs() {
-  var prs = getRecentPRs(3);
-  var el = document.getElementById('recentPRs');
+// ══ 히어로 카드 ══
+function renderHeroCard() {
+  var el = document.getElementById('heroCard');
   if (!el) return;
 
-  if (prs.length === 0) {
-    el.innerHTML = '<div class="empty-msg">아직 기록이 없습니다</div>';
+  var sessions = getSessionsByMonth(_currentYM);
+  if (sessions.length === 0) {
+    el.innerHTML =
+      '<div class="hero-empty">' +
+        '<div class="hero-empty-icon">💪</div>' +
+        '<div class="hero-empty-text">첫 운동을 시작해보세요!</div>' +
+      '</div>';
     return;
   }
 
-  var html = '';
-  for (var i = 0; i < prs.length; i++) {
-    var pr = prs[i];
-    var ex = getExercise(pr.exerciseId);
-    var name = ex ? ex.name : pr.exerciseId;
-    html +=
-      '<div class="pr-item">' +
-        '<div class="pr-badge">🏆</div>' +
-        '<div class="pr-info">' +
-          '<div class="pr-name">' + name + '</div>' +
-          '<div class="pr-detail">' + pr.weight + 'kg × ' + pr.reps + '회</div>' +
-        '</div>' +
-        '<div class="pr-date">' + formatDate(pr.date) + '</div>' +
+  // 부위별 볼륨 집계
+  var partVolumes = {};
+  for (var i = 0; i < sessions.length; i++) {
+    var tags = sessions[i].tags || [];
+    for (var j = 0; j < tags.length; j++) {
+      var partId = tags[j];
+      partVolumes[partId] = (partVolumes[partId] || 0) + (sessions[i].totalVolumeExWarmup || 0);
+    }
+  }
+
+  // 최다 부위 찾기
+  var maxPart = null, maxVolume = 0;
+  var parts = Object.keys(partVolumes);
+  for (var i = 0; i < parts.length; i++) {
+    if (partVolumes[parts[i]] > maxVolume) {
+      maxVolume = partVolumes[parts[i]];
+      maxPart = parts[i];
+    }
+  }
+
+  var partInfo = getBodyPart(maxPart);
+  var partName = partInfo ? partInfo.name : maxPart;
+
+  // 해당 부위의 상위 종목 2개
+  var topExercises = [];
+  var exVolumes = {};
+  for (var i = 0; i < sessions.length; i++) {
+    for (var j = 0; j < sessions[i].exercises.length; j++) {
+      var ex = sessions[i].exercises[j];
+      var exInfo = getExercise(ex.exerciseId);
+      if (exInfo && sessions[i].tags.indexOf(maxPart) >= 0) {
+        var exVol = 0;
+        for (var k = 0; k < ex.sets.length; k++) {
+          if (ex.sets[k].done) {
+            exVol += (ex.sets[k].weight || 0) * (ex.sets[k].reps || 0);
+          }
+        }
+        exVolumes[ex.exerciseId] = (exVolumes[ex.exerciseId] || 0) + exVol;
+      }
+    }
+  }
+
+  var exIds = Object.keys(exVolumes).sort(function(a, b) {
+    return exVolumes[b] - exVolumes[a];
+  });
+  for (var i = 0; i < Math.min(2, exIds.length); i++) {
+    var ex = getExercise(exIds[i]);
+    if (ex) {
+      topExercises.push({
+        name: ex.name,
+        volume: exVolumes[exIds[i]]
+      });
+    }
+  }
+
+  var exHtml = '';
+  for (var i = 0; i < topExercises.length; i++) {
+    exHtml +=
+      '<div class="hero-exercise">' +
+        '<div class="hero-ex-name">' + topExercises[i].name + '</div>' +
+        '<div class="hero-ex-vol">' + formatNum(topExercises[i].volume) + 'kg</div>' +
       '</div>';
   }
+
+  el.innerHTML =
+    '<div class="hero-card-inner">' +
+      '<div class="hero-part-name">가장 많이 한 부위</div>' +
+      '<div class="hero-part-title">' + partName + '</div>' +
+      '<div class="hero-part-vol">' + formatNum(maxVolume) + 'kg</div>' +
+      '<div class="hero-exercises">' + exHtml + '</div>' +
+    '</div>';
+}
+
+// ══ 주간 캘린더 ══
+function renderWeekCal() {
+  var el = document.getElementById('weekCal');
+  if (!el) return;
+
+  var weekStart = getWeekStartDate();
+  var today_ = today();
+  var dows = ['일', '월', '화', '수', '목', '금', '토'];
+
+  var html = '<div class="week-cal">';
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    var dateStr = getLocalYMD(d);
+    var dayNum = d.getDate();
+    var dowIdx = d.getDay();
+    var dow = dows[dowIdx];
+
+    var isToday = dateStr === today_;
+    var sessions = getSessionsByDate(dateStr);
+    var hasWorkout = sessions.length > 0;
+
+    var dayClass = 'week-day';
+    if (isToday) dayClass += ' today';
+
+    var dot = '';
+    if (hasWorkout) {
+      dot = '<div class="week-day-dot"></div>';
+    }
+
+    html +=
+      '<div class="' + dayClass + '">' +
+        '<div class="week-day-num">' + dayNum + '</div>' +
+        '<div class="week-day-dow">' + dow + '</div>' +
+        dot +
+      '</div>';
+  }
+  html += '</div>';
+
   el.innerHTML = html;
 }
 
-// ══ 캘린더 ══
-function renderCalendar(ym) {
-  _calendarYM = ym || getYM();
-  var el = document.getElementById('calendar');
+// ══ 월간 캘린더 ══
+function renderMonthCal() {
+  var el = document.getElementById('monthCal');
   if (!el) return;
 
-  var sessions = getSessionsByMonth(_calendarYM);
-  // 날짜별 태그 매핑
+  var sessions = getSessionsByMonth(_currentYM);
   var dayTags = {};
   for (var i = 0; i < sessions.length; i++) {
     var day = sessions[i].date;
@@ -113,141 +200,125 @@ function renderCalendar(ym) {
     }
   }
 
-  var [y, m] = _calendarYM.split('-').map(Number);
-  var daysInMonth = getDaysInMonth(_calendarYM);
-  var firstDay = getFirstDayOfMonth(_calendarYM);
+  var [y, m] = _currentYM.split('-').map(Number);
+  var daysInMonth = getDaysInMonth(_currentYM);
+  var firstDay = getFirstDayOfMonth(_currentYM);
   var todayStr = today();
 
-  // 헤더
-  var prevYM = m === 1 ? (y - 1) + '-12' : y + '-' + String(m - 1).padStart(2, '0');
-  var nextYM = m === 12 ? (y + 1) + '-01' : y + '-' + String(m + 1).padStart(2, '0');
-
-  var html =
-    '<div class="cal-header">' +
-      '<button class="cal-nav" onclick="renderCalendar(\'' + prevYM + '\')">‹</button>' +
-      '<span class="cal-title">' + y + '년 ' + m + '월</span>' +
-      '<button class="cal-nav" onclick="renderCalendar(\'' + nextYM + '\')">›</button>' +
-    '</div>';
+  var html = '<div class="month-cal">';
 
   // 요일 헤더
-  html += '<div class="cal-grid">';
+  html += '<div class="month-cal-grid">';
   var dows = ['일', '월', '화', '수', '목', '금', '토'];
   for (var i = 0; i < 7; i++) {
-    html += '<div class="cal-dow">' + dows[i] + '</div>';
+    html += '<div class="month-cal-dow">' + dows[i] + '</div>';
   }
 
-  // 빈 칸 (1일 이전)
+  // 빈 칸
   for (var i = 0; i < firstDay; i++) {
-    html += '<div class="cal-day empty"></div>';
+    html += '<div class="month-cal-day empty"></div>';
   }
 
   // 날짜
   for (var d = 1; d <= daysInMonth; d++) {
-    var dateStr = _calendarYM + '-' + String(d).padStart(2, '0');
+    var dateStr = _currentYM + '-' + String(d).padStart(2, '0');
     var isToday = dateStr === todayStr;
     var tags = dayTags[dateStr] || [];
 
-    var dayClass = 'cal-day';
+    var dayClass = 'month-cal-day';
     if (isToday) dayClass += ' today';
     if (tags.length > 0) dayClass += ' has-workout';
 
     var dots = '';
     if (tags.length > 0) {
-      dots = '<div class="cal-dots">';
+      dots = '<div class="month-cal-dots">';
       for (var t = 0; t < tags.length && t < 3; t++) {
         var part = getBodyPart(tags[t]);
         var color = part ? part.color : '#999';
-        dots += '<span class="cal-dot" style="background:' + color + '"></span>';
+        dots += '<span class="month-cal-dot" style="background:' + color + '"></span>';
       }
       dots += '</div>';
     }
 
     html +=
-      '<div class="' + dayClass + '" onclick="renderDayDetail(\'' + dateStr + '\')">' +
-        '<span class="cal-day-num">' + d + '</span>' +
+      '<div class="' + dayClass + '" onclick="openBottomSheet(\'' + dateStr + '\')">' +
+        '<span class="month-cal-day-num">' + d + '</span>' +
         dots +
       '</div>';
   }
 
   html += '</div>';
-
-  // 날짜 상세 슬롯
-  html += '<div id="dayDetail"></div>';
+  html += '</div>';
 
   el.innerHTML = html;
 }
 
-function renderDayDetail(dateStr) {
-  var el = document.getElementById('dayDetail');
-  if (!el) return;
+// ══ 바텀시트 ══
+function openBottomSheet(dateStr) {
+  var overlay = document.getElementById('bottomSheetOverlay');
+  var sheet = document.getElementById('bottomSheet');
+  var content = document.getElementById('bottomSheetContent');
 
   var sessions = getSessionsByDate(dateStr);
   if (sessions.length === 0) {
-    el.innerHTML = '';
-    return;
-  }
-
-  var html = '<div class="day-detail"><div class="day-detail-title">' + formatDate(dateStr) + '</div>';
-
-  for (var i = 0; i < sessions.length; i++) {
-    var s = sessions[i];
-    var tagNames = [];
-    for (var j = 0; j < s.tags.length; j++) {
-      var part = getBodyPart(s.tags[j]);
-      tagNames.push(part ? part.name : s.tags[j]);
-    }
-    html +=
-      '<div class="day-session">' +
-        '<div class="day-session-tags">' + tagNames.join(' · ') + '</div>' +
-        '<div class="day-session-stats">' +
-          formatNum(s.totalVolumeExWarmup || 0) + 'kg · ' +
-          formatDuration(s.durationMin || 0) + ' · ' +
-          formatNum(s.totalCalories || 0) + 'kcal' +
-        '</div>' +
-      '</div>';
-  }
-
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-// ══ 히스토리 ══
-function renderHistory() {
-  var el = document.getElementById('historyList');
-  if (!el) return;
-
-  var sessions = getSessions().slice(0, 20);
-  if (sessions.length === 0) {
-    el.innerHTML = '<div class="empty-msg">아직 운동 기록이 없습니다</div>';
-    return;
-  }
-
-  var html = '';
-  for (var i = 0; i < sessions.length; i++) {
-    var s = sessions[i];
-    var tagHtml = '';
-    for (var j = 0; j < s.tags.length; j++) {
-      var part = getBodyPart(s.tags[j]);
-      if (part) {
-        tagHtml += '<span class="history-tag" style="background:' + part.bg + ';color:' + part.color + '">' + part.name + '</span>';
+    content.innerHTML = '<div class="empty-msg">운동 기록이 없습니다</div>';
+  } else {
+    var html = '<div class="bs-date">' + formatDate(dateStr) + '</div>';
+    for (var i = 0; i < sessions.length; i++) {
+      var s = sessions[i];
+      var tagNames = [];
+      for (var j = 0; j < s.tags.length; j++) {
+        var part = getBodyPart(s.tags[j]);
+        tagNames.push(part ? part.name : s.tags[j]);
       }
+      html +=
+        '<div class="bs-session">' +
+          '<div class="bs-tags">' + tagNames.join(' · ') + '</div>' +
+          '<div class="bs-stats">' +
+            '<span>' + formatNum(s.totalVolumeExWarmup || 0) + 'kg</span>' +
+            '<span>·</span>' +
+            '<span>' + formatDuration(s.durationMin || 0) + '</span>' +
+            '<span>·</span>' +
+            '<span>' + formatNum(s.totalCalories || 0) + 'kcal</span>' +
+          '</div>' +
+        '</div>';
     }
-    html +=
-      '<div class="history-item" onclick="showSessionDetail(\'' + s.id + '\')">' +
-        '<div class="hi-top">' +
-          '<div class="hi-date">' + formatDate(s.date) + '</div>' +
-          '<div class="hi-tags">' + tagHtml + '</div>' +
-        '</div>' +
-        '<div class="hi-summary">' +
-          formatNum(s.totalVolumeExWarmup || 0) + 'kg · ' +
-          formatDuration(s.durationMin || 0) + ' · ' +
-          formatNum(s.totalCalories || 0) + 'kcal' +
-        '</div>' +
-      '</div>';
+    content.innerHTML = html;
   }
-  el.innerHTML = html;
+
+  overlay.style.display = 'block';
+  sheet.style.display = 'block';
+  _bottomSheetOpen = true;
 }
 
-function showSessionDetail(sessionId) {
-  // TODO: 세션 상세 보기 (2차)
+function closeBottomSheet() {
+  var overlay = document.getElementById('bottomSheetOverlay');
+  var sheet = document.getElementById('bottomSheet');
+  overlay.style.display = 'none';
+  sheet.style.display = 'none';
+  _bottomSheetOpen = false;
+}
+
+// ══ 월 전환 ══
+function changeMonth(delta) {
+  var [y, m] = _currentYM.split('-').map(Number);
+  m += delta;
+
+  if (m < 1) {
+    m = 12;
+    y -= 1;
+  } else if (m > 12) {
+    m = 1;
+    y += 1;
+  }
+
+  _currentYM = y + '-' + String(m).padStart(2, '0');
+  updateMonthTitle();
+  renderHome();
+}
+
+function updateMonthTitle() {
+  var [y, m] = _currentYM.split('-').map(Number);
+  var el = document.getElementById('monthTitle');
+  if (el) el.textContent = m + '월';
 }

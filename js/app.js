@@ -1,13 +1,17 @@
 /* ═══ app.js — 초기화, 진입점 ═══ */
 
 function init() {
+  // 더미 데이터 초기화 (없으면)
+  initDummyData();
+
   // 진행 중인 세션 복원 (있으면)
   restoreSession();
 
-  // 홈 화면 렌더
-  renderHome();
+  // 초기 월 설정
+  _currentYM = getYM();
+  updateMonthTitle();
 
-  // 탭바 초기 상태
+  // 메인 화면 표시
   showScreen('home');
 }
 
