@@ -1196,7 +1196,7 @@ input {
 
 /* ── 요약 메시지 ── */
 .summary-msg {
-  padding: 60px 20px 20px 20px;
+  padding: 60px 27px 20px 20px;
   margin: 0;
   background: transparent;
 }
@@ -1485,31 +1485,24 @@ input {
   align-items: center;
   gap: 0;
   cursor: pointer;
-  padding: 30px 0 4px 0;
+  padding: 4px 0;
   border-radius: 10px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.week-day:last-child {
-  padding-top: 0;
+  transition: transform 0.2s ease;
 }
 
 .week-day:active {
   background: rgba(0,0,0,0.03);
 }
 
-/* 선택된 날: 전체가 떠오름 */
+/* 기본 상태: 떠오르지 않음 (today 포함) */
+/* 선택된 날만 떠오름 */
 .week-day.selected {
-  transform: translateY(-2px);
-}
-
-/* 오늘: 더 강하게 떠오름 */
-.week-day.today {
   transform: translateY(-4px);
 }
 
+/* 오늘+선택: 더 강하게 */
 .week-day.today.selected {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
 }
 
 .week-day-dow {
@@ -1522,26 +1515,24 @@ input {
 .week-day-num {
   width: 44px;
   height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   font-weight: 400;
   color: var(--dark);
-  border-radius: 12px;
   transition: all 0.2s ease;
-  margin-top: 0;
 }
 
-/* 선택된 날 배경 + 그림자 */
+/* 선택된 날 */
 .week-day.selected .week-day-num {
   background: var(--light-gray);
   font-weight: 500;
-  font-size: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
 }
 
-/* 오늘 배경 + 강한 그림자 */
+/* 오늘 (선택 여부 무관하게 배경만) */
 .week-day.today .week-day-num {
   background: var(--white);
   font-weight: 500;
@@ -1549,9 +1540,9 @@ input {
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10);
 }
 
+/* 오늘+선택: 강한 그림자 */
 .week-day.today.selected .week-day-num {
   box-shadow: 0 8px 24px rgba(0,0,0,0.22), 0 3px 8px rgba(0,0,0,0.12);
 }
