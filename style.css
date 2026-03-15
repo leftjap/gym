@@ -1198,7 +1198,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: calc(max(12px, env(safe-area-inset-top)) + 8px) 16px 4px 20px;
+  padding: 60px 20px 4px 20px;
   background: var(--bg-gray);
   border-bottom: none;
 }
@@ -1226,7 +1226,7 @@ input {
 
 /* ── 요약 메시지 ── */
 .summary-msg {
-  padding: 16px 20px 20px 20px;
+  padding: 16px 20px 30px 20px;
   margin: 0;
   background: transparent;
 }
@@ -1265,8 +1265,8 @@ input {
 
 /* ── 직전 운동 카드 ── */
 .last-workout-card {
-  margin: 0 16px 8px 16px;
-  padding-top: 8px;
+  margin: 0 20px 40px 20px;
+  padding-top: 0;
 }
 
 .lw-card {
@@ -1291,7 +1291,7 @@ input {
 
 .lw-date {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--dark);
 }
 
@@ -1304,7 +1304,7 @@ input {
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   background: var(--light-gray);
   color: var(--dark);
 }
@@ -1330,7 +1330,7 @@ input {
 
 .lw-stat-num {
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--dark);
 }
 
@@ -1341,8 +1341,9 @@ input {
 }
 
 .lw-stat-label {
-  font-size: 11px;
-  color: var(--icon-inactive);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gray);
   margin-top: 4px;
 }
 
@@ -1363,7 +1364,7 @@ input {
   border: 1.5px solid var(--border-gray);
   border-radius: 10px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--dark);
 }
 
@@ -1473,7 +1474,7 @@ input {
 /* ── 주간 캘린더 ── */
 .week-cal-container {
   background: transparent;
-  padding: 0 12px 12px 12px;
+  padding: 0 20px 30px 20px;
   margin: 0;
 }
 
@@ -1501,9 +1502,9 @@ input {
 
 .week-day-dow {
   font-size: 13px;
-  font-weight: 500;
-  color: var(--icon-inactive);
-  margin-bottom: 2px;
+  font-weight: 400;
+  color: var(--gray);
+  margin-bottom: 0;
 }
 
 .week-day-num {
@@ -1513,41 +1514,34 @@ input {
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--dark);
-  border-radius: 14px;
-  transition: all 0.25s ease;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  margin-top: 0;
 }
 
 /* 선택된 날 (공통 떠오르는 효과) */
 .week-day.selected .week-day-num {
-  background: var(--white);
+  background: var(--light-gray);
   color: var(--dark);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 18px;
-  width: 46px;
-  height: 46px;
-  border-radius: 15px;
-  box-shadow:
-    -3px -3px 6px rgba(255,255,255,0.95),
-    3px 3px 8px rgba(0,0,0,0.1),
-    0 1px 3px rgba(0,0,0,0.05);
-  transform: translateY(-1px);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
 }
 
 /* 오늘: 더 강한 떠오르는 효과 */
 .week-day.today .week-day-num {
   background: var(--white);
   color: var(--dark);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 19px;
-  width: 50px;
-  height: 50px;
-  border-radius: 16px;
-  box-shadow:
-    -5px -5px 10px rgba(255,255,255,1),
-    5px 5px 14px rgba(0,0,0,0.13),
-    0 2px 6px rgba(0,0,0,0.08);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08);
   transform: translateY(-3px);
 }
 
@@ -1555,10 +1549,10 @@ input {
 .week-day-vol {
   font-size: 11px;
   font-weight: 600;
-  color: var(--icon-inactive);
+  color: var(--gray);
   height: 14px;
   line-height: 14px;
-  margin-top: 1px;
+  margin-top: 0;
   padding-top: 0;
   font-variant-numeric: tabular-nums;
 }
