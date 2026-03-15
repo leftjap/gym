@@ -1291,7 +1291,7 @@ input {
 
 .lw-date {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--dark);
 }
 
@@ -1304,7 +1304,7 @@ input {
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   background: var(--light-gray);
   color: var(--dark);
 }
@@ -1330,7 +1330,7 @@ input {
 
 .lw-stat-num {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--dark);
 }
 
@@ -1350,8 +1350,8 @@ input {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-gray);
+  padding-top: 8px;
+  border-top: none;
 }
 
 .lw-ex-chip {
@@ -1374,7 +1374,7 @@ input {
 
 .lw-ex-pr {
   font-size: 11px;
-  color: var(--blue);
+  color: #e87461;
   font-weight: 700;
 }
 
@@ -1513,7 +1513,7 @@ input {
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--dark);
   border-radius: 14px;
   transition: all 0.25s ease;
@@ -1523,8 +1523,8 @@ input {
 .week-day.selected .week-day-num {
   background: var(--white);
   color: var(--dark);
-  font-weight: 800;
-  font-size: 19px;
+  font-weight: 600;
+  font-size: 18px;
   width: 46px;
   height: 46px;
   border-radius: 15px;
@@ -1539,8 +1539,8 @@ input {
 .week-day.today .week-day-num {
   background: var(--white);
   color: var(--dark);
-  font-weight: 800;
-  font-size: 20px;
+  font-weight: 600;
+  font-size: 19px;
   width: 50px;
   height: 50px;
   border-radius: 16px;
