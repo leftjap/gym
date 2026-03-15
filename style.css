@@ -1525,7 +1525,7 @@ input {
 .week-day.selected .week-day-body {
   background: var(--white);
   border-radius: 14px;
-  width: 48px;
+  width: 50px;
   aspect-ratio: 1;
   justify-content: center;
   box-shadow: 0 4px 14px rgba(0,0,0,0.15);
@@ -1536,7 +1536,7 @@ input {
 .week-day.today.selected .week-day-body {
   background: var(--white);
   border-radius: 16px;
-  width: 52px;
+  width: 54px;
   aspect-ratio: 1;
   justify-content: center;
   box-shadow: 0 8px 24px rgba(0,0,0,0.22), 0 3px 8px rgba(0,0,0,0.12);
@@ -1545,7 +1545,7 @@ input {
 
 .week-day-num {
   width: 44px;
-  height: 44px;
+  height: 30px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -1553,7 +1553,7 @@ input {
   font-size: 18px;
   font-weight: 400;
   color: var(--dark);
-  transition: all 0.2s ease;
+  transition: all 0.2s ease, transform 0.2s ease;
 }
 
 /* 선택된 날: 흰색 배경 + 그림자 */
@@ -1582,7 +1582,7 @@ input {
   color: var(--gray);
   height: 14px;
   line-height: 14px;
-  margin-top: -1px;
+  margin-top: 0px;
   padding-top: 0;
   font-variant-numeric: tabular-nums;
 }
