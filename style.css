@@ -2926,3 +2926,75 @@ input {
   color: var(--icon-inactive);
   font-size: 14px;
 }
+
+/* ══ 동기화 상태 표시 ══ */
+.sync-status {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  display: none;
+  z-index: 999;
+  white-space: nowrap;
+}
+
+.sync-status.syncing {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.sync-status.success {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.sync-status.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* ══ 설정 화면 동기화 섹션 ══ */
+.settings-sync-section {
+  padding: 20px;
+  margin-top: 20px;
+  border-top: 1px solid var(--border-gray);
+  text-align: center;
+}
+
+.settings-sync-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray);
+  margin-bottom: 12px;
+}
+
+.settings-sync-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-gray);
+  border-radius: 8px;
+  background: white;
+  color: var(--dark);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-sync-btn:last-child {
+  margin-bottom: 0;
+}
+
+.settings-sync-btn:active {
+  opacity: 0.7;
+}

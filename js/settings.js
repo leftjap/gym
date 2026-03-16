@@ -40,6 +40,14 @@ function renderSettings() {
       '<button class="settings-add-btn" onclick="openAddExerciseForm()">+ 종목 추가</button>' +
     '</div>';
 
+  // 동기화 섹션
+  html +=
+    '<div class="settings-sync-section">' +
+      '<div class="settings-sync-title">데이터 동기화</div>' +
+      '<button class="settings-sync-btn" onclick="syncToServer()">서버에 저장</button>' +
+      '<button class="settings-sync-btn" onclick="syncFromServer()">서버에서 불러오기</button>' +
+    '</div>';
+
   // 종목 추가 폼 (숨김)
   html += '<div id="addExerciseForm" style="display:none;"></div>';
 

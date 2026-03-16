@@ -7,6 +7,9 @@ function init() {
   // 진행 중인 세션 복원 (있으면)
   restoreSession();
 
+  // 서버에서 데이터 동기화
+  syncFromServer();
+
   // 초기 월 설정
   _currentYM = getYM();
   updateMonthTitle();
