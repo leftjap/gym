@@ -609,7 +609,8 @@ input {
 /* ── 세트 테이블 ── */
 .set-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 6px 0;
   margin-bottom: 12px;
   font-size: 13px;
 }
@@ -619,7 +620,7 @@ input {
 }
 
 .set-table th {
-  padding: 8px 4px;
+  padding: 8px 0;
   text-align: center;
   font-weight: 600;
   color: var(--icon-inactive);
@@ -628,14 +629,18 @@ input {
 }
 
 .set-table td {
-  padding: 8px 4px;
+  padding: 6px 0;
   text-align: center;
   border-bottom: none;
   vertical-align: middle;
 }
 
-.st-set, .st-chk {
-  width: 40px;
+.st-set {
+  width: 28px;
+}
+
+.st-chk {
+  width: 36px;
 }
 
 .st-kg, .st-reps {
