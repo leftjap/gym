@@ -358,22 +358,26 @@ function renderExerciseCard(exIdx) {
 }
 
 function renderSetProgress(todayVol, lastVol, lastSetCount, doneCount) {
-  // 지난번 데이터가 없으면 진행 바 미표시
+  var html = '<div class="set-progress">';
+
+  // 지난번 데이터가 없으면
   if (lastVol <= 0) {
-    return '<div class="set-progress">' +
+    html +=
       '<div class="set-progress-text">' +
+        '<span style="color:var(--icon-inactive);font-size:12px">첫 기록</span>' +
         '<span class="set-progress-vol">' + formatNum(todayVol) + 'kg</span>' +
-        '<span style="color:var(--icon-inactive);font-size:11px">첫 기록</span>' +
-      '</div>' +
-    '</div>';
+      '</div>';
+    html += '</div>';
+    return html;
   }
 
   var pct = Math.round((todayVol / lastVol) * 100);
-  var barPct = Math.min(pct, 100); // 바는 100%까지만
-  var isBurst = pct >= 100;
+  var barPct = Math.min(pct, 100);
+  var isBurst = pct >= 100 && todayVol > 0;
   var diff = todayVol - lastVol;
 
-  var html = '<div class="set-progress">';
+  // 요약문: 지난번 세트 수 + 볼륨
+  html += '<div class="set-progress-summary">지난번 ' + lastSetCount + '세트 · ' + formatNum(lastVol) + 'kg</div>';
 
   if (isBurst && diff > 0) {
     html += '<div class="set-progress-burst">🔥 지난번 돌파! +' + formatNum(diff) + 'kg</div>';
@@ -384,7 +388,7 @@ function renderSetProgress(todayVol, lastVol, lastSetCount, doneCount) {
       '<div class="set-progress-bar' + (isBurst ? ' burst' : '') + '" style="width:' + barPct + '%"></div>' +
     '</div>' +
     '<div class="set-progress-text">' +
-      '<span class="set-progress-pct' + (isBurst ? ' burst' : '') + '">' + pct + '%</span>' +
+      '<span class="set-progress-pct' + (isBurst ? ' burst' : '') + '">' + (todayVol > 0 ? pct + '%' : '') + '</span>' +
       '<span class="set-progress-vol">' + formatNum(todayVol) + ' / ' + formatNum(lastVol) + 'kg</span>' +
     '</div>';
 
@@ -450,9 +454,7 @@ function renderSetRow(exIdx, setIdx) {
 
   var html =
     '<tr class="' + rowClass + '" id="setRow-' + exIdx + '-' + setIdx + '">' +
-      '<td><span class="set-num">' + (setIdx + 1) + '</span>' +
-        (prev ? '<span class="prev-val">&nbsp;</span>' : '') +
-      '</td>' +
+      '<td><span class="set-num">' + (setIdx + 1) + '</span></td>' +
       '<td>' +
         '<div class="set-adjust-group">' +
           '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'weight\',-1)">－</button>' +
@@ -464,7 +466,6 @@ function renderSetRow(exIdx, setIdx) {
             'onfocus="this.select()">' +
           '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'weight\',1)">＋</button>' +
         '</div>' +
-        (prev ? '<span class="prev-val">' + prev.weight + '</span>' : '') +
       '</td>' +
       '<td>' +
         '<div class="set-adjust-group">' +
@@ -477,14 +478,12 @@ function renderSetRow(exIdx, setIdx) {
             'onfocus="this.select()">' +
           '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',1)">＋</button>' +
         '</div>' +
-        (prev ? '<span class="prev-val">' + prev.reps + '</span>' : '') +
       '</td>' +
       '<td>' +
         '<button class="set-check-btn' + (setData.done ? ' done' : '') + '" ' +
           'onclick="completeSet(' + exIdx + ',' + setIdx + ')">' +
           '✓' +
         '</button>' +
-        (prev ? '<span class="prev-val">&nbsp;</span>' : '') +
       '</td>' +
     '</tr>';
 
@@ -608,7 +607,8 @@ function renderRestTimer() {
   if (sec <= 0) {
     el.innerHTML =
       '<div class="rest-timer done" onclick="dismissRestTimer()">' +
-        '<span class="rest-timer-text">휴식 완료!</span>' +
+        '<span class="rest-timer-num">완료</span>' +
+        '<span class="rest-timer-text">탭해서 닫기</span>' +
       '</div>';
     return;
   }
@@ -620,7 +620,7 @@ function renderRestTimer() {
   el.innerHTML =
     '<div class="rest-timer active" onclick="dismissRestTimer()">' +
       '<span class="rest-timer-num">' + display + '</span>' +
-      '<span class="rest-timer-text">휴식 중 · 탭하여 건너뛰기</span>' +
+      '<span class="rest-timer-text">탭해서 건너뛰기</span>' +
     '</div>';
 
   _restAnimFrame = requestAnimationFrame(renderRestTimer);
