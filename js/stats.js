@@ -55,7 +55,7 @@ function renderStatsScreen() {
         var tagText = tagNames.length > 0 ? tagNames.join(' · ') : '';
 
         showConfirm(
-          formatDate(dateStr) + (tagText ? '\n' + tagText : '') + '\n\n이 날의 운동 기록을 모두 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.',
+          '기록을 모두 삭제하시겠습니까?',
           function(confirmed) {
             if (confirmed) {
               deleteSessionsByDate(dateStr);
