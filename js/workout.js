@@ -795,8 +795,8 @@ function finishWorkout() {
   // 임시 저장 제거
   localStorage.removeItem('wk_current_session');
 
-  // 서버에 동기화
-  syncToServer();
+  // 서버에 동기화 (silent 모드 — 토스트 미표시)
+  syncToServer(null, true);
 
   // 타이머 정리
   if (_workoutTimerInterval) clearInterval(_workoutTimerInterval);

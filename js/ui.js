@@ -289,13 +289,15 @@ function renderWeekCal() {
     var dayNum = d.getDate();
 
     var isToday = dateStr === todayStr;
+    var isFuture = dateStr > todayStr;
     var isSelected = dateStr === _selectedWeekDate;
     var vol = getDayVolume(dateStr);
     var hasPR = hasPROnDate(dateStr);
 
     var dayClass = 'week-day';
     if (isToday) dayClass += ' today';
-    if (isSelected) dayClass += ' selected';
+    if (isSelected && !isFuture) dayClass += ' selected';
+    if (isFuture) dayClass += ' future';
 
     var volClass = 'week-day-vol';
     if (vol === 0) volClass += ' empty';
@@ -303,8 +305,10 @@ function renderWeekCal() {
 
     var volText = vol > 0 ? formatNum(vol) : '';
 
+    var onclick = isFuture ? '' : ' onclick="selectWeekDate(\'' + dateStr + '\')"';
+
     html +=
-      '<div class="' + dayClass + '" onclick="selectWeekDate(\'' + dateStr + '\')">' +
+      '<div class="' + dayClass + '"' + onclick + '>' +
         '<div class="week-day-dow">' + dows[i] + '</div>' +
         '<div class="week-day-body">' +
           '<div class="week-day-num">' + dayNum + '</div>' +
