@@ -40,7 +40,7 @@ function renderSettings() {
       '<button class="settings-add-btn" onclick="openAddExerciseForm()">+ 종목 추가</button>' +
     '</div>';
 
-  // 동기화 섹션
+  // 동기화 섹션 (시각만 표시)
   var lastSync = getLastSyncTime();
   var syncTimeText = formatSyncTime(lastSync);
   var onlineStatus = navigator.onLine ? '온라인' : '오프라인';
@@ -56,14 +56,6 @@ function renderSettings() {
         '</div>' +
       '</div>' +
       '<div class="settings-sync-time">마지막 동기화: ' + syncTimeText + '</div>' +
-      '<div class="settings-sync-btns">' +
-        '<button class="settings-sync-btn" id="syncSaveBtn" onclick="onManualSyncSave()">' +
-          '<span class="settings-sync-btn-icon">↑</span> 서버에 저장' +
-        '</button>' +
-        '<button class="settings-sync-btn" id="syncLoadBtn" onclick="onManualSyncLoad()">' +
-          '<span class="settings-sync-btn-icon">↓</span> 서버에서 불러오기' +
-        '</button>' +
-      '</div>' +
     '</div>';
 
   // 종목 추가 폼 (숨김)
