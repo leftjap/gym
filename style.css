@@ -511,14 +511,13 @@ input {
 }
 
 .ex-nav-btn {
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 18px;
-  border: 1.5px solid #ddd;
-  background: var(--white);
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-gray);
+  background: transparent;
   color: var(--dark);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -530,17 +529,17 @@ input {
 }
 
 .ex-nav-btn.active {
-  background: var(--white);
+  background: transparent;
   color: var(--dark);
-  font-weight: 700;
+  font-weight: 600;
   border-color: var(--dark);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .ex-nav-btn.done {
   background: var(--light-gray);
   color: var(--icon-inactive);
-  border-color: #ddd;
+  border-color: var(--light-gray);
 }
 
 /* ── 종목 카드 ── */
