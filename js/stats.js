@@ -80,7 +80,7 @@ function renderStatsHeader() {
   var currentYM = getYM();
   var isCurrentMonth = _statsYM === currentYM;
 
-  var nextBtnClass = 'stats-month-nav' + (isCurrentMonth ? ' disabled' : '');
+  var nextBtnClass = 'stats-month-nav-tri' + (isCurrentMonth ? ' disabled' : '');
 
   return (
     '<div class="stats-header">' +
@@ -88,13 +88,9 @@ function renderStatsHeader() {
         '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
       '</button>' +
       '<div class="stats-header-month">' +
-        '<button class="stats-month-nav" onclick="changeStatsMonth(-1)">' +
-          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
-        '</button>' +
+        '<button class="stats-month-nav-tri" onclick="changeStatsMonth(-1)">◀</button>' +
         '<span class="stats-month-title">' + m + '월</span>' +
-        '<button class="' + nextBtnClass + '" onclick="changeStatsMonth(1)">' +
-          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' +
-        '</button>' +
+        '<button class="' + nextBtnClass + '" onclick="changeStatsMonth(1)">▶</button>' +
       '</div>' +
       '<div style="width:36px"></div>' +
     '</div>'

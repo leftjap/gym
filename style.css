@@ -1018,6 +1018,33 @@ input {
   background: var(--light-gray);
 }
 
+.stats-month-nav-tri {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark);
+  background: none;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0.5;
+}
+
+.stats-month-nav-tri:active {
+  opacity: 0.8;
+}
+
+.stats-month-nav-tri.disabled {
+  opacity: 0.15;
+  cursor: default;
+  pointer-events: none;
+}
+
 .stats-month-title {
   font-size: 18px;
   font-weight: 700;
