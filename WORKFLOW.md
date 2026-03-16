@@ -282,6 +282,7 @@ js/data.js         — 세션/PR/인바디 CRUD, 통계 함수, 칼로리 추정
 js/ui.js           — 화면 전환, 대시보드, 캘린더, 히스토리 렌더링
 js/workout.js      — 운동 진행 화면 (부위 선택, 세트 입력, 타이머, PR 감지)
 js/stats.js        — 통계 차트, 인바디 기록 UI
+js/settings.js     — 설정 화면, 종목 관리 (추가/삭제/숨김)
 js/app.js          — 초기화, 진입점
 WORKFLOW.md        — AI 작업 가이드 (이 파일)
 ```
@@ -467,6 +468,26 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 
 ---
 
+### js/settings.js
+**역할:** 설정 화면 UI, 종목 관리 (추가/삭제/숨김 토글).
+
+**설정 화면:**
+- `renderSettings()` — 설정 화면 전체 렌더 (헤더 + 부위 탭 + 종목 목록 + 추가 버튼)
+- `selectSettingsPart(partId)` — 부위 탭 전환
+- `renderSettingsExerciseList()` — 부위별 종목 목록 (기본 + 커스텀, 숨김 표시)
+
+**종목 관리:**
+- `onToggleHideExercise(id)` — 기본 종목 숨김 토글 핸들러
+- `onDeleteCustomExercise(id)` — 커스텀 종목 삭제 핸들러
+
+**종목 추가 폼:**
+- `openAddExerciseForm()` — 종목 추가 폼 열기
+- `selectEquipmentTab(btnEl, eq)` — 장비 탭 선택
+- `saveNewExercise()` — 새 종목 저장
+- `closeAddExerciseForm()` — 폼 닫기
+
+---
+
 ### js/app.js
 **역할:** 앱 초기화, 진입점.
 
@@ -497,6 +518,8 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 | _longPressTimer | ui.js | CONTINUE 버튼 길게 누르기 타이머 ID |
 | _statsPeriod | stats.js | 통계 기간 ('week'|'month') |
 | _inbodyFormMode | stats.js | 인바디 폼 모드 ('add'|'edit'|null) |
+| _settingsSelectedPart | settings.js | 설정 화면에서 선택된 부위 ID (기본: 'chest') |
+| _selectedEquipment | settings.js | 종목 추가 폼에서 선택된 장비 (기본: 'barbell') |
 
 ---
 
@@ -532,6 +555,18 @@ showScreen('home')
   → renderSummaryMsg() → getThisWeekVolume(), getLastWeekVolumeAtSamePoint()
   → renderWeekCal() → getDayVolume(), hasPROnDate()
   → renderLastWorkoutCard() → getSessionsByDate(), getLastSession()
+```
+
+### 설정 화면
+```
+showScreen('settings')
+→ renderSettings()
+  → renderSettingsExerciseList()
+    → getHiddenExercises(), getCustomExercises()
+→ [숨김 토글] onToggleHideExercise(id) → toggleHideExercise(id) → renderSettings()
+→ [삭제] onDeleteCustomExercise(id) → showConfirm() → deleteCustomExercise(id) → renderSettings()
+→ [종목 추가] openAddExerciseForm() → saveNewExercise() → addCustomExercise() → renderSettings()
+→ [뒤로] showScreen('home')
 ```
 
 ---
