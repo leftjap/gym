@@ -369,6 +369,7 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 - `getMonthPRDates(ym)` — 특정 월의 날짜별 PR 여부 맵 반환
 - `getMonthPartVolumes(ym)` — 특정 월의 부위별 총 볼륨 랭킹 반환 [{partId, partName, volume, percentage, color}]
 - `getRecentMonthlyVolumes(count, baseYM)` — 최근 N개월의 월별 총 볼륨 반환 [{ym, month, volume, isCurrent}]
+- `getMonthExerciseVolumes(ym)` — 특정 월의 운동종목별 총 볼륨 랭킹 반환 [{exerciseId, name, volume, percentage}]
 
 ---
 
