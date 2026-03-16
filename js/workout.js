@@ -613,43 +613,68 @@ function startRestTimer(seconds) {
   _restTimer = {
     endTime: Date.now() + seconds * 1000
   };
+
+  var el = document.getElementById('restTimerBar');
+  if (!el) return;
+
+  // 초기 HTML 한 번만 세팅
+  el.innerHTML =
+    '<div class="rest-timer active">' +
+      '<span class="rest-timer-num" id="restTimerNum"></span>' +
+      '<span class="rest-timer-text">탭해서 건너뛰기</span>' +
+    '</div>';
+
+  // 컨테이너에 클릭 이벤트 등록 (innerHTML 교체와 무관)
+  el.onclick = function() {
+    dismissRestTimer();
+  };
+
   renderRestTimer();
 }
 
 function renderRestTimer() {
+  if (!_restTimer) return;
+
   var el = document.getElementById('restTimerBar');
-  if (!el || !_restTimer) return;
+  if (!el) return;
 
   var remaining = Math.max(0, _restTimer.endTime - Date.now());
   var sec = Math.ceil(remaining / 1000);
 
+  var numEl = document.getElementById('restTimerNum');
+  var timerDiv = el.querySelector('.rest-timer');
+
   if (sec <= 0) {
-    el.innerHTML =
-      '<div class="rest-timer done" onclick="dismissRestTimer()">' +
-        '<span class="rest-timer-num">완료</span>' +
-        '<span class="rest-timer-text">탭해서 닫기</span>' +
-      '</div>';
-    return;
+    // 완료 상태
+    if (numEl) numEl.textContent = '완료';
+    if (timerDiv) {
+      timerDiv.className = 'rest-timer done';
+      var textEl = timerDiv.querySelector('.rest-timer-text');
+      if (textEl) textEl.textContent = '탭해서 닫기';
+    }
+    return; // 애니메이션 루프 중단
   }
 
   var min = Math.floor(sec / 60);
   var s = sec % 60;
   var display = (min > 0 ? min + ':' : '') + String(s).padStart(min > 0 ? 2 : 1, '0');
 
-  el.innerHTML =
-    '<div class="rest-timer active" onclick="dismissRestTimer()">' +
-      '<span class="rest-timer-num">' + display + '</span>' +
-      '<span class="rest-timer-text">탭해서 건너뛰기</span>' +
-    '</div>';
+  if (numEl) numEl.textContent = display;
 
   _restAnimFrame = requestAnimationFrame(renderRestTimer);
 }
 
 function dismissRestTimer() {
   _restTimer = null;
-  if (_restAnimFrame) cancelAnimationFrame(_restAnimFrame);
+  if (_restAnimFrame) {
+    cancelAnimationFrame(_restAnimFrame);
+    _restAnimFrame = null;
+  }
   var el = document.getElementById('restTimerBar');
-  if (el) el.innerHTML = '';
+  if (el) {
+    el.innerHTML = '';
+    el.onclick = null;
+  }
 }
 
 // ══ 자동저장 ══
