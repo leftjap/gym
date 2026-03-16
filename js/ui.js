@@ -372,6 +372,32 @@ function closeBottomSheet() {
   _bottomSheetOpen = false;
 }
 
+// ══ 커스텀 확인 모달 ══
+var _confirmCallback = null;
+
+function showConfirm(message, onResult) {
+  var overlay = document.getElementById('confirmModal');
+  var msgEl = document.getElementById('confirmModalMsg');
+
+  if (!overlay || !msgEl) return;
+
+  msgEl.textContent = message;
+  _confirmCallback = onResult;
+  overlay.style.display = 'flex';
+}
+
+function hideConfirm(result) {
+  var overlay = document.getElementById('confirmModal');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
+
+  if (_confirmCallback) {
+    _confirmCallback(result);
+    _confirmCallback = null;
+  }
+}
+
 // ══ 월 전환 ══
 function changeMonth(delta) {
   var [y, m] = _currentYM.split('-').map(Number);
@@ -465,9 +491,11 @@ function setupLongPress(btn) {
     _longPressTimer = setTimeout(function() {
       _longPressTriggered = true;
       // 길게 누르면 취소 옵션
-      if (confirm('운동을 취소하시겠습니까?\n기록이 저장되지 않습니다.')) {
-        cancelWorkout();
-      }
+      showConfirm('운동을 취소하시겠습니까?\n기록이 저장되지 않습니다.', function(confirmed) {
+        if (confirmed) {
+          cancelWorkout();
+        }
+      });
     }, 800);
   };
 

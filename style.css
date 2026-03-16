@@ -1993,3 +1993,76 @@ input {
 .screen.active {
   display: block;
 }
+
+/* ── 확인 모달 ── */
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.confirm-modal {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 300px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.confirm-modal-msg {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--dark);
+  line-height: 1.5;
+  margin-bottom: 20px;
+  white-space: pre-line;
+}
+
+.confirm-modal-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-modal-cancel {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: 10px;
+  background: var(--light-gray);
+  color: var(--gray);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.confirm-modal-cancel:active {
+  background: var(--border-gray);
+}
+
+.confirm-modal-ok {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: 10px;
+  background: var(--dark);
+  color: var(--white);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.confirm-modal-ok:active {
+  background: #1a1a1a;
+}

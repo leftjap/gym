@@ -381,6 +381,10 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 - `changeMonth(delta)` — 월 전환
 - `updateMonthTitle()` — 월 타이틀 업데이트
 
+**커스텀 모달:**
+- `showConfirm(message, onResult)` — 확인 모달 표시
+- `hideConfirm(result)` — 모달 닫기 + 콜백 실행
+
 **하단 버튼:**
 - `updateBottomButton(state)` — 하단 고정 버튼 상태 ('start'|'partSelect'|'partSelectReady'|'workout'|'summary')
 - `onBottomBtnClick()` — 하단 버튼 클릭 시 상태에 따라 분기
@@ -468,6 +472,7 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 | _currentYM | ui.js | 현재 선택된 월 (YYYY-MM) |
 | _bottomSheetOpen | ui.js | 바텀시트 열림 상태 |
 | _selectedWeekDate | ui.js | 주간 캘린더에서 선택된 날짜 (기본: 오늘) |
+| _confirmCallback | ui.js | 확인 모달 콜백 함수 |
 | _bottomBtnState | ui.js | 하단 고정 버튼 현재 상태 |
 | _currentSession | workout.js | 진행 중인 세션 객체 |
 | _selectedParts | workout.js | 선택된 부위 ID 배열 |
