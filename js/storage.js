@@ -21,7 +21,7 @@ function S(key, val) {
 
 // ── 날짜 유틸 ──
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return getLocalYMD(new Date());
 }
 
 function getLocalYMD(date) {
@@ -132,7 +132,10 @@ const EXERCISES = [
   { id: 'situp', name: '싯업', bodyPart: 'daily', equipment: 'bodyweight', defaultSets: 3, defaultReps: 20, defaultWeight: 0, defaultRestSec: 45, met: 4, sortOrder: 1 },
 
   // 인터벌 (유산소 — reps 사용하지 않음, durationMin 별도 입력)
-  { id: 'running', name: '러닝', bodyPart: 'interval', equipment: 'cardio', defaultSets: 1, defaultReps: 0, defaultWeight: 0, defaultRestSec: 0, met: 9, sortOrder: 0 }
+  { id: 'running', name: '러닝', bodyPart: 'interval', equipment: 'cardio', defaultSets: 1, defaultReps: 0, defaultWeight: 0, defaultRestSec: 0, met: 9, sortOrder: 0 },
+
+  // 데일리 추가 종목
+  { id: 'barbell_curl', name: '바벨 컬', bodyPart: 'daily', equipment: 'barbell', defaultSets: 3, defaultReps: 12, defaultWeight: 15, defaultRestSec: 60, met: 3, sortOrder: 3 }
 ];
 
 // ── 종목 조회 헬퍼 ──
@@ -322,7 +325,7 @@ function initDummyData() {
           { weight: 120, reps: 8, done: true, isPR: true, restSec: 120 },
           { weight: 120, reps: 6, done: true, isPR: false, restSec: 120 }
         ]},
-        { exerciseId: 'overhead_press', sortOrder: 3, sets: [
+        { exerciseId: 'ohp', sortOrder: 3, sets: [
           { weight: 20, reps: 10, done: true, isPR: false, restSec: 90 },
           { weight: 25, reps: 8, done: true, isPR: false, restSec: 90 },
           { weight: 30, reps: 6, done: true, isPR: true, restSec: 90 },
@@ -522,6 +525,11 @@ function initDummyData() {
   ];
 
   S(K.sessions, sessions);
-  S(K.prs, Object.values(prs));
+  var prData = {};
+  var prKeys = Object.keys(prs);
+  for (var i = 0; i < prKeys.length; i++) {
+    prData[prKeys[i]] = prs[prKeys[i]].records;
+  }
+  S(K.prs, prData);
   S(K.inbody, inbody);
 }
