@@ -347,6 +347,7 @@ function renderExerciseCard(exIdx) {
         '<thead><tr>' +
           '<th class="st-set"></th>' +
           '<th class="st-kg">KG</th>' +
+          '<th class="st-gap"></th>' +
           '<th class="st-reps">횟수</th>' +
           '<th class="st-chk"></th>' +
         '</tr></thead>' +
@@ -484,6 +485,7 @@ function renderSetRow(exIdx, setIdx) {
           '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'weight\',1)">＋</button>' +
         '</div>' +
       '</td>' +
+      '<td class="st-gap"></td>' +
       '<td>' +
         '<div class="set-adjust-group">' +
           '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',-1)">－</button>' +

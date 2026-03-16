@@ -620,8 +620,7 @@ input {
 /* ── 세트 테이블 ── */
 .set-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 6px 0;
+  border-collapse: collapse;
   margin-bottom: 12px;
   font-size: 13px;
 }
@@ -631,7 +630,7 @@ input {
 }
 
 .set-table th {
-  padding: 8px 0;
+  padding: 8px 4px;
   text-align: center;
   font-weight: 600;
   color: var(--icon-inactive);
@@ -640,7 +639,7 @@ input {
 }
 
 .set-table td {
-  padding: 6px 0;
+  padding: 6px 4px;
   text-align: center;
   border-bottom: none;
   vertical-align: middle;
@@ -654,16 +653,24 @@ input {
   width: 36px;
 }
 
+.st-gap {
+  width: 12px;
+  padding: 0;
+}
+
 .st-kg, .st-reps {
   flex: 1;
 }
 
 .set-row.set-done {
-  background: var(--bg-gray);
   opacity: 0.6;
 }
 
 .set-row.set-done td {
+  background: var(--bg-gray);
+}
+
+.set-row.set-done td.st-gap {
   background: var(--bg-gray);
 }
 
