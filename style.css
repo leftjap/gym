@@ -10,6 +10,8 @@
   --border-gray: #E0E0E0; /* 보더 */
   --blue: #4A90D9;        /* 포인트 블루 */
   --icon-inactive: #AAAAAA; /* 비활성 아이콘 */
+  --accent: #e85040;      /* 대표 포인트 (Bear 레드) */
+  --accent-bg: #fdf0ee;   /* 포인트 연한 배경 */
 }
 
 /* ── 리셋 ── */
@@ -620,7 +622,7 @@ input {
 }
 
 .ex-motivate-main strong {
-  color: #e87461;
+  color: var(--accent);
   font-weight: 800;
 }
 
@@ -845,7 +847,7 @@ input {
 }
 
 .set-progress-bar.burst {
-  background: #e87461;
+  background: var(--accent);
 }
 
 .set-progress-text {
@@ -862,7 +864,7 @@ input {
 }
 
 .set-progress-pct.burst {
-  color: #e87461;
+  color: var(--accent);
 }
 
 .set-progress-vol {
@@ -872,7 +874,7 @@ input {
 .set-progress-burst {
   font-size: 12px;
   font-weight: 700;
-  color: #e87461;
+  color: var(--accent);
   text-align: center;
   margin-bottom: 4px;
 }
@@ -1026,7 +1028,7 @@ input {
 }
 
 .stats-summary-main strong {
-  color: #e87461;
+  color: var(--accent);
 }
 
 .stats-summary-sub {
@@ -1150,7 +1152,7 @@ input {
 }
 
 .stats-cal-vol.has-pr {
-  color: #e87461;
+  color: var(--accent);
 }
 
 /* 선택된 날짜 운동 카드 */
@@ -1172,14 +1174,14 @@ input {
 }
 
 .stats-hero-summary strong {
-  color: #e87461;
+  color: var(--accent);
 }
 
 .stats-hero-first {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fdf1ef;
+  background: var(--accent-bg);
   border-radius: 14px;
   padding: 16px 20px;
   margin-bottom: 8px;
@@ -1221,7 +1223,7 @@ input {
 .stats-hero-first-vol {
   font-size: 20px;
   font-weight: 700;
-  color: #e87461;
+  color: var(--accent);
 }
 
 .stats-hero-first-vol small {
@@ -1338,7 +1340,7 @@ input {
 }
 
 .stats-monthly-bar.current {
-  background: #e87461;
+  background: var(--accent);
 }
 
 .stats-monthly-label {
@@ -1696,7 +1698,7 @@ input {
 }
 
 .summary-vol-diff.up {
-  color: #e87461;
+  color: var(--accent);
 }
 
 .summary-vol-diff.down {
@@ -1728,7 +1730,7 @@ input {
 .summary-pr-title {
   font-size: 14px;
   font-weight: 700;
-  color: #e87461;
+  color: var(--accent);
   margin-bottom: 12px;
 }
 
@@ -1754,7 +1756,7 @@ input {
   width: 32px;
   height: 20px;
   border-radius: 4px;
-  background: #e87461;
+  background: var(--accent);
   color: var(--white);
   font-size: 10px;
   font-weight: 800;
@@ -2129,7 +2131,7 @@ input {
 .pr-toast-title {
   font-size: 13px;
   font-weight: 600;
-  color: #e87461;
+  color: var(--accent);
   margin-bottom: 8px;
   display: block;
   letter-spacing: 1px;
@@ -2178,7 +2180,7 @@ input {
 }
 
 .summary-msg-main strong {
-  color: #e87461;
+  color: var(--accent);
 }
 
 .summary-msg-icon {
@@ -2217,7 +2219,7 @@ input {
 }
 
 .summary-msg-sub .vol-up {
-  color: #e87461;
+  color: var(--accent);
 }
 
 .summary-msg-sub .vol-down {
@@ -2330,7 +2332,7 @@ input {
 
 .lw-ex-pr {
   font-size: 11px;
-  color: #e87461;
+  color: var(--accent);
   font-weight: 700;
 }
 
@@ -2569,7 +2571,7 @@ input {
 }
 
 .week-day-vol.has-pr {
-  color: #e87461;
+  color: var(--accent);
 }
 
 /* ── 월간 캘린더 컨테이너 ── */

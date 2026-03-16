@@ -351,7 +351,7 @@ function renderExerciseCard(exIdx) {
   // 1. 카드헤더 (박스 밖, 최상단) — 세로바 색상 고정
   html +=
     '<div class="ex-card-header-standalone">' +
-      '<div class="ex-card-color" style="background:#e87461"></div>' +
+      '<div class="ex-card-color" style="background:#e85040"></div>' +
       '<div class="ex-card-info">' +
         '<div class="ex-card-name">' + meta.name + '</div>' +
       '</div>' +

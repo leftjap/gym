@@ -87,7 +87,7 @@ function genId() {
 
 // ── 부위 그룹 정의 ──
 const BODY_PARTS = [
-  { id: 'chest',    name: '가슴',    color: '#e87461', bg: '#fdf1ef' },
+  { id: 'chest',    name: '가슴',    color: '#e85040', bg: '#fdf0ee' },
   { id: 'back',     name: '등',      color: '#4a90d9', bg: '#e8f0fe' },
   { id: 'lower',    name: '하체',    color: '#f0a848', bg: '#fef5e8' },
   { id: 'shoulder', name: '어깨',    color: '#8b5cf6', bg: '#f0ebfe' },
