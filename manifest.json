@@ -1,0 +1,18 @@
+{
+  "name": "Gorilla",
+  "short_name": "Gorilla",
+  "description": "운동 기록 앱",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F5F5F5",
+  "theme_color": "#e85040",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
