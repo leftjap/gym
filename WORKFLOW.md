@@ -689,7 +689,8 @@ showScreen('settings')
 | 메인 텍스트 | `--dark` | `#2D2D2D` |
 | 서브 텍스트 | `--gray` | `#6C6C6C` |
 | 포인트 (유일한 컬러) | `--blue` | `#4A90D9` |
-| PR 강조 | — | `#e87461` (붉은색) |
+| 대표 포인트 | `--accent` | `#e85040` (Bear 레드) |
+| 포인트 연한 배경 | `--accent-bg` | `#fdf0ee` |
 | 비활성 | `--icon-inactive` | `#AAAAAA` |
 | 보더 | `--border-gray` | `#E0E0E0` |
 | 라이트 그레이 | `--light-gray` | `#F0F0F0` |
