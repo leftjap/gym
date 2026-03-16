@@ -87,7 +87,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 2px) 16px 2px 16px;
   background: var(--bg-gray);
   color: var(--dark);
   box-shadow: none;
