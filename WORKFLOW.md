@@ -349,11 +349,11 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 
 **종목/세트:**
 - `renderExerciseCards()` — 종목 카드 전체 렌더
-- `renderExerciseCard(exerciseId, index)` — 단일 종목 카드
+- `renderExerciseCard(exerciseId, index)` — 단일 종목 카드 (진행 바 + 점진적 세트 표시)
+- `renderSetProgress(todayVol, lastVol, lastSetCount, doneCount)` — 세트 진행 바 (볼륨 비교 + 돌파 표시)
 - `renderSetRow(exerciseId, setIndex)` — 세트 행
 - `toggleWarmup(exerciseId, setIndex)` — 워밍업 토글
-- `completeSet(exerciseId, setIndex)` — 세트 완료 처리 → PR 감지 + 타이머 시작
-- `addSet(exerciseId)` — 세트 추가
+- `completeSet(exerciseId, setIndex)` — 세트 완료 처리 → PR 감지 + 타이머 시작 + 모든 세트 완료 시 새 세트 자동 추가
 - `getLastSessionSets(exerciseId)` — 지난번 같은 종목 세트 데이터 조회
 - `getWeightDelta(exerciseId)` — 장비 타입별 중량 증감 단위 반환 (barbell/machine/cable: 5, dumbbell/bodyweight: 1)
 - `adjustSetValue(exIdx, setIdx, field, direction)` — ＋/－ 버튼으로 중량/횟수 증감

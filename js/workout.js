@@ -265,19 +265,25 @@ function renderExerciseCard(exIdx) {
   var partColor = part ? part.color : '#999';
   var isCardio = meta.equipment === 'cardio';
 
-  // 이 종목의 오늘 볼륨 계산
+  // 오늘 볼륨 계산
   var todayVol = 0;
   var allDone = true;
+  var doneCount = 0;
   for (var i = 0; i < exData.sets.length; i++) {
     var s = exData.sets[i];
-    if (s.done) todayVol += (s.weight || 0) * (s.reps || 0);
+    if (s.done) {
+      todayVol += (s.weight || 0) * (s.reps || 0);
+      doneCount++;
+    }
     if (!s.done) allDone = false;
   }
 
-  // 지난번 볼륨
+  // 지난번 데이터
   var lastSets = getLastExerciseSets(meta.id);
   var lastVol = 0;
+  var lastSetCount = 0;
   if (lastSets) {
+    lastSetCount = lastSets.length;
     for (var i = 0; i < lastSets.length; i++) {
       lastVol += (lastSets[i].weight || 0) * (lastSets[i].reps || 0);
     }
@@ -293,7 +299,6 @@ function renderExerciseCard(exIdx) {
           '<div class="ex-card-name">' + meta.name + '</div>' +
           '<div class="ex-card-vol">' +
             (isCardio ? '' : formatNum(todayVol) + 'kg') +
-            (lastVol > 0 && !isCardio ? ' <span class="ex-card-vol-prev">(지난번 ' + formatNum(lastVol) + ')</span>' : '') +
           '</div>' +
         '</div>' +
         (allDone ? '<span class="ex-card-check">✓</span>' : '') +
@@ -301,7 +306,6 @@ function renderExerciseCard(exIdx) {
       '<div class="ex-card-body" id="exBody-' + exIdx + '">';
 
   if (isCardio) {
-    // 유산소: 시간만 입력
     var curMin = exData.sets[0] ? exData.sets[0].reps : 0;
     html +=
       '<div class="cardio-input">' +
@@ -314,7 +318,10 @@ function renderExerciseCard(exIdx) {
         '</button>' +
       '</div>';
   } else {
-    // 세트 테이블
+    // 진행 바
+    html += renderSetProgress(todayVol, lastVol, lastSetCount, doneCount);
+
+    // 세트 테이블: 완료된 세트 + 다음 1개만
     html +=
       '<table class="set-table">' +
         '<thead><tr>' +
@@ -325,17 +332,63 @@ function renderExerciseCard(exIdx) {
         '</tr></thead>' +
         '<tbody>';
 
+    var nextShown = false;
     for (var s = 0; s < exData.sets.length; s++) {
-      html += renderSetRow(exIdx, s);
+      if (exData.sets[s].done) {
+        html += renderSetRow(exIdx, s);
+      } else if (!nextShown) {
+        html += renderSetRow(exIdx, s);
+        nextShown = true;
+      }
+      // 나머지 미완료 세트는 렌더하지 않음
+    }
+
+    // 모든 기존 세트가 완료되었으면 새 세트 1개를 자동 추가하여 표시
+    if (!nextShown && allDone) {
+      // 아직 추가하지 않음 — 사용자가 체크하면 completeSet에서 처리
     }
 
     html +=
         '</tbody>' +
-      '</table>' +
-      '<button class="add-set-btn" onclick="addSet(' + exIdx + ')">세트 추가</button>';
+      '</table>';
   }
 
   html += '</div></div>';
+  return html;
+}
+
+function renderSetProgress(todayVol, lastVol, lastSetCount, doneCount) {
+  // 지난번 데이터가 없으면 진행 바 미표시
+  if (lastVol <= 0) {
+    return '<div class="set-progress">' +
+      '<div class="set-progress-text">' +
+        '<span class="set-progress-vol">' + formatNum(todayVol) + 'kg</span>' +
+        '<span style="color:var(--icon-inactive);font-size:11px">첫 기록</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  var pct = Math.round((todayVol / lastVol) * 100);
+  var barPct = Math.min(pct, 100); // 바는 100%까지만
+  var isBurst = pct >= 100;
+  var diff = todayVol - lastVol;
+
+  var html = '<div class="set-progress">';
+
+  if (isBurst && diff > 0) {
+    html += '<div class="set-progress-burst">🔥 지난번 돌파! +' + formatNum(diff) + 'kg</div>';
+  }
+
+  html +=
+    '<div class="set-progress-bar-wrap">' +
+      '<div class="set-progress-bar' + (isBurst ? ' burst' : '') + '" style="width:' + barPct + '%"></div>' +
+    '</div>' +
+    '<div class="set-progress-text">' +
+      '<span class="set-progress-pct' + (isBurst ? ' burst' : '') + '">' + pct + '%</span>' +
+      '<span class="set-progress-vol">' + formatNum(todayVol) + ' / ' + formatNum(lastVol) + 'kg</span>' +
+    '</div>';
+
+  html += '</div>';
   return html;
 }
 
@@ -482,16 +535,25 @@ function completeSet(exIdx, setIdx) {
   // 자동저장
   autoSaveSession();
 
-  // 해당 행만 업데이트
-  var row = document.getElementById('setRow-' + exIdx + '-' + setIdx);
-  if (row) {
-    var tbody = row.parentNode;
-    var tempDiv = document.createElement('tbody');
-    tempDiv.innerHTML = renderSetRow(exIdx, setIdx);
-    tbody.replaceChild(tempDiv.firstChild, row);
+  // 세트 완료 시: 모든 기존 세트가 완료되었으면 새 세트 자동 추가
+  if (setData.done) {
+    var exData2 = _currentSession.exercises[exIdx];
+    var allSetsDone = true;
+    for (var k = 0; k < exData2.sets.length; k++) {
+      if (!exData2.sets[k].done) { allSetsDone = false; break; }
+    }
+    if (allSetsDone) {
+      var lastSet = exData2.sets[exData2.sets.length - 1];
+      exData2.sets.push({
+        weight: lastSet ? lastSet.weight : 0,
+        reps: lastSet ? lastSet.reps : 0,
+        done: false,
+        isPR: false
+      });
+    }
   }
 
-  // 종목 카드 헤더 볼륨 업데이트
+  // 전체 다시 렌더
   renderExerciseCards();
 }
 
@@ -505,18 +567,6 @@ function completeCardio(exIdx) {
   exData.sets[0].done = !exData.sets[0].done;
 
   autoSaveSession();
-  renderExerciseCards();
-}
-
-function addSet(exIdx) {
-  var exData = _currentSession.exercises[exIdx];
-  var lastSet = exData.sets[exData.sets.length - 1];
-  exData.sets.push({
-    weight: lastSet ? lastSet.weight : 0,
-    reps: lastSet ? lastSet.reps : 0,
-    done: false,
-    isPR: false
-  });
   renderExerciseCards();
 }
 
