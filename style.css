@@ -82,9 +82,9 @@ input {
   align-items: center;
   justify-content: space-between;
   padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 16px;
-  background: var(--white);
+  background: var(--bg-gray);
   color: var(--dark);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: none;
   z-index: 10;
 }
 
@@ -970,7 +970,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 12px 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 16px;
   background: var(--bg-gray);
 }
 
@@ -1370,8 +1370,8 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 12px 16px;
-  background: var(--white);
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px 16px;
+  background: var(--bg-gray);
   border-bottom: 1px solid var(--light-gray);
 }
 
@@ -2159,7 +2159,7 @@ input {
 
 /* ── 메인 뷰 ── */
 .main-view {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
   padding-bottom: calc(60px + max(0px, env(safe-area-inset-bottom)));
   background: var(--bg-gray);
 }
