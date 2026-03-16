@@ -43,6 +43,7 @@ button {
   border: none;
   cursor: pointer;
   background: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 input {
