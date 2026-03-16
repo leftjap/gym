@@ -159,7 +159,7 @@ function startWorkout() {
       for (var s = 0; s < numSets; s++) {
         var prev = lastSets && lastSets[s] ? lastSets[s] : null;
         sets.push({
-          weight: prev ? prev.weight : 0,
+          weight: prev ? prev.weight : (ex.defaultWeight || 0),
           reps: prev ? prev.reps : ex.defaultReps,
           done: false,
           isPR: false
@@ -555,6 +555,7 @@ function toggleExCard(exIdx) {
 function completeSet(exIdx, setIdx) {
   var exData = _currentSession.exercises[exIdx];
   var setData = exData.sets[setIdx];
+  var meta = getExercise(exData.exerciseId);
 
   // 입력값 읽기 (비어있으면 placeholder=지난번 값 사용)
   var wInput = document.getElementById('setW-' + exIdx + '-' + setIdx);
@@ -563,49 +564,57 @@ function completeSet(exIdx, setIdx) {
   var w = parseFloat(wInput.value) || parseFloat(wInput.placeholder) || 0;
   var r = parseInt(rInput.value) || parseInt(rInput.placeholder) || 0;
 
+  // 완료 해제(토글 off)인 경우 바로 처리
+  if (setData.done) {
+    setData.done = false;
+    setData.isPR = false;
+    autoSaveSession();
+    renderExerciseCards();
+    return;
+  }
+
+  // 완료 처리 전: 중량 0 검증 (맨몸/유산소 제외)
+  var isBodyweight = meta && (meta.equipment === 'bodyweight' || meta.equipment === 'cardio');
+  if (!isBodyweight && w <= 0) {
+    showConfirm('중량을 입력하세요', function() {});
+    return;
+  }
+
   setData.weight = w;
   setData.reps = r;
-  setData.done = !setData.done; // 토글
+  setData.done = true;
 
-  if (setData.done) {
-    // PR 판정
-    if (w > 0 && r > 0) {
-      var prResult = checkPR(exData.exerciseId, w, r, _currentSession.id);
-      setData.isPR = prResult.isPR;
+  // PR 판정
+  if (w > 0 && r > 0) {
+    var prResult = checkPR(exData.exerciseId, w, r, _currentSession.id);
+    setData.isPR = prResult.isPR;
 
-      if (prResult.isPR) {
-        showPRFlash(exIdx, setIdx, prResult);
-      }
+    if (prResult.isPR) {
+      showPRFlash(exIdx, setIdx, prResult);
     }
+  }
 
-    // 휴식 타이머 시작
-    var meta = getExercise(exData.exerciseId);
-    if (meta && meta.defaultRestSec > 0) {
-      startRestTimer(meta.defaultRestSec);
-    }
-  } else {
-    setData.isPR = false;
+  // 휴식 타이머 시작
+  if (meta && meta.defaultRestSec > 0) {
+    startRestTimer(meta.defaultRestSec);
   }
 
   // 자동저장
   autoSaveSession();
 
-  // 세트 완료 시: 모든 기존 세트가 완료되었으면 새 세트 자동 추가
-  if (setData.done) {
-    var exData2 = _currentSession.exercises[exIdx];
-    var allSetsDone = true;
-    for (var k = 0; k < exData2.sets.length; k++) {
-      if (!exData2.sets[k].done) { allSetsDone = false; break; }
-    }
-    if (allSetsDone) {
-      var lastSet = exData2.sets[exData2.sets.length - 1];
-      exData2.sets.push({
-        weight: lastSet ? lastSet.weight : 0,
-        reps: lastSet ? lastSet.reps : 0,
-        done: false,
-        isPR: false
-      });
-    }
+  // 모든 기존 세트가 완료되었으면 새 세트 자동 추가
+  var allSetsDone = true;
+  for (var k = 0; k < exData.sets.length; k++) {
+    if (!exData.sets[k].done) { allSetsDone = false; break; }
+  }
+  if (allSetsDone) {
+    var lastSet = exData.sets[exData.sets.length - 1];
+    exData.sets.push({
+      weight: lastSet ? lastSet.weight : 0,
+      reps: lastSet ? lastSet.reps : 0,
+      done: false,
+      isPR: false
+    });
   }
 
   // 전체 다시 렌더

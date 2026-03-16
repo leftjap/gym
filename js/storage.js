@@ -106,31 +106,31 @@ const EQUIPMENT = {
 // ── 종목 마스터 데이터 ──
 const EXERCISES = [
   // 가슴
-  { id: 'incline_bench', name: '인클라인 벤치프레스', bodyPart: 'chest', equipment: 'barbell', defaultSets: 4, defaultReps: 8, defaultRestSec: 90, met: 5, sortOrder: 0 },
+  { id: 'incline_bench', name: '인클라인 벤치프레스', bodyPart: 'chest', equipment: 'barbell', defaultSets: 4, defaultReps: 8, defaultWeight: 30, defaultRestSec: 90, met: 5, sortOrder: 0 },
 
   // 등
-  { id: 'lat_pulldown', name: '랫풀다운', bodyPart: 'back', equipment: 'cable', defaultSets: 3, defaultReps: 12, defaultRestSec: 90, met: 4, sortOrder: 0 },
-  { id: 'seated_row', name: '시티드 로우', bodyPart: 'back', equipment: 'cable', defaultSets: 3, defaultReps: 12, defaultRestSec: 90, met: 4, sortOrder: 1 },
-  { id: 'face_pull', name: '페이스 풀', bodyPart: 'back', equipment: 'cable', defaultSets: 3, defaultReps: 15, defaultRestSec: 60, met: 3, sortOrder: 2 },
-  { id: 'barbell_row', name: '바벨 로우', bodyPart: 'back', equipment: 'barbell', defaultSets: 3, defaultReps: 10, defaultRestSec: 90, met: 5, sortOrder: 3 },
-  { id: 'deadlift', name: '데드리프트', bodyPart: 'back', equipment: 'barbell', defaultSets: 3, defaultReps: 5, defaultRestSec: 120, met: 6, sortOrder: 4 },
+  { id: 'lat_pulldown', name: '랫풀다운', bodyPart: 'back', equipment: 'cable', defaultSets: 3, defaultReps: 12, defaultWeight: 30, defaultRestSec: 90, met: 4, sortOrder: 0 },
+  { id: 'seated_row', name: '시티드 로우', bodyPart: 'back', equipment: 'cable', defaultSets: 3, defaultReps: 12, defaultWeight: 30, defaultRestSec: 90, met: 4, sortOrder: 1 },
+  { id: 'face_pull', name: '페이스 풀', bodyPart: 'back', equipment: 'cable', defaultSets: 3, defaultReps: 15, defaultWeight: 15, defaultRestSec: 60, met: 3, sortOrder: 2 },
+  { id: 'barbell_row', name: '바벨 로우', bodyPart: 'back', equipment: 'barbell', defaultSets: 3, defaultReps: 10, defaultWeight: 30, defaultRestSec: 90, met: 5, sortOrder: 3 },
+  { id: 'deadlift', name: '데드리프트', bodyPart: 'back', equipment: 'barbell', defaultSets: 3, defaultReps: 5, defaultWeight: 50, defaultRestSec: 120, met: 6, sortOrder: 4 },
 
   // 하체
-  { id: 'leg_extension', name: '레그 익스텐션', bodyPart: 'lower', equipment: 'machine', defaultSets: 4, defaultReps: 12, defaultRestSec: 60, met: 4, sortOrder: 0 },
-  { id: 'leg_curl', name: '레그 컬', bodyPart: 'lower', equipment: 'machine', defaultSets: 3, defaultReps: 12, defaultRestSec: 60, met: 4, sortOrder: 1 },
-  { id: 'barbell_squat', name: '바벨 백 스쿼트', bodyPart: 'lower', equipment: 'barbell', defaultSets: 4, defaultReps: 5, defaultRestSec: 120, met: 6, sortOrder: 2 },
-  { id: 'leg_press', name: '레그 프레스', bodyPart: 'lower', equipment: 'machine', defaultSets: 4, defaultReps: 10, defaultRestSec: 90, met: 5, sortOrder: 3 },
+  { id: 'leg_extension', name: '레그 익스텐션', bodyPart: 'lower', equipment: 'machine', defaultSets: 4, defaultReps: 12, defaultWeight: 25, defaultRestSec: 60, met: 4, sortOrder: 0 },
+  { id: 'leg_curl', name: '레그 컬', bodyPart: 'lower', equipment: 'machine', defaultSets: 3, defaultReps: 12, defaultWeight: 20, defaultRestSec: 60, met: 4, sortOrder: 1 },
+  { id: 'barbell_squat', name: '바벨 백 스쿼트', bodyPart: 'lower', equipment: 'barbell', defaultSets: 4, defaultReps: 5, defaultWeight: 40, defaultRestSec: 120, met: 6, sortOrder: 2 },
+  { id: 'leg_press', name: '레그 프레스', bodyPart: 'lower', equipment: 'machine', defaultSets: 4, defaultReps: 10, defaultWeight: 80, defaultRestSec: 90, met: 5, sortOrder: 3 },
 
   // 어깨
-  { id: 'ohp', name: '오버헤드 프레스', bodyPart: 'shoulder', equipment: 'barbell', defaultSets: 4, defaultReps: 8, defaultRestSec: 90, met: 5, sortOrder: 0 },
-  { id: 'side_lateral', name: '사이드 레터럴 레이즈', bodyPart: 'shoulder', equipment: 'dumbbell', defaultSets: 3, defaultReps: 15, defaultRestSec: 60, met: 3, sortOrder: 1 },
+  { id: 'ohp', name: '오버헤드 프레스', bodyPart: 'shoulder', equipment: 'barbell', defaultSets: 4, defaultReps: 8, defaultWeight: 20, defaultRestSec: 90, met: 5, sortOrder: 0 },
+  { id: 'side_lateral', name: '사이드 레터럴 레이즈', bodyPart: 'shoulder', equipment: 'dumbbell', defaultSets: 3, defaultReps: 15, defaultWeight: 5, defaultRestSec: 60, met: 3, sortOrder: 1 },
 
   // 데일리
-  { id: 'wrist_curl', name: '바벨 리스트 컬', bodyPart: 'daily', equipment: 'barbell', defaultSets: 3, defaultReps: 15, defaultRestSec: 45, met: 3, sortOrder: 0 },
-  { id: 'situp', name: '싯업', bodyPart: 'daily', equipment: 'bodyweight', defaultSets: 3, defaultReps: 20, defaultRestSec: 45, met: 4, sortOrder: 1 },
+  { id: 'wrist_curl', name: '바벨 리스트 컬', bodyPart: 'daily', equipment: 'barbell', defaultSets: 3, defaultReps: 15, defaultWeight: 15, defaultRestSec: 45, met: 3, sortOrder: 0 },
+  { id: 'situp', name: '싯업', bodyPart: 'daily', equipment: 'bodyweight', defaultSets: 3, defaultReps: 20, defaultWeight: 0, defaultRestSec: 45, met: 4, sortOrder: 1 },
 
   // 인터벌 (유산소 — reps 사용하지 않음, durationMin 별도 입력)
-  { id: 'running', name: '러닝', bodyPart: 'interval', equipment: 'cardio', defaultSets: 1, defaultReps: 0, defaultRestSec: 0, met: 9, sortOrder: 0 }
+  { id: 'running', name: '러닝', bodyPart: 'interval', equipment: 'cardio', defaultSets: 1, defaultReps: 0, defaultWeight: 0, defaultRestSec: 0, met: 9, sortOrder: 0 }
 ];
 
 // ── 종목 조회 헬퍼 ──
