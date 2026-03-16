@@ -399,6 +399,7 @@ function updateMonthTitle() {
 // ══ 하단 고정 버튼 상태 관리 ══
 var _bottomBtnState = 'start'; // 'start' | 'continue' | 'partSelect' | 'partSelectReady' | 'workout' | 'summary'
 var _longPressTimer = null;
+var _longPressTriggered = false;
 
 function updateBottomButton(state) {
   _bottomBtnState = state;
@@ -427,7 +428,8 @@ function updateBottomButton(state) {
       btn.disabled = false;
       btn.style.background = '#e87461';
       btn.style.color = 'var(--white)';
-      // 길게 누르기 이벤트 등록
+      // 길게 누르기 이벤트 등록 (클릭도 여기서 처리)
+      btn.onclick = null;
       setupLongPress(btn);
       break;
     case 'partSelect':
@@ -459,8 +461,9 @@ function updateBottomButton(state) {
 
 function setupLongPress(btn) {
   var startLongPress = function(e) {
-    e.preventDefault();
+    _longPressTriggered = false;
     _longPressTimer = setTimeout(function() {
+      _longPressTriggered = true;
       // 길게 누르면 취소 옵션
       if (confirm('운동을 취소하시겠습니까?\n기록이 저장되지 않습니다.')) {
         cancelWorkout();
@@ -468,21 +471,34 @@ function setupLongPress(btn) {
     }, 800);
   };
 
+  var endLongPress = function(e) {
+    if (_longPressTimer) {
+      clearTimeout(_longPressTimer);
+      _longPressTimer = null;
+    }
+    // 길게 누르기가 실행되지 않았으면 일반 클릭 처리
+    if (!_longPressTriggered) {
+      onBottomBtnClick();
+    }
+    _longPressTriggered = false;
+  };
+
   var cancelLongPress = function() {
     if (_longPressTimer) {
       clearTimeout(_longPressTimer);
       _longPressTimer = null;
     }
+    _longPressTriggered = false;
   };
 
   // 터치 이벤트
   btn.ontouchstart = startLongPress;
-  btn.ontouchend = cancelLongPress;
+  btn.ontouchend = endLongPress;
   btn.ontouchcancel = cancelLongPress;
 
   // 마우스 이벤트 (데스크톱 테스트용)
   btn.onmousedown = startLongPress;
-  btn.onmouseup = cancelLongPress;
+  btn.onmouseup = endLongPress;
   btn.onmouseleave = cancelLongPress;
 }
 
