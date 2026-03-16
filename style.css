@@ -2220,7 +2220,7 @@ input {
 
 /* ── 요약 메시지 ── */
 .summary-msg {
-  padding: 60px calc((100vw - 40px) / 14 + 6px) 30px 20px;
+  padding: 20px calc((100vw - 40px) / 14 + 6px) 30px 20px;
   margin: 0;
   background: transparent;
 }
