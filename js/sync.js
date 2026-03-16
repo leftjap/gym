@@ -28,6 +28,7 @@ function syncToServer(callback, silent) {
     inbody: L(K.inbody) || [],
     customExercises: L(K.customExercises) || [],
     hiddenExercises: L(K.hiddenExercises) || [],
+    exerciseIcons: L(K.exerciseIcons) || {},
     settings: L(K.settings) || {},
     lastSync: new Date().toISOString()
   };
@@ -114,6 +115,7 @@ function syncFromServer(callback, silent) {
       if (p.inbody) S(K.inbody, p.inbody);
       if (p.customExercises) S(K.customExercises, p.customExercises);
       if (p.hiddenExercises) S(K.hiddenExercises, p.hiddenExercises);
+      if (p.exerciseIcons) S(K.exerciseIcons, p.exerciseIcons);
       if (p.settings) S(K.settings, p.settings);
 
       saveLastSyncTime();

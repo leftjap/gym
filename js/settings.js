@@ -83,11 +83,9 @@ function renderSettingsExerciseList() {
   var partId = _settingsSelectedPart;
   var hidden = getHiddenExercises();
 
-  // 기본 종목 (숨긴 것 포함해서 모두 표시, 숨김 상태를 토글로 표시)
   var baseExercises = EXERCISES.filter(function(e) { return e.bodyPart === partId; })
     .sort(function(a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
 
-  // 커스텀 종목
   var customExercises = getCustomExercises().filter(function(e) { return e.bodyPart === partId; });
 
   var html = '';
@@ -97,10 +95,17 @@ function renderSettingsExerciseList() {
     for (var i = 0; i < baseExercises.length; i++) {
       var ex = baseExercises[i];
       var isHidden = hidden.indexOf(ex.id) >= 0;
+      var iconUrl = getExerciseIcon(ex.id);
+      var iconHtml = iconUrl
+        ? '<img src="' + iconUrl + '" class="settings-ex-icon" alt="" onerror="this.style.display=\'none\'">'
+        : '';
       html +=
         '<div class="settings-ex-item' + (isHidden ? ' hidden-ex' : '') + '">' +
-          '<div class="settings-ex-info">' +
-            '<div class="settings-ex-name">' + ex.name + '</div>' +
+          '<div class="settings-ex-info" onclick="openEditExerciseIconForm(\'' + ex.id + '\')" style="cursor:pointer;">' +
+            '<div class="settings-ex-name-row">' +
+              iconHtml +
+              '<span class="settings-ex-name">' + ex.name + '</span>' +
+            '</div>' +
             '<div class="settings-ex-meta">' +
               (EQUIPMENT[ex.equipment] || ex.equipment) +
               ' · ' + ex.defaultSets + '세트 · ' + ex.defaultReps + '회' +
@@ -108,7 +113,7 @@ function renderSettingsExerciseList() {
             '</div>' +
           '</div>' +
           '<button class="settings-ex-toggle' + (isHidden ? '' : ' active') + '" ' +
-            'onclick="onToggleHideExercise(\'' + ex.id + '\')">' +
+            'onclick="event.stopPropagation(); onToggleHideExercise(\'' + ex.id + '\')">' +
             '<div class="settings-toggle-knob"></div>' +
           '</button>' +
         '</div>';
@@ -119,10 +124,17 @@ function renderSettingsExerciseList() {
     html += '<div class="settings-section-label">추가한 종목</div>';
     for (var i = 0; i < customExercises.length; i++) {
       var ex = customExercises[i];
+      var iconUrl = getExerciseIcon(ex.id);
+      var iconHtml = iconUrl
+        ? '<img src="' + iconUrl + '" class="settings-ex-icon" alt="" onerror="this.style.display=\'none\'">'
+        : '';
       html +=
         '<div class="settings-ex-item">' +
-          '<div class="settings-ex-info">' +
-            '<div class="settings-ex-name">' + ex.name + '</div>' +
+          '<div class="settings-ex-info" onclick="openEditExerciseIconForm(\'' + ex.id + '\')" style="cursor:pointer;">' +
+            '<div class="settings-ex-name-row">' +
+              iconHtml +
+              '<span class="settings-ex-name">' + ex.name + '</span>' +
+            '</div>' +
             '<div class="settings-ex-meta">' +
               (EQUIPMENT[ex.equipment] || ex.equipment) +
               ' · ' + ex.defaultSets + '세트 · ' + ex.defaultReps + '회' +
@@ -215,6 +227,10 @@ function openAddExerciseForm() {
           '<input type="number" id="newExRest" value="60" inputmode="numeric">' +
         '</div>' +
       '</div>' +
+      '<div class="form-group">' +
+        '<label>아이콘 이미지 URL</label>' +
+        '<input type="url" id="newExIcon" placeholder="https://example.com/icon.png">' +
+      '</div>' +
       '<div class="form-actions">' +
         '<button class="btn-cancel" onclick="closeAddExerciseForm()">취소</button>' +
         '<button class="btn-save" onclick="saveNewExercise()">추가</button>' +
@@ -255,7 +271,14 @@ function saveNewExercise() {
     met: 4
   };
 
-  addCustomExercise(exercise);
+  var added = addCustomExercise(exercise);
+
+  // 아이콘 URL 저장
+  var iconUrl = (document.getElementById('newExIcon').value || '').trim();
+  if (iconUrl && added.id) {
+    setExerciseIcon(added.id, iconUrl);
+  }
+
   closeAddExerciseForm();
   renderSettings();
 }
@@ -267,6 +290,72 @@ function closeAddExerciseForm() {
     el.innerHTML = '';
   }
   _selectedEquipment = 'barbell';
+}
+
+// ══ 기본/커스텀 종목 아이콘 편집 폼 ══
+function openEditExerciseIconForm(exerciseId) {
+  var el = document.getElementById('addExerciseForm');
+  if (!el) return;
+
+  var meta = getExercise(exerciseId);
+  if (!meta) return;
+
+  var currentIcon = getExerciseIcon(exerciseId);
+
+  var previewHtml = currentIcon
+    ? '<div class="settings-icon-preview"><img src="' + currentIcon + '" alt="" onerror="this.parentElement.innerHTML=\'이미지를 불러올 수 없습니다\'"></div>'
+    : '';
+
+  var html =
+    '<div class="settings-form">' +
+      '<div class="settings-form-title">' + meta.name + '</div>' +
+      '<div class="form-group">' +
+        '<div class="settings-ex-meta" style="margin-bottom:12px">' +
+          (EQUIPMENT[meta.equipment] || meta.equipment) +
+          ' · ' + meta.defaultSets + '세트 · ' + meta.defaultReps + '회' +
+          (meta.defaultWeight ? ' · ' + meta.defaultWeight + 'kg' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label>아이콘 이미지 URL</label>' +
+        '<input type="url" id="editExIcon" value="' + (currentIcon || '') + '" placeholder="https://example.com/icon.png" oninput="previewEditIcon()">' +
+      '</div>' +
+      '<div id="editIconPreview">' + previewHtml + '</div>' +
+      '<div class="form-actions">' +
+        '<button class="btn-cancel" onclick="closeEditExerciseIconForm()">취소</button>' +
+        '<button class="btn-save" onclick="saveExerciseIcon(\'' + exerciseId + '\')">저장</button>' +
+      '</div>' +
+    '</div>';
+
+  el.innerHTML = html;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function saveExerciseIcon(exerciseId) {
+  var iconUrl = (document.getElementById('editExIcon').value || '').trim();
+  setExerciseIcon(exerciseId, iconUrl);
+  closeEditExerciseIconForm();
+  renderSettings();
+}
+
+function closeEditExerciseIconForm() {
+  var el = document.getElementById('addExerciseForm');
+  if (el) {
+    el.style.display = 'none';
+    el.innerHTML = '';
+  }
+}
+
+function previewEditIcon() {
+  var url = (document.getElementById('editExIcon').value || '').trim();
+  var container = document.getElementById('editIconPreview');
+  if (!container) return;
+  if (url) {
+    container.innerHTML = '<div class="settings-icon-preview"><img src="' + url + '" alt="" onerror="this.parentElement.innerHTML=\'이미지를 불러올 수 없습니다\'"></div>';
+  } else {
+    container.innerHTML = '';
+  }
 }
 
 // ══ 수동 동기화 (설정 화면) ══

@@ -235,11 +235,19 @@ function renderStatsHeroRanking() {
       m + '월에는 <strong>' + topEx.name + '</strong>을 가장 많이 했어요' +
     '</div>';
 
-  // 1위 카드 (한 줄, 배경색)
+  // 1위 카드 — 아이콘이 있으면 이미지, 없으면 넘버링
+  var firstIcon = getExerciseIcon(topEx.exerciseId);
+  var firstBadgeHtml;
+  if (firstIcon) {
+    firstBadgeHtml = '<img src="' + firstIcon + '" class="stats-hero-first-icon" alt="" onerror="this.outerHTML=\'<div class=\\\'stats-hero-first-badge\\\'>1</div>\'">';
+  } else {
+    firstBadgeHtml = '<div class="stats-hero-first-badge">1</div>';
+  }
+
   html +=
     '<div class="stats-hero-first">' +
       '<div class="stats-hero-first-left">' +
-        '<div class="stats-hero-first-badge">1</div>' +
+        firstBadgeHtml +
         '<div class="stats-hero-first-info">' +
           '<div class="stats-hero-first-name">' + topEx.name + '</div>' +
           '<div class="stats-hero-first-meta">' + topEx.percentage + '%</div>' +
@@ -253,9 +261,16 @@ function renderStatsHeroRanking() {
     html += '<div class="stats-hero-grid">';
     for (var i = 1; i < rankings.length && i < 7; i++) {
       var r = rankings[i];
+      var icon = getExerciseIcon(r.exerciseId);
+      var rankBadgeHtml;
+      if (icon) {
+        rankBadgeHtml = '<img src="' + icon + '" class="stats-hero-card-icon" alt="" onerror="this.outerHTML=\'<div class=\\\'stats-hero-card-rank\\\'>' + (i + 1) + '</div>\'">';
+      } else {
+        rankBadgeHtml = '<div class="stats-hero-card-rank">' + (i + 1) + '</div>';
+      }
       html +=
         '<div class="stats-hero-card">' +
-          '<div class="stats-hero-card-rank">' + (i + 1) + '</div>' +
+          rankBadgeHtml +
           '<div class="stats-hero-card-info">' +
             '<div class="stats-hero-card-name">' + r.name + '</div>' +
             '<div class="stats-hero-card-vol">' + formatNum(r.volume) + '<small>kg</small></div>' +

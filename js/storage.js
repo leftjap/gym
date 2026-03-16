@@ -7,7 +7,8 @@ const K = {
   inbody: 'wk_inbody',
   settings: 'wk_settings',
   customExercises: 'wk_custom_exercises',
-  hiddenExercises: 'wk_hidden_exercises'
+  hiddenExercises: 'wk_hidden_exercises',
+  exerciseIcons: 'wk_exercise_icons'
 };
 
 // ── LocalStorage 읽기/쓰기 ──
@@ -532,4 +533,24 @@ function initDummyData() {
   }
   S(K.prs, prData);
   S(K.inbody, inbody);
+}
+
+// ── 종목 아이콘 관리 ──
+function getExerciseIcons() {
+  return L(K.exerciseIcons) || {};
+}
+
+function setExerciseIcon(exerciseId, url) {
+  var icons = getExerciseIcons();
+  if (url && url.trim()) {
+    icons[exerciseId] = url.trim();
+  } else {
+    delete icons[exerciseId];
+  }
+  S(K.exerciseIcons, icons);
+}
+
+function getExerciseIcon(exerciseId) {
+  var icons = getExerciseIcons();
+  return icons[exerciseId] || '';
 }

@@ -1474,6 +1474,53 @@ input {
   color: var(--icon-inactive);
 }
 
+/* ── 종목 아이콘 ── */
+.settings-ex-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.settings-ex-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.settings-icon-preview {
+  text-align: center;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: var(--bg-gray);
+  border-radius: 8px;
+}
+
+.settings-icon-preview img {
+  max-width: 64px;
+  max-height: 64px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.stats-hero-first-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.stats-hero-card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 /* 토글 스위치 */
 .settings-ex-toggle {
   width: 44px;

@@ -354,6 +354,11 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 **더미 데이터:**
 - `initDummyData()` — 세션 6건, PR, 인바디 3건 생성 (데이터 없을 때만)
 
+**종목 아이콘 관리:**
+- `getExerciseIcons()` — 전체 아이콘 맵 반환 { exerciseId: url }
+- `setExerciseIcon(exerciseId, url)` — 종목 아이콘 URL 설정 (빈값이면 삭제)
+- `getExerciseIcon(exerciseId)` — 종목 아이콘 URL 반환 (없으면 빈 문자열)
+
 ---
 
 ### js/data.js
@@ -518,6 +523,12 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 - `saveNewExercise()` — 새 종목 저장
 - `closeAddExerciseForm()` — 폼 닫기
 
+**종목 아이콘 편집:**
+- `openEditExerciseIconForm(exerciseId)` — 기본/커스텀 종목 아이콘 편집 폼 열기
+- `saveExerciseIcon(exerciseId)` — 아이콘 URL 저장
+- `closeEditExerciseIconForm()` — 편집 폼 닫기
+- `previewEditIcon()` — 아이콘 URL 입력 시 실시간 미리보기
+
 ---
 
 ### js/sync.js
@@ -667,6 +678,11 @@ showScreen('settings')
 ### 인바디 기록 (K.inbody)
 ```
 [{ id, date, weight, bodyFatPct, muscleMass, memo }]
+```
+
+### 종목 아이콘 (K.exerciseIcons)
+```
+{ "exerciseId": "https://example.com/icon.png", ... }
 ```
 
 ---
