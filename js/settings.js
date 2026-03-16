@@ -116,12 +116,13 @@ function renderSettingsExerciseList() {
     html += '<div class="settings-section-label">추가한 종목</div>';
     for (var i = 0; i < customExercises.length; i++) {
       var ex = customExercises[i];
+      var isHidden = hidden.indexOf(ex.id) >= 0;
       var iconUrl = getExerciseIcon(ex.id);
       var iconHtml = iconUrl
         ? '<img src="' + iconUrl + '" class="settings-ex-icon" alt="" onerror="this.style.display=\'none\'">'
         : '';
       html +=
-        '<div class="settings-ex-item">' +
+        '<div class="settings-ex-item' + (isHidden ? ' hidden-ex' : '') + '">' +
           '<div class="settings-ex-info" onclick="openEditExerciseIconForm(\'' + ex.id + '\')" style="cursor:pointer;">' +
             '<div class="settings-ex-name-row">' +
               iconHtml +
@@ -133,8 +134,9 @@ function renderSettingsExerciseList() {
               (ex.defaultWeight ? ' · ' + ex.defaultWeight + 'kg' : '') +
             '</div>' +
           '</div>' +
-          '<button class="settings-ex-delete" onclick="onDeleteCustomExercise(\'' + ex.id + '\')">' +
-            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          '<button class="settings-ex-toggle' + (isHidden ? '' : ' active') + '" ' +
+            'onclick="event.stopPropagation(); onToggleHideExercise(\'' + ex.id + '\')">' +
+            '<div class="settings-toggle-knob"></div>' +
           '</button>' +
         '</div>';
     }
