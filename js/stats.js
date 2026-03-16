@@ -63,7 +63,7 @@ function renderStatsScreen() {
           function(confirmed) {
             if (confirmed) {
               deleteSessionsByDate(dateStr);
-              if (typeof syncToServer === 'function') syncToServer();
+              if (typeof syncToServer === 'function') syncToServer(null, true);
               _statsSelectedDate = null;
               renderStatsScreen();
             }
@@ -486,7 +486,7 @@ function renderStatsWorkoutCard() {
               showConfirm(exName + ' 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.', function(confirmed) {
                 if (confirmed) {
                   deleteExerciseFromSession(sessionId, exerciseId);
-                  if (typeof syncToServer === 'function') syncToServer();
+                  if (typeof syncToServer === 'function') syncToServer(null, true);
                   renderStatsWorkoutCard();
                   renderStatsScreen();
                 }
