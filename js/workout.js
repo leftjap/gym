@@ -6,6 +6,7 @@ var _restTimer = null;        // {endTime, intervalId}
 var _workoutStartTime = null;
 var _restAnimFrame = null;
 var _currentExerciseIndex = 0;  // 현재 보고 있는 종목 인덱스
+var _isFinishing = false;  // finishWorkout 중복 실행 방지
 
 // ══ 화면 진입 ══
 function renderWorkoutScreen() {
@@ -95,6 +96,12 @@ function togglePart(partId) {
 // ══ 운동 시작 ══
 function startWorkout() {
   if (_selectedParts.length === 0) return;
+
+  // 이미 진행 중인 세션이 있으면 중복 생성 방지
+  if (_currentSession) {
+    console.warn('이미 진행 중인 세션이 있습니다.');
+    return;
+  }
 
   _workoutStartTime = Date.now();
 
@@ -728,7 +735,14 @@ function autoSaveSession() {
 
 // ══ 운동 완료 ══
 function finishWorkout() {
+  // 중복 실행 방지
+  if (_isFinishing) {
+    console.warn('이미 완료 처리 중입니다.');
+    return;
+  }
   if (!_currentSession) return;
+
+  _isFinishing = true;  // 플래그 설정
 
   // 경과 시간
   _currentSession.endTime = Date.now();
@@ -763,11 +777,11 @@ function finishWorkout() {
   renderWorkoutSummary(_currentSession);
 
   // 상태 초기화
-  var finishedSession = _currentSession;
   _currentSession = null;
   _selectedParts = [];
   _workoutStartTime = null;
   _currentExerciseIndex = 0;
+  _isFinishing = false;  // 플래그 해제
 }
 
 // ══ 운동 완료 요약 ══
@@ -886,6 +900,7 @@ function cancelWorkout() {
   _selectedParts = [];
   _workoutStartTime = null;
   _currentExerciseIndex = 0;
+  _isFinishing = false;  // 플래그도 초기화
 
   showScreen('home');
 }

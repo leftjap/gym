@@ -476,6 +476,7 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 | _workoutStartTime | workout.js | 운동 시작 시각 (Date.now()) |
 | _workoutTimerInterval | workout.js | 운동 경과 타이머 setInterval ID |
 | _currentExerciseIndex | workout.js | 현재 보고 있는 종목 인덱스 |
+| _isFinishing | workout.js | finishWorkout 중복 실행 방지 플래그 |
 | _statsPeriod | stats.js | 통계 기간 ('week'|'month') |
 | _inbodyFormMode | stats.js | 인바디 폼 모드 ('add'|'edit'|null) |
 
