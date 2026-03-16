@@ -297,7 +297,7 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 - `K` — LocalStorage 키 객체 (sessions, prs, inbody, settings)
 - `BODY_PARTS` — 부위 그룹 배열 [{id, name, color, bg}, ...] (chest, back, lower, shoulder, daily, interval)
 - `EQUIPMENT` — 장비 타입 객체 {barbell, dumbbell, machine, cable, bodyweight, cardio}
-- `EXERCISES` — 종목 마스터 배열 [{id, name, bodyPart, equipment, defaultSets, defaultReps, defaultRestSec, met, sortOrder}, ...]
+- `EXERCISES` — 종목 마스터 배열 [{id, name, bodyPart, equipment, defaultSets, defaultReps, defaultWeight, defaultRestSec, met, sortOrder}, ...]
 
 **유틸 함수:**
 - `L(key)` / `S(key, val)` — LocalStorage 읽기/쓰기
