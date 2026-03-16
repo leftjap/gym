@@ -946,8 +946,12 @@ function restoreSession() {
 
 // ══ 뒤로가기 / 운동 취소 ══
 function onWorkoutBack() {
-  // 세션 유지한 채 홈으로 이동 (일시정지 개념)
-  showScreen('home');
+  if (_editMode) {
+    cancelEditMode();
+  } else {
+    // 세션 유지한 채 홈으로 이동 (일시정지 개념)
+    showScreen('home');
+  }
 }
 
 function cancelWorkout() {
@@ -966,4 +970,126 @@ function cancelWorkout() {
   _isFinishing = false;  // 플래그도 초기화
 
   showScreen('home');
+}
+
+// ══ 수정 모드 ══
+var _editMode = false;
+var _editSessionId = null;
+var _editReturnScreen = 'stats'; // 수정 완료 후 돌아갈 화면
+
+/**
+ * 기존 세션을 수정 모드로 운동 화면에 로드
+ * @param {string} sessionId - 수정할 세션 ID
+ * @param {string} focusExerciseId - 포커스할 종목 ID (선택)
+ */
+function enterEditMode(sessionId, focusExerciseId) {
+  var session = getSession(sessionId);
+  if (!session) return;
+
+  _editMode = true;
+  _editSessionId = sessionId;
+
+  // 세션 복제 (원본 보존)
+  _currentSession = JSON.parse(JSON.stringify(session));
+  _selectedParts = _currentSession.tags.slice();
+  _workoutStartTime = _currentSession.startTime;
+
+  // 포커스 종목 인덱스 찾기
+  _currentExerciseIndex = 0;
+  if (focusExerciseId) {
+    for (var i = 0; i < _currentSession.exercises.length; i++) {
+      if (_currentSession.exercises[i].exerciseId === focusExerciseId) {
+        _currentExerciseIndex = i;
+        break;
+      }
+    }
+  }
+
+  // 운동 화면으로 전환
+  showScreen('workout');
+
+  // 헤더 표시
+  var workoutHeader = document.getElementById('workoutHeader');
+  if (workoutHeader) workoutHeader.style.display = 'flex';
+  updateWorkoutHeader(true);
+
+  // 하단 버튼: SAVE CHANGES
+  updateBottomButton('editSave');
+
+  // 종목 카드 렌더
+  renderExerciseCards();
+}
+
+/**
+ * 수정 내용 저장
+ */
+function saveEditChanges() {
+  if (!_editMode || !_currentSession) return;
+
+  // 볼륨 재계산
+  var vol = 0;
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    var ex = _currentSession.exercises[i];
+    var meta = getExercise(ex.exerciseId);
+    if (meta && meta.equipment === 'cardio') continue;
+    for (var j = 0; j < ex.sets.length; j++) {
+      var s = ex.sets[j];
+      if (s.done) {
+        vol += (s.weight || 0) * (s.reps || 0);
+      }
+    }
+  }
+  _currentSession.totalVolume = vol;
+  _currentSession.totalVolumeExWarmup = vol;
+  _currentSession.totalCalories = estimateCalories(_currentSession);
+
+  // 기존 세션 덮어쓰기
+  saveSession(_currentSession);
+
+  // PR 재계산
+  recalcAllPRs();
+
+  // 서버 동기화
+  if (typeof syncToServer === 'function') syncToServer();
+
+  // 타이머 정리
+  if (_workoutTimerInterval) clearInterval(_workoutTimerInterval);
+  dismissRestTimer();
+
+  // 헤더 숨기기
+  var workoutHeader = document.getElementById('workoutHeader');
+  if (workoutHeader) workoutHeader.style.display = 'none';
+
+  // 상태 초기화
+  var returnScreen = _editReturnScreen;
+  _currentSession = null;
+  _selectedParts = [];
+  _workoutStartTime = null;
+  _currentExerciseIndex = 0;
+  _editMode = false;
+  _editSessionId = null;
+
+  // 통계 화면으로 복귀
+  showScreen(returnScreen);
+}
+
+/**
+ * 수정 모드 취소 (뒤로가기)
+ */
+function cancelEditMode() {
+  // 타이머 정리
+  if (_workoutTimerInterval) clearInterval(_workoutTimerInterval);
+  dismissRestTimer();
+
+  var workoutHeader = document.getElementById('workoutHeader');
+  if (workoutHeader) workoutHeader.style.display = 'none';
+
+  _currentSession = null;
+  _selectedParts = [];
+  _workoutStartTime = null;
+  _currentExerciseIndex = 0;
+  _editMode = false;
+  _editSessionId = null;
+
+  showScreen('stats');
 }

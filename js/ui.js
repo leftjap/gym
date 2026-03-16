@@ -553,6 +553,13 @@ function updateBottomButton(state) {
       btn.style.color = 'var(--white)';
       btn.onclick = onBottomBtnClick;
       break;
+    case 'editSave':
+      btn.textContent = 'SAVE CHANGES';
+      btn.disabled = false;
+      btn.style.background = 'var(--dark)';
+      btn.style.color = 'var(--white)';
+      btn.onclick = onBottomBtnClick;
+      break;
   }
 }
 
@@ -624,5 +631,95 @@ function onBottomBtnClick() {
     case 'partSelect':
       // disabled 상태, 동작 없음
       break;
+    case 'editSave':
+      saveEditChanges();
+      break;
   }
+}
+
+// ══ 액션시트 (iOS 스타일) ══
+function showActionSheet(title, buttons) {
+  var overlay = document.getElementById('actionSheetOverlay');
+  var sheet = document.getElementById('actionSheet');
+  if (!overlay || !sheet) return;
+
+  var html = '<div class="action-sheet-group">';
+  if (title) {
+    html += '<div class="action-sheet-title">' + title + '</div>';
+  }
+  for (var i = 0; i < buttons.length; i++) {
+    var b = buttons[i];
+    var btnClass = 'action-sheet-btn' + (b.cls ? ' ' + b.cls : '');
+    html += '<button class="' + btnClass + '" data-idx="' + i + '">' + b.text + '</button>';
+  }
+  html += '</div>';
+  html += '<button class="action-sheet-cancel" onclick="hideActionSheet()">취소</button>';
+
+  sheet.innerHTML = html;
+
+  var btns = sheet.querySelectorAll('.action-sheet-btn');
+  for (var i = 0; i < btns.length; i++) {
+    (function(idx) {
+      btns[idx].onclick = function() {
+        hideActionSheet();
+        setTimeout(function() {
+          if (buttons[idx] && buttons[idx].onClick) buttons[idx].onClick();
+        }, 250);
+      };
+    })(i);
+  }
+
+  requestAnimationFrame(function() {
+    overlay.classList.add('visible');
+    sheet.classList.add('visible');
+  });
+}
+
+function hideActionSheet() {
+  var overlay = document.getElementById('actionSheetOverlay');
+  var sheet = document.getElementById('actionSheet');
+  if (overlay) overlay.classList.remove('visible');
+  if (sheet) sheet.classList.remove('visible');
+  setTimeout(function() {
+    if (sheet) sheet.innerHTML = '';
+  }, 300);
+}
+
+// ══ 롱프레스 헬퍼 (텍스트 선택/콜아웃 차단) ══
+function bindLongPress(el, callback, ms) {
+  var timer = null;
+  var triggered = false;
+  var startX = 0;
+  var startY = 0;
+
+  el.addEventListener('touchstart', function(e) {
+    triggered = false;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    timer = setTimeout(function() {
+      triggered = true;
+      callback(e);
+    }, ms || 600);
+  }, { passive: true });
+
+  el.addEventListener('touchmove', function(e) {
+    if (!timer) return;
+    var dx = Math.abs(e.touches[0].clientX - startX);
+    var dy = Math.abs(e.touches[0].clientY - startY);
+    if (dx > 10 || dy > 10) {
+      clearTimeout(timer);
+      timer = null;
+      triggered = false;
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchend', function(e) {
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (triggered) { e.preventDefault(); triggered = false; }
+  }, { passive: false });
+
+  el.addEventListener('touchcancel', function() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    triggered = false;
+  }, { passive: true });
 }

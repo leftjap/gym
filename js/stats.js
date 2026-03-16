@@ -33,6 +33,42 @@ function renderStatsScreen() {
 
   container.innerHTML = html;
 
+  // ── 캘린더 날짜 롱프레스 바인딩 ──
+  var calCells = container.querySelectorAll('.stats-cal-cell:not(.empty):not(.future)');
+  for (var ci = 0; ci < calCells.length; ci++) {
+    (function(cell) {
+      var dateStr = cell.getAttribute('data-date');
+      if (!dateStr) return;
+      bindLongPress(cell, function() {
+        var sessions = getSessionsByDate(dateStr);
+        if (sessions.length === 0) return; // 기록 없으면 무반응
+
+        // 부위 태그 텍스트 생성
+        var tagNames = [];
+        for (var i = 0; i < sessions.length; i++) {
+          for (var j = 0; j < sessions[i].tags.length; j++) {
+            var p = getBodyPart(sessions[i].tags[j]);
+            var name = p ? p.name : sessions[i].tags[j];
+            if (tagNames.indexOf(name) < 0) tagNames.push(name);
+          }
+        }
+        var tagText = tagNames.length > 0 ? tagNames.join(' · ') : '';
+
+        showConfirm(
+          formatDate(dateStr) + (tagText ? '\n' + tagText : '') + '\n\n이 날의 운동 기록을 모두 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.',
+          function(confirmed) {
+            if (confirmed) {
+              deleteSessionsByDate(dateStr);
+              if (typeof syncToServer === 'function') syncToServer();
+              _statsSelectedDate = null;
+              renderStatsScreen();
+            }
+          }
+        );
+      }, 600);
+    })(calCells[ci]);
+  }
+
   // 선택된 날짜 카드 렌더
   renderStatsWorkoutCard();
 }
@@ -160,7 +196,7 @@ function renderStatsMonthCal() {
     var onclick = isFuture ? '' : ' onclick="selectStatsDate(\'' + dateStr + '\')"';
 
     html +=
-      '<div class="' + cellClass + '"' + onclick + '>' +
+      '<div class="' + cellClass + '" data-date="' + dateStr + '"' + onclick + '>' +
         '<div class="stats-cal-body">' +
           '<div class="stats-cal-num">' + d + '</div>' +
           '<div class="' + volClass + '">' + volText + '</div>' +
@@ -364,8 +400,20 @@ function renderStatsWorkoutCard() {
 
     var setsLabel = exInfo.equipment === 'cardio' ? data.totalMin + '분' : data.doneSets + '세트';
 
+    // 해당 종목이 포함된 세션 ID 찾기
+    var chipSessionId = '';
+    for (var si2 = 0; si2 < sessions.length; si2++) {
+      for (var ei2 = 0; ei2 < sessions[si2].exercises.length; ei2++) {
+        if (sessions[si2].exercises[ei2].exerciseId === exId) {
+          chipSessionId = sessions[si2].id;
+          break;
+        }
+      }
+      if (chipSessionId) break;
+    }
+
     exChipsHtml +=
-      '<div class="lw-ex-chip">' +
+      '<div class="lw-ex-chip" data-session-id="' + chipSessionId + '" data-exercise-id="' + exId + '">' +
         '<span>' + exInfo.name + '</span>' +
         '<span class="lw-ex-sets">' + setsLabel + '</span>' +
         (data.hasPR ? '<span class="lw-ex-pr">PR</span>' : '') +
@@ -396,4 +444,42 @@ function renderStatsWorkoutCard() {
     '</div>';
 
   el.innerHTML = html;
+
+  // ── 종목 칩 롱프레스 바인딩 ──
+  var chips = el.querySelectorAll('.lw-ex-chip');
+  for (var ci = 0; ci < chips.length; ci++) {
+    (function(chip) {
+      var sessionId = chip.getAttribute('data-session-id');
+      var exerciseId = chip.getAttribute('data-exercise-id');
+      if (!sessionId || !exerciseId) return;
+
+      var exInfo = getExercise(exerciseId);
+      var exName = exInfo ? exInfo.name : exerciseId;
+
+      bindLongPress(chip, function() {
+        showActionSheet(exName, [
+          {
+            text: '기록 수정',
+            onClick: function() {
+              enterEditMode(sessionId, exerciseId);
+            }
+          },
+          {
+            text: '이 종목 삭제',
+            cls: 'destructive',
+            onClick: function() {
+              showConfirm(exName + ' 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.', function(confirmed) {
+                if (confirmed) {
+                  deleteExerciseFromSession(sessionId, exerciseId);
+                  if (typeof syncToServer === 'function') syncToServer();
+                  renderStatsWorkoutCard();
+                  renderStatsScreen();
+                }
+              });
+            }
+          }
+        ]);
+      }, 600);
+    })(chips[ci]);
+  }
 }

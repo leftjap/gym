@@ -533,3 +533,115 @@ function getMonthPRDates(ym) {
   }
   return map;
 }
+
+// ══ 날짜 전체 삭제 ══
+function deleteSessionsByDate(dateStr) {
+  var sessions = getSessions().filter(function(s) { return s.date !== dateStr; });
+  saveSessions(sessions);
+  recalcAllPRs();
+}
+
+// ══ 특정 세션에서 특정 종목만 삭제 ══
+function deleteExerciseFromSession(sessionId, exerciseId) {
+  var sessions = getSessions();
+  for (var i = 0; i < sessions.length; i++) {
+    if (sessions[i].id !== sessionId) continue;
+
+    var sess = sessions[i];
+    sess.exercises = sess.exercises.filter(function(ex) {
+      return ex.exerciseId !== exerciseId;
+    });
+
+    // 종목이 0개가 되면 세션 자체를 삭제
+    if (sess.exercises.length === 0) {
+      sessions.splice(i, 1);
+    } else {
+      // 볼륨/칼로리 재계산
+      var vol = 0;
+      for (var j = 0; j < sess.exercises.length; j++) {
+        var ex = sess.exercises[j];
+        var meta = getExercise(ex.exerciseId);
+        if (meta && meta.equipment === 'cardio') continue;
+        for (var k = 0; k < ex.sets.length; k++) {
+          if (ex.sets[k].done) {
+            vol += (ex.sets[k].weight || 0) * (ex.sets[k].reps || 0);
+          }
+        }
+      }
+      sess.totalVolume = vol;
+      sess.totalVolumeExWarmup = vol;
+      sess.totalCalories = estimateCalories(sess);
+
+      // 태그 재계산
+      var tagSet = {};
+      var newTags = [];
+      for (var j = 0; j < sess.exercises.length; j++) {
+        var meta = getExercise(sess.exercises[j].exerciseId);
+        if (meta && !tagSet[meta.bodyPart]) {
+          tagSet[meta.bodyPart] = true;
+          newTags.push(meta.bodyPart);
+        }
+      }
+      sess.tags = newTags;
+    }
+
+    saveSessions(sessions);
+    break;
+  }
+
+  recalcAllPRs();
+}
+
+// ══ PR 전체 재계산 ══
+function recalcAllPRs() {
+  var sessions = getSessions();
+
+  // 날짜 오름차순 (오래된 순서대로 PR 재판정)
+  var sorted = sessions.slice().sort(function(a, b) {
+    return a.date.localeCompare(b.date) || a.startTime - b.startTime;
+  });
+
+  var newPRs = {};
+  var bestMap = {}; // { exerciseId: best1RM }
+
+  for (var si = 0; si < sorted.length; si++) {
+    var sess = sorted[si];
+    for (var ei = 0; ei < sess.exercises.length; ei++) {
+      var ex = sess.exercises[ei];
+      for (var ki = 0; ki < ex.sets.length; ki++) {
+        var set = ex.sets[ki];
+        if (!set.done || set.weight <= 0 || set.reps <= 0) {
+          set.isPR = false;
+          continue;
+        }
+
+        var e1rm = estimate1RM(set.weight, set.reps);
+        var currentBest = bestMap[ex.exerciseId] || 0;
+
+        if (e1rm > currentBest) {
+          set.isPR = true;
+          bestMap[ex.exerciseId] = e1rm;
+
+          if (!newPRs[ex.exerciseId]) newPRs[ex.exerciseId] = [];
+          newPRs[ex.exerciseId].push({
+            weight: set.weight,
+            reps: set.reps,
+            volume: set.weight * set.reps,
+            estimated1RM: e1rm,
+            date: sess.date,
+            sessionId: sess.id
+          });
+        } else {
+          set.isPR = false;
+        }
+      }
+    }
+  }
+
+  // 날짜 내림차순 복원 후 저장
+  sorted.sort(function(a, b) {
+    return b.date.localeCompare(a.date) || b.startTime - a.startTime;
+  });
+  saveSessions(sorted);
+  savePRs(newPRs);
+}
