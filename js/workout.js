@@ -608,15 +608,20 @@ function showPRFlash(exIdx, setIdx, prResult) {
   var name = meta ? meta.name : '';
   var set = ex.sets[setIdx];
 
-  var toast = document.createElement('div');
-  toast.className = 'pr-toast';
-  toast.innerHTML = '🏆 ' + name + ' 개인 기록! ' + set.weight + 'kg × ' + set.reps + '회';
-  document.body.appendChild(toast);
+  var overlay = document.createElement('div');
+  overlay.className = 'pr-toast-overlay';
+  overlay.innerHTML =
+    '<div class="pr-toast">' +
+      '<span class="pr-toast-icon">🏆</span>' +
+      '<span class="pr-toast-title">개인 기록 달성!</span>' +
+      '<span class="pr-toast-detail">' + name + '<br>' + set.weight + 'kg × ' + set.reps + '회</span>' +
+    '</div>';
+  document.body.appendChild(overlay);
 
-  setTimeout(function() { toast.classList.add('show'); }, 10);
+  setTimeout(function() { overlay.classList.add('show'); }, 10);
   setTimeout(function() {
-    toast.classList.remove('show');
-    setTimeout(function() { toast.remove(); }, 300);
+    overlay.classList.remove('show');
+    setTimeout(function() { overlay.remove(); }, 300);
   }, 2500);
 }
 
