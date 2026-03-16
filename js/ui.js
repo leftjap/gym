@@ -433,6 +433,7 @@ function updateBottomButton(state) {
   if (!btn) return;
 
   // 기존 이벤트 정리
+  btn.onclick = null;
   btn.onmousedown = null;
   btn.onmouseup = null;
   btn.onmouseleave = null;
@@ -448,6 +449,7 @@ function updateBottomButton(state) {
       btn.disabled = false;
       btn.style.background = 'var(--dark)';
       btn.style.color = 'var(--white)';
+      btn.onclick = onBottomBtnClick;
       break;
     case 'continue':
       btn.textContent = 'CONTINUE WORKOUT';
@@ -455,7 +457,6 @@ function updateBottomButton(state) {
       btn.style.background = '#e87461';
       btn.style.color = 'var(--white)';
       // 길게 누르기 이벤트 등록 (클릭도 여기서 처리)
-      btn.onclick = null;
       setupLongPress(btn);
       break;
     case 'partSelect':
@@ -463,24 +464,28 @@ function updateBottomButton(state) {
       btn.disabled = true;
       btn.style.background = 'var(--border-gray)';
       btn.style.color = 'var(--icon-inactive)';
+      btn.onclick = onBottomBtnClick;
       break;
     case 'partSelectReady':
       btn.textContent = 'START';
       btn.disabled = false;
       btn.style.background = 'var(--dark)';
       btn.style.color = 'var(--white)';
+      btn.onclick = onBottomBtnClick;
       break;
     case 'workout':
       btn.textContent = 'FINISH WORKOUT';
       btn.disabled = false;
       btn.style.background = 'var(--dark)';
       btn.style.color = 'var(--white)';
+      btn.onclick = onBottomBtnClick;
       break;
     case 'summary':
       btn.textContent = 'DONE';
       btn.disabled = false;
       btn.style.background = 'var(--dark)';
       btn.style.color = 'var(--white)';
+      btn.onclick = onBottomBtnClick;
       break;
   }
 }
