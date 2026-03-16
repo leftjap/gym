@@ -375,7 +375,7 @@ function renderWeekCal() {
 
   el.innerHTML = html;
 
-  // ── 주간 캘린더 롱프레스 바인딩 (기록 삭제) ──
+  // ── 주간 캘린더 롱프레스 바인딩 (날짜 선택 + 기록 삭제) ──
   var weekDays = el.querySelectorAll('.week-day:not(.future)');
   for (var wi = 0; wi < weekDays.length; wi++) {
     (function(dayEl, idx) {
@@ -384,6 +384,9 @@ function renderWeekCal() {
       var dateStr = getLocalYMD(d);
 
       bindLongPress(dayEl, function() {
+        // 먼저 해당 날짜를 선택 상태로
+        selectWeekDate(dateStr);
+
         var daySessions = getSessionsByDate(dateStr);
         if (daySessions.length === 0) return;
 

@@ -40,8 +40,12 @@ function renderStatsScreen() {
       var dateStr = cell.getAttribute('data-date');
       if (!dateStr) return;
       bindLongPress(cell, function() {
+        // 먼저 해당 날짜를 선택 상태로
+        _statsSelectedDate = dateStr;
+        renderStatsScreen();
+
         var sessions = getSessionsByDate(dateStr);
-        if (sessions.length === 0) return; // 기록 없으면 무반응
+        if (sessions.length === 0) return;
 
         // 부위 태그 텍스트 생성
         var tagNames = [];
