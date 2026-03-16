@@ -115,7 +115,21 @@ function syncFromServer(callback, silent) {
       if (p.inbody) S(K.inbody, p.inbody);
       if (p.customExercises) S(K.customExercises, p.customExercises);
       if (p.hiddenExercises) S(K.hiddenExercises, p.hiddenExercises);
-      if (p.exerciseIcons) S(K.exerciseIcons, p.exerciseIcons);
+      // exerciseIcons: 서버와 로컬을 병합 (로컬 우선)
+      var serverIcons = p.exerciseIcons || {};
+      var localIcons = L(K.exerciseIcons) || {};
+      var mergedIcons = {};
+      var iconKeys = Object.keys(serverIcons);
+      for (var ik = 0; ik < iconKeys.length; ik++) {
+        mergedIcons[iconKeys[ik]] = serverIcons[iconKeys[ik]];
+      }
+      var localIconKeys = Object.keys(localIcons);
+      for (var ik = 0; ik < localIconKeys.length; ik++) {
+        if (localIcons[localIconKeys[ik]]) {
+          mergedIcons[localIconKeys[ik]] = localIcons[localIconKeys[ik]];
+        }
+      }
+      S(K.exerciseIcons, mergedIcons);
       if (p.settings) S(K.settings, p.settings);
 
       saveLastSyncTime();
