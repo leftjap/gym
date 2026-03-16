@@ -1,229 +1,290 @@
-/* ═══ stats.js — 통계 화면, 인바디 기록 ═══ */
+/* ═══ stats.js — 통계/기록 화면 ═══ */
 
-var _statsPeriod = 'week'; // 'week' | 'month'
-var _inbodyFormMode = null; // 'add' | 'edit'
+var _statsYM = getYM();           // 통계 화면에서 보고 있는 월
+var _statsSelectedDate = today(); // 통계 화면 캘린더에서 선택된 날짜
 
 // ══ 통계 화면 전체 렌더 ══
-function renderStats() {
-  renderPeriodStats(_statsPeriod);
-  renderHistory();
-  renderInbodySection();
+function renderStatsScreen() {
+  var container = document.getElementById('statsContent');
+  if (!container) return;
+
+  var html = '';
+
+  // 헤더 (뒤로가기 + 월 이동)
+  html += renderStatsHeader();
+
+  // 요약문
+  html += renderStatsSummary();
+
+  // 월간 캘린더
+  html += renderStatsMonthCal();
+
+  // 선택된 날짜의 운동 카드
+  html += '<div id="statsWorkoutCard" class="stats-workout-card"></div>';
+
+  // 히어로 랭킹 + 월별 차트는 작업지시서 B, C에서 추가
+  html += '<div id="statsHeroRanking"></div>';
+  html += '<div id="statsMonthlyChart"></div>';
+
+  // 하단 여백
+  html += '<div style="height:40px"></div>';
+
+  container.innerHTML = html;
+
+  // 선택된 날짜 카드 렌더
+  renderStatsWorkoutCard();
 }
 
-// ══ 기간별 통계 ══
-function renderPeriodStats(period) {
-  _statsPeriod = period;
-  var el = document.getElementById('periodStats');
-  if (!el) return;
+// ══ 헤더 ══
+function renderStatsHeader() {
+  var parts = _statsYM.split('-');
+  var m = parseInt(parts[1]);
 
-  var data = period === 'week' ? getWeekSummary() : getMonthSummary();
-
-  el.innerHTML =
-    '<div class="period-tabs">' +
-      '<button class="period-tab' + (period === 'week' ? ' active' : '') + '" onclick="renderPeriodStats(\'week\')">이번 주</button>' +
-      '<button class="period-tab' + (period === 'month' ? ' active' : '') + '" onclick="renderPeriodStats(\'month\')">이번 달</button>' +
-    '</div>' +
-    '<div class="period-cards">' +
-      '<div class="period-card">' +
-        '<div class="period-card-num">' + data.count + '회</div>' +
-        '<div class="period-card-label">운동 횟수</div>' +
+  return (
+    '<div class="stats-header">' +
+      '<button class="stats-header-back" onclick="showScreen(\'home\')">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+      '</button>' +
+      '<div class="stats-header-month">' +
+        '<button class="stats-month-nav" onclick="changeStatsMonth(-1)">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+        '</button>' +
+        '<span class="stats-month-title">' + m + '월</span>' +
+        '<button class="stats-month-nav" onclick="changeStatsMonth(1)">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>' +
+        '</button>' +
       '</div>' +
-      '<div class="period-card">' +
-        '<div class="period-card-num">' + formatNum(data.volume) + '<small>kg</small></div>' +
-        '<div class="period-card-label">총 볼륨</div>' +
-      '</div>' +
-      '<div class="period-card">' +
-        '<div class="period-card-num">' + formatDuration(data.duration) + '</div>' +
-        '<div class="period-card-label">운동 시간</div>' +
-      '</div>' +
-      '<div class="period-card">' +
-        '<div class="period-card-num">' + formatNum(data.calories) + '<small>kcal</small></div>' +
-        '<div class="period-card-label">소모 칼로리</div>' +
-      '</div>' +
-    '</div>';
+      '<div style="width:36px"></div>' +
+    '</div>'
+  );
 }
 
-// ══ 볼륨 차트 ══
-function renderVolumeChart() {
-  var el = document.getElementById('volumeChart');
-  if (!el) return;
+// ══ 월 이동 ══
+function changeStatsMonth(delta) {
+  var parts = _statsYM.split('-').map(Number);
+  var y = parts[0];
+  var m = parts[1] + delta;
 
-  // TODO: 2차에서 차트 라이브러리 추가
-  el.innerHTML = '<div class="chart-placeholder">볼륨 추이 (준비 중)</div>';
+  if (m < 1) { m = 12; y -= 1; }
+  else if (m > 12) { m = 1; y += 1; }
+
+  _statsYM = y + '-' + String(m).padStart(2, '0');
+  _statsSelectedDate = null;
+  renderStatsScreen();
 }
 
-// ══ 칼로리 차트 ══
-function renderCalorieChart() {
-  var el = document.getElementById('calorieChart');
-  if (!el) return;
+// ══ 요약문 ══
+function renderStatsSummary() {
+  var summary = getMonthSummary(_statsYM);
+  var parts = _statsYM.split('-');
+  var m = parseInt(parts[1]);
 
-  // TODO: 2차에서 차트 라이브러리 추가
-  el.innerHTML = '<div class="chart-placeholder">칼로리 추이 (준비 중)</div>';
-}
+  var mainText = '';
+  var subText = '';
 
-// ══ 인바디 섹션 ══
-function renderInbodySection() {
-  var el = document.getElementById('inbodySection');
-  if (!el) return;
-
-  var records = getInbodyRecords();
-  var latest = records.length > 0 ? records[records.length - 1] : null;
-
-  var html =
-    '<div class="inbody-header">' +
-      '<span class="section-title">신체 기록</span>' +
-      '<button class="inbody-add-btn" onclick="openInbodyForm()">+ 기록</button>' +
-    '</div>';
-
-  if (latest) {
-    html +=
-      '<div class="inbody-current">' +
-        '<div class="inbody-item">' +
-          '<div class="inbody-label">체중</div>' +
-          '<div class="inbody-val">' + latest.weight + ' <small>kg</small></div>' +
-        '</div>';
-
-    if (latest.bodyFatPct) {
-      html +=
-        '<div class="inbody-item">' +
-          '<div class="inbody-label">체지방률</div>' +
-          '<div class="inbody-val">' + latest.bodyFatPct + ' <small>%</small></div>' +
-        '</div>';
+  if (summary.volume > 0) {
+    mainText = m + '월에는 총 <strong>' + formatNum(summary.volume) + 'kg</strong> 들었어요';
+    if (summary.count > 0) {
+      subText = summary.count + '회 운동 · ' + formatDuration(summary.duration) + ' · ' + formatNum(summary.calories) + 'kcal';
     }
-
-    if (latest.muscleMass) {
-      html +=
-        '<div class="inbody-item">' +
-          '<div class="inbody-label">근육량</div>' +
-          '<div class="inbody-val">' + latest.muscleMass + ' <small>kg</small></div>' +
-        '</div>';
-    }
-
-    html +=
-        '<div class="inbody-item">' +
-          '<div class="inbody-label">측정일</div>' +
-          '<div class="inbody-val">' + formatDate(latest.date) + '</div>' +
-        '</div>' +
-      '</div>';
   } else {
-    html += '<div class="inbody-empty">아직 기록이 없습니다</div>';
+    mainText = m + '월에는 아직 기록이 없어요';
+    subText = '운동을 시작해보세요!';
   }
 
-  html +=
-    '<div class="inbody-chart" id="inbodyChart"></div>' +
-    '<div class="inbody-form" id="inbodyForm" style="display:none;"></div>';
-
-  el.innerHTML = html;
-
-  // 차트 초기화
-  renderInbodyChart();
+  return (
+    '<div class="stats-summary">' +
+      '<div class="stats-summary-main">' + mainText + '</div>' +
+      '<div class="stats-summary-sub">' + subText + '</div>' +
+    '</div>'
+  );
 }
 
-// ══ 인바디 차트 ══
-function renderInbodyChart() {
-  var el = document.getElementById('inbodyChart');
-  if (!el) return;
+// ══ 월간 캘린더 (주간 캘린더 스타일 적용) ══
+function renderStatsMonthCal() {
+  var daysInMonth = getDaysInMonth(_statsYM);
+  var firstDay = getFirstDayOfMonth(_statsYM);
+  var todayStr = today();
+  var dayVolumes = getMonthDayVolumes(_statsYM);
+  var prDates = getMonthPRDates(_statsYM);
 
-  var records = getInbodyRecords();
-  if (records.length === 0) {
-    el.innerHTML = '';
-    return;
-  }
+  // 월요일 시작으로 변환 (일=0 → 6, 월=1 → 0, ...)
+  var firstDayMon = firstDay === 0 ? 6 : firstDay - 1;
 
-  // 최근 10개 기록 표시
-  var recentRecords = records.slice(Math.max(0, records.length - 10));
+  var dows = ['월', '화', '수', '목', '금', '토', '일'];
 
-  var html = '<div class="inbody-list">';
-  for (var i = recentRecords.length - 1; i >= 0; i--) {
-    var r = recentRecords[i];
-    html +=
-      '<div class="inbody-history-item">' +
-        '<div class="inbody-history-date">' + formatDate(r.date) + '</div>' +
-        '<div class="inbody-history-data">' +
-          r.weight + 'kg';
+  var html = '<div class="stats-cal">';
 
-    if (r.bodyFatPct) html += ' · ' + r.bodyFatPct + '%';
-    if (r.muscleMass) html += ' · ' + r.muscleMass + 'kg';
-
-    html +=
-        '</div>' +
-      '</div>';
+  // 요일 헤더
+  html += '<div class="stats-cal-dow-row">';
+  for (var i = 0; i < 7; i++) {
+    html += '<div class="stats-cal-dow">' + dows[i] + '</div>';
   }
   html += '</div>';
 
-  el.innerHTML = html;
+  // 날짜 그리드
+  html += '<div class="stats-cal-grid">';
+
+  // 빈 칸
+  for (var i = 0; i < firstDayMon; i++) {
+    html += '<div class="stats-cal-cell empty"></div>';
+  }
+
+  // 날짜
+  for (var d = 1; d <= daysInMonth; d++) {
+    var dateStr = _statsYM + '-' + String(d).padStart(2, '0');
+    var isToday = dateStr === todayStr;
+    var isSelected = dateStr === _statsSelectedDate;
+    var vol = dayVolumes[dateStr] || 0;
+    var hasPR = prDates[dateStr] || false;
+
+    var cellClass = 'stats-cal-cell';
+    if (isToday) cellClass += ' today';
+    if (isSelected) cellClass += ' selected';
+
+    var volClass = 'stats-cal-vol';
+    if (vol === 0) volClass += ' empty';
+    else if (hasPR) volClass += ' has-pr';
+
+    var volText = vol > 0 ? formatNum(vol) : '';
+
+    html +=
+      '<div class="' + cellClass + '" onclick="selectStatsDate(\'' + dateStr + '\')">' +
+        '<div class="stats-cal-body">' +
+          '<div class="stats-cal-num">' + d + '</div>' +
+          '<div class="' + volClass + '">' + volText + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  html += '</div>';
+  html += '</div>';
+
+  return html;
 }
 
-// ══ 인바디 입력 폼 열기 ══
-function openInbodyForm() {
-  var el = document.getElementById('inbodyForm');
+// ══ 날짜 선택 ══
+function selectStatsDate(dateStr) {
+  _statsSelectedDate = dateStr;
+  renderStatsScreen();
+}
+
+// ══ 선택된 날짜의 운동 카드 ══
+function renderStatsWorkoutCard() {
+  var el = document.getElementById('statsWorkoutCard');
   if (!el) return;
 
-  _inbodyFormMode = 'add';
-
-  var html =
-    '<div class="inbody-form-content">' +
-      '<div class="form-title">신체 기록 추가</div>' +
-      '<div class="form-group">' +
-        '<label>측정일</label>' +
-        '<input type="date" id="inbodyDate" value="' + today() + '">' +
-      '</div>' +
-      '<div class="form-group">' +
-        '<label>체중 (kg) *</label>' +
-        '<input type="number" id="inbodyWeight" placeholder="70.0" step="0.1">' +
-      '</div>' +
-      '<div class="form-group">' +
-        '<label>체지방률 (%)</label>' +
-        '<input type="number" id="inbodyFat" placeholder="20.0" step="0.1">' +
-      '</div>' +
-      '<div class="form-group">' +
-        '<label>근육량 (kg)</label>' +
-        '<input type="number" id="inbodyMuscle" placeholder="55.0" step="0.1">' +
-      '</div>' +
-      '<div class="form-group">' +
-        '<label>메모</label>' +
-        '<input type="text" id="inbodyMemo" placeholder="(선택사항)">' +
-      '</div>' +
-      '<div class="form-actions">' +
-        '<button class="btn-cancel" onclick="closeInbodyForm()">취소</button>' +
-        '<button class="btn-save" onclick="saveInbodyForm()">저장</button>' +
-      '</div>' +
-    '</div>';
-
-  el.innerHTML = html;
-  el.style.display = 'block';
-  el.scrollIntoView({ behavior: 'smooth' });
-}
-
-// ══ 인바디 입력 저장 ══
-function saveInbodyForm() {
-  var weight = parseFloat(document.getElementById('inbodyWeight').value);
-  var date = document.getElementById('inbodyDate').value;
-
-  if (!weight || weight <= 0) {
-    alert('체중을 입력하세요');
+  if (!_statsSelectedDate) {
+    el.innerHTML = '';
     return;
   }
 
-  var record = {
-    id: genId(),
-    date: date || today(),
-    weight: weight,
-    bodyFatPct: parseFloat(document.getElementById('inbodyFat').value) || null,
-    muscleMass: parseFloat(document.getElementById('inbodyMuscle').value) || null,
-    memo: document.getElementById('inbodyMemo').value || ''
-  };
+  var sessions = getSessionsByDate(_statsSelectedDate);
 
-  addInbodyRecord(record);
-  closeInbodyForm();
-  renderInbodySection();
-}
-
-function closeInbodyForm() {
-  var el = document.getElementById('inbodyForm');
-  if (el) {
-    el.style.display = 'none';
+  if (sessions.length === 0) {
     el.innerHTML = '';
+    return;
   }
-  _inbodyFormMode = null;
+
+  // 병합 로직 (홈 화면과 동일)
+  var seen = {};
+  var uniqueSessions = [];
+  for (var i = 0; i < sessions.length; i++) {
+    if (!seen[sessions[i].id]) {
+      seen[sessions[i].id] = true;
+      uniqueSessions.push(sessions[i]);
+    }
+  }
+  sessions = uniqueSessions;
+
+  var totalVolume = 0;
+  var totalCalories = 0;
+  var totalDuration = 0;
+  var tagSet = {};
+  var tagList = [];
+  var exMap = {};
+  var exOrder = [];
+
+  for (var si = 0; si < sessions.length; si++) {
+    var s = sessions[si];
+    totalVolume += s.totalVolume || 0;
+    totalCalories += s.totalCalories || 0;
+    totalDuration += s.durationMin || 0;
+
+    for (var ti = 0; ti < s.tags.length; ti++) {
+      if (!tagSet[s.tags[ti]]) {
+        tagSet[s.tags[ti]] = true;
+        tagList.push(s.tags[ti]);
+      }
+    }
+
+    for (var ei = 0; ei < s.exercises.length; ei++) {
+      var ex = s.exercises[ei];
+      var exId = ex.exerciseId;
+      if (!exMap[exId]) {
+        exMap[exId] = { doneSets: 0, hasPR: false, totalMin: 0 };
+        exOrder.push(exId);
+      }
+      for (var ji = 0; ji < ex.sets.length; ji++) {
+        var set = ex.sets[ji];
+        if (set.done) {
+          var exInfo = getExercise(exId);
+          if (exInfo && exInfo.equipment === 'cardio') {
+            exMap[exId].totalMin += set.reps || 0;
+          }
+          exMap[exId].doneSets++;
+        }
+        if (set.isPR) exMap[exId].hasPR = true;
+      }
+    }
+  }
+
+  var tagsHtml = '';
+  for (var i = 0; i < tagList.length; i++) {
+    var part = getBodyPart(tagList[i]);
+    tagsHtml += '<span class="lw-tag">' + (part ? part.name : tagList[i]) + '</span>';
+  }
+
+  var exChipsHtml = '';
+  for (var i = 0; i < exOrder.length; i++) {
+    var exId = exOrder[i];
+    var data = exMap[exId];
+    if (data.doneSets === 0) continue;
+    var exInfo = getExercise(exId);
+    if (!exInfo) continue;
+
+    var setsLabel = exInfo.equipment === 'cardio' ? data.totalMin + '분' : data.doneSets + '세트';
+
+    exChipsHtml +=
+      '<div class="lw-ex-chip">' +
+        '<span>' + exInfo.name + '</span>' +
+        '<span class="lw-ex-sets">' + setsLabel + '</span>' +
+        (data.hasPR ? '<span class="lw-ex-pr">PR</span>' : '') +
+      '</div>';
+  }
+
+  var html =
+    '<div class="lw-card">' +
+      '<div class="lw-header">' +
+        '<span class="lw-date">' + formatDate(_statsSelectedDate) + '</span>' +
+        '<div class="lw-tags">' + tagsHtml + '</div>' +
+      '</div>' +
+      '<div class="lw-stats">' +
+        '<div class="lw-stat">' +
+          '<span class="lw-stat-num">' + formatNum(totalVolume) + '<small>kg</small></span>' +
+          '<span class="lw-stat-label">볼륨</span>' +
+        '</div>' +
+        '<div class="lw-stat">' +
+          '<span class="lw-stat-num">' + formatNum(totalCalories) + '<small>kcal</small></span>' +
+          '<span class="lw-stat-label">칼로리</span>' +
+        '</div>' +
+        '<div class="lw-stat">' +
+          '<span class="lw-stat-num">' + totalDuration + '<small>분</small></span>' +
+          '<span class="lw-stat-label">시간</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="lw-exercises">' + exChipsHtml + '</div>' +
+    '</div>';
+
+  el.innerHTML = html;
 }

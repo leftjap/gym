@@ -356,3 +356,42 @@ function hasPROnDate(dateStr) {
   }
   return false;
 }
+
+/**
+ * 특정 월의 날짜별 볼륨 맵 반환
+ * @returns { '2026-03-01': 1200, '2026-03-03': 3400, ... }
+ */
+function getMonthDayVolumes(ym) {
+  var target = ym || getYM();
+  var sessions = getSessions().filter(function(s) { return getYM(s.date) === target; });
+  var map = {};
+  for (var i = 0; i < sessions.length; i++) {
+    var d = sessions[i].date;
+    if (!map[d]) map[d] = 0;
+    map[d] += sessions[i].totalVolume || 0;
+  }
+  return map;
+}
+
+/**
+ * 특정 월의 날짜별 PR 여부 맵 반환
+ * @returns { '2026-03-05': true, ... }
+ */
+function getMonthPRDates(ym) {
+  var target = ym || getYM();
+  var sessions = getSessions().filter(function(s) { return getYM(s.date) === target; });
+  var map = {};
+  for (var i = 0; i < sessions.length; i++) {
+    var s = sessions[i];
+    for (var j = 0; j < s.exercises.length; j++) {
+      for (var k = 0; k < s.exercises[j].sets.length; k++) {
+        if (s.exercises[j].sets[k].isPR) {
+          map[s.date] = true;
+          break;
+        }
+      }
+      if (map[s.date]) break;
+    }
+  }
+  return map;
+}
