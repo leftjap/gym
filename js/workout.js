@@ -348,10 +348,15 @@ function renderExerciseCard(exIdx) {
 
   var html = '';
 
-  // 1. 카드헤더 (박스 밖, 최상단) — 세로바 색상 고정
+  // 1. 카드헤더 (박스 밖, 최상단) — 세로바 + 아이콘 + 종목명
+  var exIconUrl = getExerciseIcon(meta.id);
+  var exIconHtml = exIconUrl
+    ? '<img src="' + exIconUrl + '" class="ex-card-icon" alt="" onerror="this.style.display=\'none\'">'
+    : '';
   html +=
     '<div class="ex-card-header-standalone">' +
       '<div class="ex-card-color" style="background:#e85040"></div>' +
+      exIconHtml +
       '<div class="ex-card-info">' +
         '<div class="ex-card-name">' + meta.name + '</div>' +
       '</div>' +

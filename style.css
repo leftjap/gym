@@ -637,6 +637,14 @@ input {
   font-weight: 700;
 }
 
+.ex-card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .ex-card-check {
   font-size: 20px;
 }
