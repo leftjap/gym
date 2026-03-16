@@ -916,11 +916,16 @@ input {
 .rest-timer {
   background: var(--white);
   border-radius: 12px;
-  padding: 16px;
+  height: 72px;
+  padding: 0 16px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .rest-timer.active {
@@ -934,15 +939,15 @@ input {
 }
 
 .rest-timer-num {
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
-  display: block;
-  margin-bottom: 4px;
+  line-height: 1.2;
 }
 
 .rest-timer-text {
-  font-size: 12px;
-  opacity: 0.9;
+  font-size: 11px;
+  opacity: 0.8;
+  line-height: 1.2;
 }
 
 /* ── 운동 완료 요약 ── */
@@ -1962,7 +1967,7 @@ input {
   bottom: calc(max(20px, env(safe-area-inset-bottom) + 20px));
   left: 20px;
   right: 20px;
-  height: 52px;
+  height: 72px;
   padding: 0 16px;
   background: var(--dark);
   color: var(--white);
