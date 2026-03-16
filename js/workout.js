@@ -623,9 +623,13 @@ function startRestTimer(seconds) {
   var el = document.getElementById('restTimerBar');
   if (!el) return;
 
-  // FINISH WORKOUT 버튼 숨기고 타이머를 버튼 자리로 이동
+  // FINISH WORKOUT 버튼 완전히 숨기고 타이머를 버튼 자리로 이동
   var bottomBtn = document.getElementById('bottomBtn');
-  if (bottomBtn) bottomBtn.style.display = 'none';
+  if (bottomBtn) {
+    bottomBtn.style.display = 'none';
+    bottomBtn.style.visibility = 'hidden';
+    bottomBtn.style.opacity = '0';
+  }
   el.style.bottom = 'calc(max(20px, env(safe-area-inset-bottom) + 20px))';
 
   // 초기 HTML 한 번만 세팅
@@ -688,9 +692,13 @@ function dismissRestTimer() {
     el.style.bottom = '';
   }
 
-  // FINISH WORKOUT 버튼 다시 표시
+  // FINISH WORKOUT 버튼 완전히 복원
   var bottomBtn = document.getElementById('bottomBtn');
-  if (bottomBtn) bottomBtn.style.display = 'block';
+  if (bottomBtn) {
+    bottomBtn.style.display = 'block';
+    bottomBtn.style.visibility = 'visible';
+    bottomBtn.style.opacity = '1';
+  }
 }
 
 // ══ 자동저장 ══
@@ -738,6 +746,14 @@ function finishWorkout() {
   // 타이머 정리
   if (_workoutTimerInterval) clearInterval(_workoutTimerInterval);
   dismissRestTimer();
+
+  // 버튼 스타일 확실히 복원
+  var bottomBtn = document.getElementById('bottomBtn');
+  if (bottomBtn) {
+    bottomBtn.style.display = 'block';
+    bottomBtn.style.visibility = 'visible';
+    bottomBtn.style.opacity = '1';
+  }
 
   // 헤더 숨기기
   var workoutHeader = document.getElementById('workoutHeader');
