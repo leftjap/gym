@@ -455,8 +455,9 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 
 **종목/세트:**
 - `renderExerciseCards()` — 현재 종목 카드 + 전체 종목 버튼바 렌더
-- `renderExerciseNav()` — 전체 종목 네비게이션 버튼바 (현재 종목 active, 완료 종목 done)
+- `renderExerciseNav()` — 전체 종목 네비게이션 버튼바 (현재 종목 active, 완료 종목 done) + 더보기 버튼
 - `switchExercise(exIdx)` — 종목 전환
+- `showExerciseListSheet()` — 전체 종목 목록 액션시트 표시 (현재 종목 강조, 완료 종목 체크)
 - `renderExerciseCard(exIdx)` — 단일 종목 카드 (카드헤더 + 동기부여 문구 + 진행 바 + 세트) — bodyweight/cardio 분기
 - `renderSetProgress(todayVol, lastVol, lastSetCount, doneCount)` — 웨이트 종목용 진행 바
 - `renderBodyweightProgress(todayReps, lastTotalReps, lastSetCount, doneCount)` — 맨몸 종목용 진행 바 (횟수 기준)

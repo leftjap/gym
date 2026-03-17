@@ -277,6 +277,9 @@ function renderExerciseNav() {
     html += '<button class="' + btnClass + '" onclick="switchExercise(' + i + ')">' + btnContent + '</button>';
   }
 
+  // 더보기 버튼
+  html += '<button class="ex-nav-more" onclick="showExerciseListSheet()">더보기 ▸</button>';
+
   html += '</div>';
   return html;
 }
@@ -286,6 +289,43 @@ function switchExercise(exIdx) {
   if (exIdx < 0 || exIdx >= _currentSession.exercises.length) return;
   _currentExerciseIndex = exIdx;
   renderExerciseCards();
+}
+
+// ══ 전체 종목 목록 액션시트 ══
+function showExerciseListSheet() {
+  if (!_currentSession) return;
+
+  var buttons = [];
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    var exData = _currentSession.exercises[i];
+    var meta = getExercise(exData.exerciseId);
+    var name = meta ? meta.name : exData.exerciseId;
+
+    var allDone = true;
+    for (var j = 0; j < exData.sets.length; j++) {
+      if (!exData.sets[j].done) { allDone = false; break; }
+    }
+
+    var label = '';
+    if (i === _currentExerciseIndex) {
+      label = '▸ ' + name;
+    } else if (allDone) {
+      label = '✓ ' + name;
+    } else {
+      label = name;
+    }
+
+    (function(idx) {
+      buttons.push({
+        text: label,
+        onClick: function() {
+          switchExercise(idx);
+        }
+      });
+    })(i);
+  }
+
+  showActionSheet('종목 선택', buttons);
 }
 
 function renderExerciseCard(exIdx) {

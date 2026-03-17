@@ -528,7 +528,7 @@ input {
   border: 1px solid var(--border-gray);
   background: transparent;
   color: var(--dark);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   white-space: nowrap;
   cursor: pointer;
@@ -552,6 +552,24 @@ input {
   background: var(--border-gray);
   color: var(--gray);
   border-color: var(--border-gray);
+}
+
+.ex-nav-more {
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-gray);
+  background: transparent;
+  color: var(--icon-inactive);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ex-nav-more:active {
+  background: var(--light-gray);
 }
 
 /* ── 종목 카드 ── */
