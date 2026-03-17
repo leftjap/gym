@@ -457,11 +457,12 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 - `renderExerciseCards()` — 현재 종목 카드 + 전체 종목 버튼바 렌더
 - `renderExerciseNav()` — 전체 종목 네비게이션 버튼바 (현재 종목 active, 완료 종목 done)
 - `switchExercise(exIdx)` — 종목 전환
-- `renderExerciseCard(exIdx)` — 단일 종목 카드 (카드헤더 + 동기부여 문구 + 진행 바 + 세트)
-- `renderSetProgress(todayVol, lastVol, lastSetCount, doneCount)` — 세트 진행 바
-- `renderSetRow(exIdx, setIdx)` — 세트 행
+- `renderExerciseCard(exIdx)` — 단일 종목 카드 (카드헤더 + 동기부여 문구 + 진행 바 + 세트) — bodyweight/cardio 분기
+- `renderSetProgress(todayVol, lastVol, lastSetCount, doneCount)` — 웨이트 종목용 진행 바
+- `renderBodyweightProgress(todayReps, lastTotalReps, lastSetCount, doneCount)` — 맨몸 종목용 진행 바 (횟수 기준)
+- `renderSetRow(exIdx, setIdx)` — 세트 행 (웨이트/맨몸 분기, 맨몸은 KG 칼럼 숨김)
 - `toggleExCard(exIdx)` — 카드 접기/펼치기
-- `completeSet(exIdx, setIdx)` — 세트 완료 처리 → PR 감지 + 타이머 + 자동 세트 추가
+- `completeSet(exIdx, setIdx)` — 세트 완료 처리 → PR 감지 + 타이머 + 자동 세트 추가 (맨몸/유산소 weight 처리)
 - `completeCardio(exIdx)` — 유산소 완료 처리
 - `getWeightDelta(exerciseId)` — 장비 타입별 중량 증감 단위
 - `adjustSetValue(exIdx, setIdx, field, direction)` — ＋/－ 버튼 증감

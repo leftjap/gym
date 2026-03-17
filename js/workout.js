@@ -294,6 +294,7 @@ function renderExerciseCard(exIdx) {
   if (!meta) return '';
 
   var isCardio = meta.equipment === 'cardio';
+  var isBodyweight = meta.equipment === 'bodyweight';
 
   // 오늘 볼륨 계산
   var todayVol = 0;
@@ -312,33 +313,57 @@ function renderExerciseCard(exIdx) {
   var lastSets = getLastExerciseSets(meta.id);
   var lastVol = 0;
   var lastSetCount = 0;
+  var lastCardioMin = 0;
   if (lastSets) {
     lastSetCount = lastSets.length;
     for (var i = 0; i < lastSets.length; i++) {
       lastVol += (lastSets[i].weight || 0) * (lastSets[i].reps || 0);
+      if (isCardio) lastCardioMin += lastSets[i].reps || 0;
     }
   }
 
+  // 지난번 날짜 조회
+  var lastDate = '';
+  var sessions = getSessions();
+  for (var si = 0; si < sessions.length; si++) {
+    var sess = sessions[si];
+    if (_currentSession && sess.id === _currentSession.id) continue;
+    for (var ei = 0; ei < sess.exercises.length; ei++) {
+      if (sess.exercises[ei].exerciseId === meta.id) {
+        lastDate = sess.date;
+        break;
+      }
+    }
+    if (lastDate) break;
+  }
+  var dateDisplay = lastDate ? formatDate(lastDate) : '';
+
   // 동기부여 문구 HTML
   var motivateHtml = '';
-  if (!isCardio) {
+  if (isCardio) {
+    if (lastCardioMin > 0) {
+      motivateHtml = '<div class="ex-motivate-msg">' +
+        (dateDisplay ? '<span class="ex-motivate-sub">' + dateDisplay + '</span>' : '') +
+        '<span class="ex-motivate-main"><strong>' + lastCardioMin + '분</strong> 했어요</span>' +
+      '</div>';
+    } else {
+      motivateHtml = '<div class="ex-motivate-msg"><span class="ex-motivate-main">첫 기록을 만들어보세요!</span></div>';
+    }
+  } else if (isBodyweight) {
     if (!lastSets || lastSets.length === 0) {
       motivateHtml = '<div class="ex-motivate-msg"><span class="ex-motivate-main">첫 기록을 만들어보세요!</span></div>';
     } else {
-      var sessions = getSessions();
-      var lastDate = '';
-      for (var si = sessions.length - 1; si >= 0; si--) {
-        var sess = sessions[si];
-        if (sess.id === _currentSession.id) continue;
-        for (var ei = 0; ei < sess.exercises.length; ei++) {
-          if (sess.exercises[ei].exerciseId === meta.id) {
-            lastDate = sess.date;
-            break;
-          }
-        }
-        if (lastDate) break;
-      }
-      var dateDisplay = lastDate ? formatDate(lastDate) : '';
+      var totalReps = 0;
+      for (var i = 0; i < lastSets.length; i++) totalReps += lastSets[i].reps || 0;
+      motivateHtml = '<div class="ex-motivate-msg">' +
+        (dateDisplay ? '<span class="ex-motivate-sub">' + dateDisplay + '</span>' : '') +
+        '<span class="ex-motivate-main">' + lastSetCount + '세트 총 <strong>' + totalReps + '회</strong> 했어요</span>' +
+      '</div>';
+    }
+  } else {
+    if (!lastSets || lastSets.length === 0) {
+      motivateHtml = '<div class="ex-motivate-msg"><span class="ex-motivate-main">첫 기록을 만들어보세요!</span></div>';
+    } else {
       motivateHtml = '<div class="ex-motivate-msg">' +
         (dateDisplay ? '<span class="ex-motivate-sub">' + dateDisplay + '</span>' : '') +
         '<span class="ex-motivate-main">' + lastSetCount + '세트 총 <strong>' + formatNum(lastVol) + 'kg</strong>을 들었어요</span>' +
@@ -348,7 +373,7 @@ function renderExerciseCard(exIdx) {
 
   var html = '';
 
-  // 1. 카드헤더 (박스 밖, 최상단) — 세로바 + 아이콘 + 종목명
+  // 1. 카드헤더 (박스 밖)
   var exIconUrl = getExerciseIcon(meta.id);
   var exIconHtml = exIconUrl
     ? '<img src="' + exIconUrl + '" class="ex-card-icon" alt="" onerror="this.style.display=\'none\'">'
@@ -363,17 +388,17 @@ function renderExerciseCard(exIdx) {
       (allDone ? '<span class="ex-card-check">✓</span>' : '') +
     '</div>';
 
-  // 2. 동기부여 문구 + 프로그레스바 (박스 밖)
+  // 2. 동기부여 문구 (모든 종목 공통)
   html += motivateHtml;
 
   if (isCardio) {
-    // 유산소: 박스 안에 입력
+    // 유산소: 카드 안에 분 입력 (프로그레스바 없음)
     html +=
       '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
         '<div class="ex-card-body">' +
           '<div class="cardio-input">' +
             '<input type="number" class="cardio-min-input" id="cardioMin-' + exIdx + '" ' +
-              'value="' + (exData.sets[0] ? exData.sets[0].reps : '') + '" placeholder="분" inputmode="numeric">' +
+              'value="' + (exData.sets[0] ? exData.sets[0].reps : '') + '" placeholder="' + (lastCardioMin > 0 ? lastCardioMin : '분') + '" inputmode="numeric">' +
             '<span class="cardio-label">분</span>' +
             '<button class="set-check-btn' + (exData.sets[0] && exData.sets[0].done ? ' done' : '') + '" ' +
               'onclick="completeCardio(' + exIdx + ')">' +
@@ -382,11 +407,48 @@ function renderExerciseCard(exIdx) {
           '</div>' +
         '</div>' +
       '</div>';
+  } else if (isBodyweight) {
+    // 맨몸: 프로그레스바 (횟수 기준) + 세트 테이블 (KG 없음)
+    var todayReps = 0;
+    var lastTotalReps = 0;
+    for (var i = 0; i < exData.sets.length; i++) {
+      if (exData.sets[i].done) todayReps += exData.sets[i].reps || 0;
+    }
+    if (lastSets) {
+      for (var i = 0; i < lastSets.length; i++) lastTotalReps += lastSets[i].reps || 0;
+    }
+    html += renderBodyweightProgress(todayReps, lastTotalReps, lastSetCount, doneCount);
+
+    html +=
+      '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
+        '<div class="ex-card-body" id="exBody-' + exIdx + '">' +
+          '<table class="set-table">' +
+            '<thead><tr>' +
+              '<th class="st-set"></th>' +
+              '<th class="st-reps">횟수</th>' +
+              '<th class="st-chk"></th>' +
+            '</tr></thead>' +
+            '<tbody>';
+
+    var nextShown = false;
+    for (var s = 0; s < exData.sets.length; s++) {
+      if (exData.sets[s].done) {
+        html += renderSetRow(exIdx, s);
+      } else if (!nextShown) {
+        html += renderSetRow(exIdx, s);
+        nextShown = true;
+      }
+    }
+
+    html +=
+            '</tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>';
   } else {
-    // 프로그레스바 (박스 밖)
+    // 웨이트: 프로그레스바 + 세트 테이블 (KG + 횟수)
     html += renderSetProgress(todayVol, lastVol, lastSetCount, doneCount);
 
-    // 3. 세트 테이블 (박스 안)
     html +=
       '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
         '<div class="ex-card-body" id="exBody-' + exIdx + '">' +
@@ -456,6 +518,41 @@ function renderSetProgress(todayVol, lastVol, lastSetCount, doneCount) {
   return html;
 }
 
+function renderBodyweightProgress(todayReps, lastTotalReps, lastSetCount, doneCount) {
+  var html = '<div class="set-progress">';
+
+  if (lastTotalReps <= 0) {
+    html +=
+      '<div class="set-progress-text">' +
+        '<span style="color:var(--icon-inactive);font-size:12px">첫 기록</span>' +
+        '<span class="set-progress-vol">' + todayReps + '회</span>' +
+      '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  var pct = Math.round((todayReps / lastTotalReps) * 100);
+  var barPct = Math.min(pct, 100);
+  var isBurst = pct >= 100 && todayReps > 0;
+  var diff = todayReps - lastTotalReps;
+
+  if (isBurst && diff > 0) {
+    html += '<div class="set-progress-burst">🔥 지난번 돌파! +' + diff + '회</div>';
+  }
+
+  html +=
+    '<div class="set-progress-bar-wrap">' +
+      '<div class="set-progress-bar' + (isBurst ? ' burst' : '') + '" style="width:' + barPct + '%"></div>' +
+    '</div>' +
+    '<div class="set-progress-text">' +
+      '<span class="set-progress-pct' + (isBurst ? ' burst' : '') + '">' + (todayReps > 0 ? pct + '%' : '') + '</span>' +
+      '<span class="set-progress-vol">' + todayReps + ' / ' + lastTotalReps + '회</span>' +
+    '</div>';
+
+  html += '</div>';
+  return html;
+}
+
 // ══ 중량/횟수 증감 ══
 function getWeightDelta(exerciseId) {
   var meta = getExercise(exerciseId);
@@ -505,6 +602,7 @@ function renderSetRow(exIdx, setIdx) {
   var exData = _currentSession.exercises[exIdx];
   var setData = exData.sets[setIdx];
   var meta = getExercise(exData.exerciseId);
+  var isBodyweight = meta && meta.equipment === 'bodyweight';
   var lastSets = getLastExerciseSets(exData.exerciseId);
   var prev = lastSets && lastSets[setIdx] ? lastSets[setIdx] : null;
 
@@ -512,9 +610,29 @@ function renderSetRow(exIdx, setIdx) {
   if (setData.done) rowClass += ' set-done';
   if (setData.isPR) rowClass += ' set-pr';
 
-  var html =
-    '<tr class="' + rowClass + '" id="setRow-' + exIdx + '-' + setIdx + '">' +
-      '<td><span class="set-num">' + (setIdx + 1) + '</span></td>' +
+  var html = '<tr class="' + rowClass + '" id="setRow-' + exIdx + '-' + setIdx + '">';
+
+  // 세트 번호
+  html += '<td><span class="set-num">' + (setIdx + 1) + '</span></td>';
+
+  if (isBodyweight) {
+    // 맨몸: 횟수만
+    html +=
+      '<td>' +
+        '<div class="set-adjust-group">' +
+          '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',-1)">－</button>' +
+          '<input type="text" class="set-input' + (setData.done ? ' filled' : '') + '" ' +
+            'id="setR-' + exIdx + '-' + setIdx + '" ' +
+            'value="' + (setData.reps || '') + '" ' +
+            'placeholder="' + (prev ? prev.reps : (meta ? meta.defaultReps : '')) + '" ' +
+            'inputmode="numeric" ' +
+            'onfocus="this.select()">' +
+          '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',1)">＋</button>' +
+        '</div>' +
+      '</td>';
+  } else {
+    // 웨이트: KG + gap + 횟수
+    html +=
       '<td>' +
         '<div class="set-adjust-group">' +
           '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'weight\',-1)">－</button>' +
@@ -539,15 +657,19 @@ function renderSetRow(exIdx, setIdx) {
             'onfocus="this.select()">' +
           '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',1)">＋</button>' +
         '</div>' +
-      '</td>' +
-      '<td>' +
-        '<button class="set-check-btn' + (setData.done ? ' done' : '') + '" ' +
-          'onclick="completeSet(' + exIdx + ',' + setIdx + ')">' +
-          '✓' +
-        '</button>' +
-      '</td>' +
-    '</tr>';
+      '</td>';
+  }
 
+  // 체크 버튼
+  html +=
+    '<td>' +
+      '<button class="set-check-btn' + (setData.done ? ' done' : '') + '" ' +
+        'onclick="completeSet(' + exIdx + ',' + setIdx + ')">' +
+        '✓' +
+      '</button>' +
+    '</td>';
+
+  html += '</tr>';
   return html;
 }
 
@@ -561,12 +683,16 @@ function completeSet(exIdx, setIdx) {
   var exData = _currentSession.exercises[exIdx];
   var setData = exData.sets[setIdx];
   var meta = getExercise(exData.exerciseId);
+  var isBodyweight = meta && (meta.equipment === 'bodyweight' || meta.equipment === 'cardio');
 
-  // 입력값 읽기 (비어있으면 placeholder=지난번 값 사용)
+  // 입력값 읽기
   var wInput = document.getElementById('setW-' + exIdx + '-' + setIdx);
   var rInput = document.getElementById('setR-' + exIdx + '-' + setIdx);
 
-  var w = parseFloat(wInput.value) || parseFloat(wInput.placeholder) || 0;
+  var w = 0;
+  if (wInput) {
+    w = parseFloat(wInput.value) || parseFloat(wInput.placeholder) || 0;
+  }
   var r = parseInt(rInput.value) || parseInt(rInput.placeholder) || 0;
 
   // 완료 해제(토글 off)인 경우 바로 처리
@@ -579,7 +705,6 @@ function completeSet(exIdx, setIdx) {
   }
 
   // 완료 처리 전: 중량 0 검증 (맨몸/유산소 제외)
-  var isBodyweight = meta && (meta.equipment === 'bodyweight' || meta.equipment === 'cardio');
   if (!isBodyweight && w <= 0) {
     showConfirm('중량을 입력하세요', function() {});
     return;
