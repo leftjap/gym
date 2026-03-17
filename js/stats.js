@@ -26,6 +26,7 @@ function renderStatsScreen() {
     (function(cell) {
       var dateStr = cell.getAttribute('data-date');
       if (!dateStr) return;
+      var hasData = cell.getAttribute('data-has-data') === '1';
 
       var timer = null;
       var triggered = false;
@@ -36,13 +37,16 @@ function renderStatsScreen() {
         triggered = false;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
+
+        // 데이터 없는 날은 롱프레스 바인딩 안 함
+        if (!hasData) return;
+
         cell.classList.add('long-pressing');
 
         timer = setTimeout(function() {
           triggered = true;
           cell.classList.remove('long-pressing');
 
-          // 롱프레스: 선택 상태 반영 (DOM 교체 없이)
           var allCells = container.querySelectorAll('.stats-cal-cell');
           for (var k = 0; k < allCells.length; k++) {
             allCells[k].classList.remove('selected');
@@ -87,7 +91,9 @@ function renderStatsScreen() {
           return;
         }
 
-        // 짧은 탭: DOM 교체 없이 클래스 전환 + 워크아웃 카드만 갱신
+        // 짧은 탭: 데이터 있는 날만 선택
+        if (!hasData) return;
+
         var allCells = container.querySelectorAll('.stats-cal-cell');
         for (var k = 0; k < allCells.length; k++) {
           allCells[k].classList.remove('selected');
@@ -214,6 +220,7 @@ function renderStatsMonthCal() {
     var isFuture = dateStr > todayStr;
     var vol = dayVolumes[dateStr] || 0;
     var hasPR = prDates[dateStr] || false;
+    var hasData = vol > 0;
 
     var cellClass = 'stats-cal-cell';
     if (isToday) cellClass += ' today';
@@ -226,9 +233,8 @@ function renderStatsMonthCal() {
 
     var volText = vol > 0 ? formatNum(vol) : '';
 
-    // onclick 제거 — 터치 이벤트로 처리
     html +=
-      '<div class="' + cellClass + '" data-date="' + dateStr + '" data-future="' + (isFuture ? '1' : '0') + '">' +
+      '<div class="' + cellClass + '" data-date="' + dateStr + '" data-future="' + (isFuture ? '1' : '0') + '" data-has-data="' + (hasData ? '1' : '0') + '">' +
         '<div class="stats-cal-body">' +
           '<div class="stats-cal-num">' + d + '</div>' +
           '<div class="' + volClass + '">' + volText + '</div>' +

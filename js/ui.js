@@ -358,6 +358,7 @@ function renderWeekCal() {
     var isSelected = dateStr === _selectedWeekDate;
     var vol = getDayVolume(dateStr);
     var hasPR = hasPROnDate(dateStr);
+    var hasData = vol > 0;
 
     var dayClass = 'week-day';
     if (isToday) dayClass += ' today';
@@ -371,7 +372,7 @@ function renderWeekCal() {
     var volText = vol > 0 ? formatNum(vol) : '';
 
     html +=
-      '<div class="' + dayClass + '" data-date="' + dateStr + '" data-future="' + (isFuture ? '1' : '0') + '">' +
+      '<div class="' + dayClass + '" data-date="' + dateStr + '" data-future="' + (isFuture ? '1' : '0') + '" data-has-data="' + (hasData ? '1' : '0') + '">' +
         '<div class="week-day-dow">' + dows[i] + '</div>' +
         '<div class="week-day-body">' +
           '<div class="week-day-num">' + dayNum + '</div>' +
@@ -389,6 +390,7 @@ function renderWeekCal() {
     (function(dayEl) {
       var dateStr = dayEl.getAttribute('data-date');
       var isFuture = dayEl.getAttribute('data-future') === '1';
+      var hasData = dayEl.getAttribute('data-has-data') === '1';
       if (isFuture) return;
 
       var timer = null;
@@ -400,17 +402,19 @@ function renderWeekCal() {
         triggered = false;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
+
+        // 데이터 없는 날은 롱프레스 바인딩 안 함
+        if (!hasData) return;
+
         dayEl.classList.add('long-pressing');
 
         timer = setTimeout(function() {
           triggered = true;
           dayEl.classList.remove('long-pressing');
 
-          // 롱프레스: 선택 + 삭제 확인
           _selectedWeekDate = dateStr;
           renderLastWorkoutCard();
 
-          // 선택 상태 시각 반영 (DOM 교체 없이)
           var allDays = el.querySelectorAll('.week-day');
           for (var k = 0; k < allDays.length; k++) {
             allDays[k].classList.remove('selected');
@@ -454,7 +458,9 @@ function renderWeekCal() {
           return;
         }
 
-        // 짧은 탭: DOM 교체 없이 클래스 전환
+        // 짧은 탭: 데이터 있는 날만 선택 전환
+        if (!hasData) return;
+
         var allDays = el.querySelectorAll('.week-day');
         for (var k = 0; k < allDays.length; k++) {
           allDays[k].classList.remove('selected');
