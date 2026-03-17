@@ -1159,7 +1159,7 @@ input {
 }
 
 .stats-cal-cell:active:not(.empty):not(.future) {
-  background: rgba(0,0,0,0.03);
+  background: none;
 }
 
 .stats-cal-cell.future {
@@ -1192,7 +1192,7 @@ input {
   aspect-ratio: 1;
   justify-content: center;
   box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-  transform: translate(-3px, -5px);
+  transform: translateY(-2px);
 }
 
 .stats-cal-cell.today.selected .stats-cal-body {
@@ -1202,7 +1202,7 @@ input {
   aspect-ratio: 1;
   justify-content: center;
   box-shadow: 0 8px 24px rgba(0,0,0,0.22), 0 3px 8px rgba(0,0,0,0.12);
-  transform: translate(-4px, -6px);
+  transform: translateY(-3px);
 }
 
 .stats-cal-num {
@@ -2611,7 +2611,7 @@ input {
 }
 
 .week-day:active {
-  background: rgba(0,0,0,0.03);
+  background: none;
 }
 
 /* 기본 상태: 떠오르지 않음 (today 포함) */
@@ -3369,8 +3369,7 @@ input {
 }
 
 .long-pressing {
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  transform: scale(0.95);
+  transition: opacity 0.3s ease;
   opacity: 0.6;
 }
 
