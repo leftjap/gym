@@ -3503,20 +3503,31 @@ input {
 }
 
 @keyframes loadingBounce {
-  0% {
+  0%, 100% {
     transform: translateY(0);
-  }
-  25% {
-    transform: translateY(-16px);
   }
   50% {
-    transform: translateY(0);
+    transform: translateY(-24px);
   }
-  75% {
-    transform: translateY(-9px);
+}
+
+.loading-shadow {
+  width: 80px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  margin-top: 12px;
+  animation: loadingShadow 1.6s ease-in-out infinite;
+}
+
+@keyframes loadingShadow {
+  0%, 100% {
+    transform: scaleX(1);
+    opacity: 0.15;
   }
-  100% {
-    transform: translateY(0);
+  50% {
+    transform: scaleX(0.6);
+    opacity: 0.06;
   }
 }
 
