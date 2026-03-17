@@ -3491,7 +3491,7 @@ input {
   border: 4px solid var(--white);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 1px 6px rgba(0, 0, 0, 0.08);
   object-fit: cover;
-  animation: loadingBounce 1.6s ease-in-out infinite;
+  animation: loadingBounce 1.3s ease-in-out infinite;
 }
 
 .loading-text {
@@ -3517,7 +3517,7 @@ input {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.1);
   margin-top: 12px;
-  animation: loadingShadow 1.6s ease-in-out infinite;
+  animation: loadingShadow 1.3s ease-in-out infinite;
 }
 
 @keyframes loadingShadow {
