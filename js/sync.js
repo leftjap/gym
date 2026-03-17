@@ -109,12 +109,26 @@ function syncFromServer(callback, silent) {
         return;
       }
 
-      // 서버 데이터를 로컬에 덮어쓰기
-      if (p.sessions) S(K.sessions, p.sessions);
-      if (p.prs) S(K.prs, p.prs);
-      if (p.inbody) S(K.inbody, p.inbody);
-      if (p.customExercises) S(K.customExercises, p.customExercises);
-      if (p.hiddenExercises) S(K.hiddenExercises, p.hiddenExercises);
+      // 타임스탬프 비교: 서버가 로컬보다 새로운 경우에만 덮어쓰기
+      var serverTime = p.lastSync ? new Date(p.lastSync).getTime() : 0;
+      var localTime = getLastSyncTime() ? new Date(getLastSyncTime()).getTime() : 0;
+
+      if (serverTime >= localTime) {
+        // 서버가 같거나 새로움 → 서버 데이터로 업데이트
+        if (p.sessions) S(K.sessions, p.sessions);
+        if (p.prs) S(K.prs, p.prs);
+        if (p.inbody) S(K.inbody, p.inbody);
+        if (p.customExercises) S(K.customExercises, p.customExercises);
+        if (p.hiddenExercises !== undefined) S(K.hiddenExercises, p.hiddenExercises);
+      } else {
+        // 로컬이 더 새로움 → 서버 덮어쓰기 건너뜀, 로컬을 서버에 업로드
+        console.log('로컬이 서버보다 최신 — 서버 덮어쓰기 건너뜀');
+        saveLastSyncTime();
+        if (!silent) showSyncToast('saved');
+        syncToServer(callback, true);
+        return;
+      }
+
       // exerciseIcons: 서버와 로컬을 병합 (로컬 우선)
       var serverIcons = p.exerciseIcons || {};
       var localIcons = L(K.exerciseIcons) || {};

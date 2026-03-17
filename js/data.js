@@ -539,6 +539,7 @@ function deleteSessionsByDate(dateStr) {
   var sessions = getSessions().filter(function(s) { return s.date !== dateStr; });
   saveSessions(sessions);
   recalcAllPRs();
+  saveLastSyncTime();
 }
 
 // ══ 특정 세션에서 특정 종목만 삭제 ══
@@ -590,6 +591,7 @@ function deleteExerciseFromSession(sessionId, exerciseId) {
   }
 
   recalcAllPRs();
+  saveLastSyncTime();
 }
 
 // ══ PR 전체 재계산 ══

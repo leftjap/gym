@@ -14,6 +14,18 @@ function init() {
   // 메인 화면 표시 (로컬 데이터로 즉시)
   showScreen('home');
 
+  // 서버 더미 데이터 정리 (1회만 실행)
+  // 서버에 남아있는 옛 더미 데이터를 로컬(현재 상태)로 덮어씀
+  var serverCleaned = L('wk_server_cleaned_v1');
+  if (!serverCleaned) {
+    syncToServer(function(success) {
+      if (success) {
+        S('wk_server_cleaned_v1', true);
+      }
+    }, true);
+    return; // 첫 실행 시 서버 정리만 하고 syncFromServer는 건너뜀
+  }
+
   // 서버 동기화 — silent 모드 (성공 시 토스트 없음, 실패 시 인라인 배너)
   syncFromServer(function(success) {
     if (success) {

@@ -945,3 +945,38 @@ console.log('감시 시작');
 | 모든 버튼/셀 탭 | 회색 하이라이트 미노출 |
 | stats 월 이동(◀▶) | 정상 작동 |
 | 운동 화면 → 설정 → 복귀 | 기존 플로우 정상 유지 |
+
+---
+
+## 20. 서버 더미 데이터 정리 + 동기화 보호 (2026-03-17)
+
+### 근본 원인
+`initDummyData()`를 비활성화해도, GAS 서버에 이미 저장된 더미 데이터가 앱 시작 시
+`syncFromServer()`를 통해 매번 로컬에 덮어써지고 있었음.
+
+### 수정 사항
+1. **app.js**: 1회성 서버 정리 (`wk_server_cleaned_v1` 플래그)
+   - 플래그 없으면 → 현재 로컬을 서버에 업로드 후 `syncFromServer` 건너뜀
+   - 플래그 있으면 → 정상 `syncFromServer` 실행
+2. **sync.js**: `syncFromServer`에 타임스탬프 비교 추가
+   - 서버 `lastSync` ≥ 로컬 `lastSync` → 서버 데이터 수신
+   - 서버 `lastSync` < 로컬 `lastSync` → 서버 덮어쓰기 건너뜀 + 로컬→서버 업로드
+3. **settings.js**: 설정 변경 시 `syncToServer` 호출 전에 `saveLastSyncTime()` 호출
+   - `onToggleHideExercise()`, `saveNewExercise()`, `saveExerciseIcon()` 각각에 추가
+4. **data.js**: 세션 삭제 시 `saveLastSyncTime()` 호출
+   - `deleteSessionsByDate()`, `deleteExerciseFromSession()` 각각에 추가
+
+### 보호 매커니즘 요약
+로컬 변경 → `saveLastSyncTime()` 즉시 → `syncToServer()` → 서버 `lastSync` 갱신
+앱 재시작 → `syncFromServer()` → 타임스탬프 비교 → 서버가 오래되면 건너뜀
+
+### 검증 체크리스트
+| 항목 | 예상 동작 |
+|---|---|
+| 첫 실행 후 서버에 더미 데이터 남아있지 않음 | 로컬 → 서버 업로드로 서버 정리 |
+| 두 번째 실행 시 더미 데이터 미노출 | 서버에 빈 데이터, 정상 동기화 |
+| 아이콘 URL 입력 후 앱 재시작 | 아이콘 유지 |
+| 종목 숨김 후 앱 재시작 | 숨김 상태 유지 |
+| 기록 삭제 후 앱 재시작 | 삭제 상태 유지 |
+| 오프라인에서 변경 → 온라인 복귀 | 로컬 데이터 서버에 업로드 |
+| 다른 기기에서 운동 후 동기화 | 정상 수신 |

@@ -177,6 +177,7 @@ function renderSettingsExerciseList() {
 function onToggleHideExercise(id) {
   toggleHideExercise(id);
   renderSettings();
+  saveLastSyncTime();
   if (typeof syncToServer === 'function') syncToServer(null, true);
 }
 
@@ -301,6 +302,7 @@ function saveNewExercise() {
 
   closeAddExerciseForm();
   renderSettings();
+  saveLastSyncTime();
   if (typeof syncToServer === 'function') syncToServer(null, true);
 }
 
@@ -358,6 +360,7 @@ function saveExerciseIcon(exerciseId) {
   setExerciseIcon(exerciseId, iconUrl);
   closeEditExerciseIconForm();
   renderSettings();
+  saveLastSyncTime();
   if (typeof syncToServer === 'function') syncToServer(null, true);
 }
 
