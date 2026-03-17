@@ -82,8 +82,10 @@ input {
 
 /* ── 헤더 ── */
 .workout-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -414,7 +416,7 @@ input {
 
 /* ── 운동 화면 ── */
 .workout-content {
-  padding: 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 44px) 16px 16px 16px;
 }
 
 .part-selector {
