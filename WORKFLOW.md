@@ -352,7 +352,7 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 - `isCustomExercise(id)` — 커스텀 종목 여부 확인 (id가 'custom_'으로 시작)
 
 **더미 데이터:**
-- `initDummyData()` — 세션 6건, PR, 인바디 3건 생성 (데이터 없을 때만)
+- `initDummyData()` — 비활성화됨 (빈 함수). 실 사용 중이므로 더미 데이터 재생성 차단
 
 **종목 아이콘 관리:**
 - `getExerciseIcons()` — 전체 아이콘 맵 반환 { exerciseId: url }
@@ -555,7 +555,7 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 **역할:** 앱 초기화, 진입점.
 
 **초기화:**
-- `init()` — 더미 데이터 → 세션 복원 → 월 설정 → 홈 표시
+- `init()` — 세션 복원 → 월 설정 → 홈 표시 → 서버 동기화(성공 시 홈 갱신)
 - `window.onload` → `init()`
 
 ---

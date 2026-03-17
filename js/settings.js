@@ -153,6 +153,7 @@ function renderSettingsExerciseList() {
 function onToggleHideExercise(id) {
   toggleHideExercise(id);
   renderSettings();
+  if (typeof syncToServer === 'function') syncToServer(null, true);
 }
 
 // ══ 커스텀 종목 삭제 ══
@@ -161,6 +162,7 @@ function onDeleteCustomExercise(id) {
     if (confirmed) {
       deleteCustomExercise(id);
       renderSettings();
+      if (typeof syncToServer === 'function') syncToServer(null, true);
     }
   });
 }
@@ -275,6 +277,7 @@ function saveNewExercise() {
 
   closeAddExerciseForm();
   renderSettings();
+  if (typeof syncToServer === 'function') syncToServer(null, true);
 }
 
 function closeAddExerciseForm() {
@@ -331,6 +334,7 @@ function saveExerciseIcon(exerciseId) {
   setExerciseIcon(exerciseId, iconUrl);
   closeEditExerciseIconForm();
   renderSettings();
+  if (typeof syncToServer === 'function') syncToServer(null, true);
 }
 
 function closeEditExerciseIconForm() {
