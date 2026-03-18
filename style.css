@@ -591,6 +591,26 @@ input {
   color: var(--dark);
 }
 
+/* ── 종목 네비 드래그 피드백 ── */
+.ex-nav-btn.nav-dragging {
+  opacity: 0.3;
+  transform: scale(0.9);
+}
+
+.ex-nav-btn.nav-drop-before {
+  border-left: 3px solid var(--accent);
+  padding-left: 11px;
+}
+
+.ex-nav-btn.nav-drop-after {
+  border-right: 3px solid var(--accent);
+  padding-right: 11px;
+}
+
+.nav-ghost {
+  transition: none !important;
+}
+
 /* ── 종목 카드 ── */
 .ex-card {
   background: var(--white);
