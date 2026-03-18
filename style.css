@@ -714,9 +714,6 @@ input {
   gap: 12px;
   padding: 12px 4px;
   user-select: none;
-  background: #FFFFFF;
-  border-radius: 12px;
-  margin: 0 16px;
 }
 
 .ex-card-header-left {
@@ -789,6 +786,8 @@ input {
   border-radius: 12px;
   object-fit: contain;
   flex-shrink: 0;
+  position: relative;
+  isolation: isolate;
   mix-blend-mode: multiply;
   background: transparent;
 }
