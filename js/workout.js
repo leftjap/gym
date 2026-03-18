@@ -209,7 +209,9 @@ function updateWorkoutHeader(inProgress) {
 
   if (inProgress) {
     if (timerEl) timerEl.style.display = 'inline';
-    if (tagsEl) tagsEl.innerHTML = '';
+    if (tagsEl) {
+      tagsEl.innerHTML = '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()">⋮</button>';
+    }
   } else {
     if (timerEl) timerEl.style.display = 'none';
     if (tagsEl) tagsEl.innerHTML = '';
@@ -245,15 +247,26 @@ function renderExerciseCards() {
   }
   if (_currentExerciseIndex < 0) _currentExerciseIndex = 0;
 
+  // 현재 종목의 부위 판별 (세로 막대바 색상용)
+  var currentExData = _currentSession.exercises[_currentExerciseIndex];
+  var currentMeta = currentExData ? getExercise(currentExData.exerciseId) : null;
+  var hasFilter = _headerFilterPart !== null;
+
   var html = '';
 
-  // 1. 부위탭 + 종목네비 그룹 영역 (하나의 카드)
-  html += '<div class="exercise-nav-group">';
+  // 1. 부위탭 + 종목네비 영역 (카드 없이 배치)
+  html += '<div class="exercise-nav-area">';
+
+  // 세로 막대바 (필터 활성 시 accent 색)
+  html += '<div class="exercise-nav-area-bar' + (hasFilter ? ' active' : '') + '"></div>';
+
+  html += '<div class="exercise-nav-area-content">';
 
   // 부위 탭 (여러 부위 선택 시에만 표시)
   if (_selectedParts.length > 1) {
-    html += '<div class="exercise-nav-parts">';
+    html += '<div class="exercise-nav-part-row">';
     for (var p = 0; p < _selectedParts.length; p++) {
+      if (p > 0) html += '<span class="exercise-nav-pipe">|</span>';
       var partInfo = getBodyPart(_selectedParts[p]);
       var isActive = (_headerFilterPart === _selectedParts[p]);
       html += '<button class="exercise-nav-part-tab' + (isActive ? ' active' : '') + '" ' +
@@ -262,17 +275,17 @@ function renderExerciseCards() {
         partInfo.name +
       '</button>';
     }
-    html += '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()" style="margin-left:auto;">⋮</button>';
-    html += '</div>';
-  } else {
-    html += '<div class="exercise-nav-parts" style="justify-content:flex-end;">';
-    html += '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()">⋮</button>';
     html += '</div>';
   }
 
   // 종목 네비게이션
   html += renderExerciseNav();
-  html += '</div>';
+
+  html += '</div>'; // exercise-nav-area-content
+  html += '</div>'; // exercise-nav-area
+
+  // 구분선
+  html += '<div class="exercise-nav-area-divider"></div>';
 
   // 2. 현재 종목 카드
   html += '<div id="exercise-cards">' + renderExerciseCard(_currentExerciseIndex) + '</div>';

@@ -517,36 +517,51 @@ input {
   background: #1a1a1a;
 }
 
-/* ── 부위탭+종목네비 그룹 ── */
-.exercise-nav-group {
-  background: var(--white);
-  border-radius: 14px;
+/* ── 부위탭+종목네비 영역 ── */
+.exercise-nav-area {
+  display: flex;
+  padding: 0 0 0 0;
   margin: 16px 0 0 0;
-  padding: 12px 0 4px 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
-.exercise-nav-parts {
+.exercise-nav-area-bar {
+  width: 4px;
+  border-radius: 2px;
+  background: var(--border-gray);
+  flex-shrink: 0;
+  margin-left: 16px;
+  transition: background 0.2s ease;
+}
+
+.exercise-nav-area-bar.active {
+  background: var(--accent);
+}
+
+.exercise-nav-area-content {
+  flex: 1;
+  min-width: 0;
+  padding-left: 12px;
+}
+
+.exercise-nav-part-row {
   display: flex;
-  gap: 0;
-  padding: 0 16px 8px 16px;
-  border-bottom: 1px solid var(--light-gray);
   align-items: center;
+  gap: 0;
+  padding: 4px 0 8px 0;
 }
 
 .exercise-nav-part-tab {
-  padding: 4px 12px 8px 12px;
-  font-size: 16px;
+  padding: 2px 8px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--gray);
   cursor: pointer;
-  position: relative;
-  transition: color 0.2s ease;
+  border: none;
+  background: none;
+  transition: color 0.2s ease, font-weight 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
-  border: none;
-  background: none;
 }
 
 .exercise-nav-part-tab.active {
@@ -554,21 +569,24 @@ input {
   color: var(--accent);
 }
 
-.exercise-nav-part-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 12px;
-  right: 12px;
-  height: 2px;
-  background: var(--accent);
-  border-radius: 1px;
-}
-
 .exercise-nav-part-tab.long-pressing {
   transform: scale(0.95);
   opacity: 0.7;
   transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
+}
+
+.exercise-nav-pipe {
+  font-size: 14px;
+  color: var(--border-gray);
+  font-weight: 300;
+  padding: 0 2px;
+  user-select: none;
+}
+
+.exercise-nav-area-divider {
+  height: 1px;
+  background: var(--border-gray);
+  margin: 8px 16px 0 16px;
 }
 
 /* ── 종목 네비게이션 ── */
@@ -613,10 +631,10 @@ input {
 }
 
 .ex-nav-btn.active {
-  background: transparent;
+  background: var(--accent-bg);
   color: var(--dark);
   font-weight: 600;
-  border-color: var(--dark);
+  border-color: var(--accent);
   box-shadow: none;
 }
 
