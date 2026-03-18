@@ -8,8 +8,6 @@ var _restAnimFrame = null;
 var _currentExerciseIndex = 0;  // 현재 보고 있는 종목 인덱스
 var _isFinishing = false;  // finishWorkout 중복 실행 방지
 var _headerFilterPart = null;  // 헤더 부위 탭 필터 (null이면 전체)
-// 종목 드래그 순서 변경
-var _dragState = null;  // { startIdx, currentIdx, startX, ghostEl, scrollEl }
 
 // ══ 화면 진입 ══
 function renderWorkoutScreen() {
@@ -285,6 +283,9 @@ function renderExerciseCards() {
   html += '<div style="height:80px"></div>';
 
   container.innerHTML = html;
+
+  // 3. 종목 네비 버튼에 롱프레스(종목 완료) 바인딩
+  bindNavLongPress();
 }
 
 // ══ 종목 네비게이션 버튼바 ══
@@ -311,9 +312,7 @@ function renderExerciseNav() {
     var btnContent = allDone ? '✓ ' + name : name;
 
     html += '<button class="' + btnClass + '" data-ex-idx="' + i + '" ' +
-      'ontouchstart="onNavBtnTouchStart(' + i + ',event)" ' +
-      'ontouchmove="onNavBtnTouchMove(event)" ' +
-      'ontouchend="onNavBtnTouchEnd(' + i + ',event)">' +
+      'onclick="switchExercise(' + i + ')">' +
       btnContent + '</button>';
   }
 
@@ -791,195 +790,84 @@ function bindLongPress(element, callback, duration) {
 }
 
 // ══ 종목 네비 드래그 순서 변경 ══
-var _navLongPressTimer = null;
-
-function onNavBtnTouchStart(exIdx, e) {
-  // 롱프레스 감지 시작
-  var touch = e.touches[0];
-  var startX = touch.clientX;
-  var startY = touch.clientY;
-
-  _navLongPressTimer = setTimeout(function() {
-    _navLongPressTimer = null;
-    // 롱프레스 진입 → 드래그 모드 시작
-    if (navigator.vibrate) navigator.vibrate(30);
-    startNavDrag(exIdx, startX);
-  }, 500);
-
-  // 짧은 탭(스크롤)을 위해 시작 위치 기록
-  _dragState = { startX: startX, startY: startY, isDragging: false, startIdx: exIdx, currentIdx: exIdx, ghostEl: null, scrollEl: null };
-}
-
-function onNavBtnTouchMove(e) {
-  if (!_dragState) return;
-
-  var touch = e.touches[0];
-
-  // 롱프레스 진입 전이면 이동 거리 체크하여 롱프레스 취소 (스크롤 허용)
-  if (!_dragState.isDragging) {
-    var dx = Math.abs(touch.clientX - _dragState.startX);
-    var dy = Math.abs(touch.clientY - _dragState.startY);
-    if (dx > 10 || dy > 10) {
-      // 스크롤 의도 → 롱프레스 취소
-      if (_navLongPressTimer) {
-        clearTimeout(_navLongPressTimer);
-        _navLongPressTimer = null;
-      }
-    }
-    return;
-  }
-
-  // 드래그 모드
-  e.preventDefault();
-  moveNavDrag(touch.clientX);
-}
-
-function onNavBtnTouchEnd(exIdx, e) {
-  // 롱프레스 타이머 취소
-  if (_navLongPressTimer) {
-    clearTimeout(_navLongPressTimer);
-    _navLongPressTimer = null;
-  }
-
-  if (_dragState && _dragState.isDragging) {
-    // 드래그 완료 → 순서 변경 적용
-    endNavDrag();
-    e.preventDefault();
-  } else {
-    // 일반 탭 → 종목 전환
-    switchExercise(exIdx);
-    _dragState = null;
-  }
-}
-
-function startNavDrag(exIdx, startX) {
-  if (!_dragState) return;
-  _dragState.isDragging = true;
-
+function bindNavLongPress() {
   var scrollEl = document.getElementById('exNavScroll');
-  _dragState.scrollEl = scrollEl;
-
-  // 드래그 중인 버튼에 시각 효과
-  var btns = scrollEl ? scrollEl.querySelectorAll('.ex-nav-btn') : [];
-  for (var i = 0; i < btns.length; i++) {
-    var idx = parseInt(btns[i].getAttribute('data-ex-idx'));
-    if (idx === exIdx) {
-      btns[i].classList.add('nav-dragging');
-    }
-  }
-
-  // 고스트 엘리먼트 생성
-  var srcBtn = null;
-  for (var i = 0; i < btns.length; i++) {
-    if (parseInt(btns[i].getAttribute('data-ex-idx')) === exIdx) {
-      srcBtn = btns[i];
-      break;
-    }
-  }
-
-  if (srcBtn) {
-    var ghost = srcBtn.cloneNode(true);
-    ghost.className = 'ex-nav-btn nav-ghost';
-    ghost.style.position = 'fixed';
-    ghost.style.zIndex = '9999';
-    ghost.style.pointerEvents = 'none';
-    ghost.style.opacity = '0.85';
-    ghost.style.transform = 'scale(1.08)';
-    ghost.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)';
-    var rect = srcBtn.getBoundingClientRect();
-    ghost.style.top = rect.top + 'px';
-    ghost.style.left = rect.left + 'px';
-    ghost.style.width = rect.width + 'px';
-    ghost.style.height = rect.height + 'px';
-    document.body.appendChild(ghost);
-    _dragState.ghostEl = ghost;
-    _dragState.ghostOffsetX = startX - rect.left;
-  }
-}
-
-function moveNavDrag(clientX) {
-  if (!_dragState || !_dragState.isDragging) return;
-
-  // 고스트 이동
-  if (_dragState.ghostEl) {
-    _dragState.ghostEl.style.left = (clientX - (_dragState.ghostOffsetX || 0)) + 'px';
-  }
-
-  // 드롭 대상 찾기
-  var scrollEl = _dragState.scrollEl;
   if (!scrollEl) return;
 
   var btns = scrollEl.querySelectorAll('.ex-nav-btn');
-  var newIdx = _dragState.startIdx;
-
   for (var i = 0; i < btns.length; i++) {
-    var rect = btns[i].getBoundingClientRect();
-    var midX = rect.left + rect.width / 2;
-    var idx = parseInt(btns[i].getAttribute('data-ex-idx'));
+    (function(btn) {
+      var exIdx = parseInt(btn.getAttribute('data-ex-idx'));
+      if (isNaN(exIdx)) return;
 
-    if (clientX < midX) {
-      newIdx = idx;
-      break;
-    }
-    newIdx = idx;
-  }
+      var timer = null;
+      var triggered = false;
+      var startX = 0;
+      var startY = 0;
 
-  if (newIdx !== _dragState.currentIdx) {
-    _dragState.currentIdx = newIdx;
+      btn.addEventListener('touchstart', function(e) {
+        triggered = false;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        btn.classList.add('long-pressing');
 
-    // 버튼들에 시각 피드백 (드롭 위치 표시)
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].classList.remove('nav-drop-before', 'nav-drop-after');
-      var bIdx = parseInt(btns[i].getAttribute('data-ex-idx'));
-      if (bIdx === newIdx && newIdx !== _dragState.startIdx) {
-        if (newIdx < _dragState.startIdx) {
-          btns[i].classList.add('nav-drop-before');
-        } else {
-          btns[i].classList.add('nav-drop-after');
+        timer = setTimeout(function() {
+          triggered = true;
+          btn.classList.remove('long-pressing');
+
+          // 종목 완료 처리
+          var exData = _currentSession.exercises[exIdx];
+          if (!exData) return;
+          var meta = getExercise(exData.exerciseId);
+          var name = meta ? meta.name : '';
+
+          var doneCount = 0;
+          for (var k = 0; k < exData.sets.length; k++) {
+            if (exData.sets[k].done) doneCount++;
+          }
+
+          if (doneCount === 0) {
+            showConfirm('완료된 세트가 없습니다.\n세트를 먼저 완료해주세요.', function(confirmed) {});
+            return;
+          }
+
+          showConfirm(name + ' 종목을 완료하시겠습니까?', function(confirmed) {
+            if (confirmed) {
+              completeExercise(exIdx);
+            }
+          });
+        }, 500);
+      }, { passive: true });
+
+      btn.addEventListener('touchmove', function(e) {
+        if (!timer) return;
+        var dx = Math.abs(e.touches[0].clientX - startX);
+        var dy = Math.abs(e.touches[0].clientY - startY);
+        if (dx > 15 || dy > 15) {
+          clearTimeout(timer);
+          timer = null;
+          triggered = false;
+          btn.classList.remove('long-pressing');
         }
-      }
-    }
+      }, { passive: true });
+
+      btn.addEventListener('touchend', function(e) {
+        if (timer) { clearTimeout(timer); timer = null; }
+        btn.classList.remove('long-pressing');
+        if (triggered) {
+          e.preventDefault();
+          e.stopPropagation();
+          triggered = false;
+        }
+      }, { passive: false });
+
+      btn.addEventListener('touchcancel', function() {
+        if (timer) { clearTimeout(timer); timer = null; }
+        triggered = false;
+        btn.classList.remove('long-pressing');
+      }, { passive: true });
+    })(btns[i]);
   }
-}
-
-function endNavDrag() {
-  if (!_dragState) return;
-
-  var fromIdx = _dragState.startIdx;
-  var toIdx = _dragState.currentIdx;
-
-  // 고스트 제거
-  if (_dragState.ghostEl) {
-    _dragState.ghostEl.remove();
-  }
-
-  // 실제 순서 변경
-  if (fromIdx !== toIdx && _currentSession) {
-    var exercises = _currentSession.exercises;
-    if (fromIdx >= 0 && fromIdx < exercises.length && toIdx >= 0 && toIdx < exercises.length) {
-      var moved = exercises.splice(fromIdx, 1)[0];
-      exercises.splice(toIdx, 0, moved);
-
-      // sortOrder 재정렬
-      for (var i = 0; i < exercises.length; i++) {
-        exercises[i].sortOrder = i;
-      }
-
-      // 현재 보고 있는 종목 인덱스 보정
-      if (_currentExerciseIndex === fromIdx) {
-        _currentExerciseIndex = toIdx;
-      } else if (fromIdx < _currentExerciseIndex && toIdx >= _currentExerciseIndex) {
-        _currentExerciseIndex--;
-      } else if (fromIdx > _currentExerciseIndex && toIdx <= _currentExerciseIndex) {
-        _currentExerciseIndex++;
-      }
-
-      autoSaveSession();
-    }
-  }
-
-  _dragState = null;
-  renderExerciseCards();
 }
 
 function renderSetProgress(todayVol, lastVol, lastSetCount, doneCount) {
@@ -1110,7 +998,7 @@ function renderSetRow(exIdx, setIdx) {
   if (setData.done) rowClass += ' set-done';
   if (setData.isPR) rowClass += ' set-pr';
 
-  var focusHandler = 'onfocus="var v=this;setTimeout(function(){v.setSelectionRange(v.value.length,v.value.length)},0)"';
+  var focusHandler = 'onfocus="this.select()"';
 
   var html = '<tr class="' + rowClass + '" id="setRow-' + exIdx + '-' + setIdx + '">';
 

@@ -454,8 +454,9 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 - `startWorkout()` — 선택 확정, 세션 생성, 타이머 시작
 
 **종목/세트:**
-- `renderExerciseCards()` — 현재 종목 카드 + 전체 종목 버튼바 렌더
-- `renderExerciseNav()` — 전체 종목 네비게이션 버튼바 (현재 종목 active, 완료 종목 done) + 더보기 버튼
+- `renderExerciseCards()` — 현재 종목 카드 + 전체 종목 버튼바 렌더 + 롱프레스 바인딩
+- `renderExerciseNav()` — 전체 종목 네비게이션 버튼바 (현재 종목 active, 완료 종목 done)
+- `bindNavLongPress()` — 종목 네비 버튼 롱프레스 바인딩 (종목 완료 확인)
 - `switchExercise(exIdx)` — 종목 전환
 - `showExerciseListSheet()` — 전체 종목 목록 액션시트 표시 (현재 종목 강조, 완료 종목 체크)
 - `renderExerciseCard(exIdx)` — 단일 종목 카드 (카드헤더 + 동기부여 문구 + 진행 바 + 세트) — bodyweight/cardio 분기
@@ -590,7 +591,6 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 | _workoutTimerInterval | workout.js | 운동 경과 타이머 setInterval ID |
 | _currentExerciseIndex | workout.js | 현재 보고 있는 종목 인덱스 |
 | _isFinishing | workout.js | finishWorkout 중복 실행 방지 플래그 |
-| _longPressTimer | ui.js | CONTINUE 버튼 길게 누르기 타이머 ID |
 | _statsYM | stats.js | 통계 화면에서 보고 있는 월 (YYYY-MM) |
 | _statsSelectedDate | stats.js | 통계 화면 캘린더에서 선택된 날짜 |
 | _settingsSelectedPart | settings.js | 설정 화면에서 선택된 부위 ID (기본: 'chest') |
@@ -903,6 +903,7 @@ console.log('감시 시작');
 - [ ] 워밍업(W) 토글 제거
 - [ ] 운동 입력 전체 흐름 테스트
 - [ ] 인바디 입력 화면
+- [ ] 설정 화면에서 종목 순서 드래그 변경
 
 ### 2차 작업 (🔮)
 - [ ] 히어로 카드 (부위별 볼륨 랭킹)

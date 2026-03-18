@@ -3,11 +3,15 @@
 /* 모바일 탭 하이라이트 완전 제거 */
 *, *::before, *::after {
   -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 html {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
   -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* ── 컬러 변수 (모노톤 + 블루 포인트) ── */
@@ -61,6 +65,8 @@ body {
 input, button, textarea {
   font-family: inherit;
   font-size: inherit;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 button {
@@ -595,6 +601,12 @@ input {
 .ex-nav-btn.nav-dragging {
   opacity: 0.3;
   transform: scale(0.9);
+}
+
+.ex-nav-btn.long-pressing {
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
+  transform: scale(0.92);
+  opacity: 0.6;
 }
 
 .ex-nav-btn.nav-drop-before {
@@ -2981,12 +2993,22 @@ input {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0);
   z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  animation: modalOverlayIn 0.25s ease both;
+}
+
+@keyframes modalOverlayIn {
+  0% {
+    background: rgba(0, 0, 0, 0);
+  }
+  100% {
+    background: rgba(0, 0, 0, 0.5);
+  }
 }
 
 .confirm-modal {
@@ -2997,6 +3019,18 @@ input {
   width: 100%;
   text-align: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: modalPopIn 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes modalPopIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .confirm-modal-msg {
@@ -3425,7 +3459,14 @@ input {
 }
 
 .long-pressing {
-  transition: opacity 0.3s ease;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
+  transform: scale(0.95);
+  opacity: 0.7;
+}
+
+.ex-card-header-standalone.long-pressing {
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
+  transform: scale(0.97);
   opacity: 0.6;
 }
 
@@ -3436,7 +3477,7 @@ input {
   background: rgba(0, 0, 0, 0.4);
   z-index: 500;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
   pointer-events: none;
 }
 
@@ -3451,7 +3492,7 @@ input {
   z-index: 501;
   padding: 0 12px calc(max(12px, env(safe-area-inset-bottom)));
   transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
 .action-sheet.visible {
@@ -3709,7 +3750,7 @@ input {
 
 .wh-pipe-tab.wh-pipe-active {
   font-weight: 700;
-  color: var(--dark);
+  color: var(--accent);
 }
 
 .wh-pipe {
@@ -3718,11 +3759,6 @@ input {
   font-weight: 300;
   padding: 0 2px;
   user-select: none;
-}
-
-.ex-card-header-standalone.long-pressing {
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
 }
 
 .wh-settings-btn {
