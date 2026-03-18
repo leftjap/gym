@@ -497,11 +497,11 @@ function renderExerciseCard(exIdx) {
     : '';
   html +=
     '<div class="ex-card-header-standalone" id="exHeader-' + exIdx + '" ontouchstart="startExHeaderLongPress(' + exIdx + ',event)" ontouchend="cancelExHeaderLongPress()" ontouchmove="moveExHeaderLongPress(event)">' +
-      '<div class="ex-card-color" style="background:#e85040"></div>' +
-      exIconHtml +
-      '<div class="ex-card-info">' +
+      '<div class="ex-card-header-left">' +
+        '<div class="ex-card-color" style="background:#e85040"></div>' +
         '<div class="ex-card-name">' + meta.name + '</div>' +
       '</div>' +
+      exIconHtml +
       (allDone ? '<span class="ex-card-check">✓</span>' : '') +
     '</div>';
 
