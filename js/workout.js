@@ -296,33 +296,27 @@ function renderExerciseCards() {
 
 // ══ 종목 네비게이션 버튼바 ══
 function renderExerciseNav() {
+  var exercises = _currentSession ? _currentSession.exercises : [];
   var html = '<div class="exercise-nav">';
   html += '<div class="exercise-nav-scroll" id="exNavScroll">';
+  var isFirst = true;
 
-  for (var i = 0; i < _currentSession.exercises.length; i++) {
-    if (i > 0) {
+  for (var i = 0; i < exercises.length; i++) {
+    var ex = exercises[i];
+
+    // 부위 필터 적용 시 해당 부위가 아닌 종목은 완전히 스킵
+    if (_headerFilterPart !== null && ex.bodyPart !== _headerFilterPart) continue;
+
+    // 첫 번째가 아닌 경우에만 파이프 추가
+    if (!isFirst) {
       html += '<span class="exercise-nav-pipe-separator">|</span>';
     }
-    var exData = _currentSession.exercises[i];
-    var meta = getExercise(exData.exerciseId);
-    var name = meta ? meta.name : exData.exerciseId;
+    isFirst = false;
 
-    if (_headerFilterPart && meta && meta.bodyPart !== _headerFilterPart) continue;
-
-    var allDone = true;
-    for (var j = 0; j < exData.sets.length; j++) {
-      if (!exData.sets[j].done) { allDone = false; break; }
-    }
-
-    var btnClass = 'ex-nav-btn';
-    if (i === _currentExerciseIndex) btnClass += ' active';
-    else if (allDone) btnClass += ' done';
-
-    var btnContent = allDone ? '✓ ' + name : name;
-
-    html += '<button class="' + btnClass + '" data-ex-idx="' + i + '" ' +
-      'onclick="switchExercise(' + i + ')">' +
-      btnContent + '</button>';
+    var cls = 'ex-nav-btn';
+    if (i === _currentExerciseIndex) cls += ' active';
+    else if (isExerciseComplete(i)) cls += ' done';
+    html += '<button class="' + cls + '" data-idx="' + i + '">' + ex.name + '</button>';
   }
 
   html += '</div>';
