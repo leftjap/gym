@@ -209,32 +209,7 @@ function updateWorkoutHeader(inProgress) {
 
   if (inProgress) {
     if (timerEl) timerEl.style.display = 'inline';
-    if (tagsEl) {
-      var tagsHtml = '<div class="wh-pipe-group">';
-      for (var i = 0; i < _selectedParts.length; i++) {
-        if (i > 0) tagsHtml += '<span class="wh-pipe">|</span>';
-        var p = getBodyPart(_selectedParts[i]);
-        var isActive = (_headerFilterPart === _selectedParts[i]);
-        tagsHtml += '<span class="wh-pipe-tab' + (isActive ? ' wh-pipe-active' : '') + '" ' +
-          'onclick="filterByPart(\'' + _selectedParts[i] + '\')" ' +
-          'data-part-id="' + _selectedParts[i] + '">' +
-          p.name + '</span>';
-      }
-      tagsHtml += '</div>';
-      tagsHtml += '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()">⋮</button>';
-      tagsEl.innerHTML = tagsHtml;
-
-      // 부위 탭 롱프레스 바인딩
-      var pipeTabs = tagsEl.querySelectorAll('.wh-pipe-tab');
-      for (var ti = 0; ti < pipeTabs.length; ti++) {
-        (function(tab) {
-          var partId = tab.getAttribute('data-part-id');
-          bindLongPress(tab, function() {
-            openSettingsForPart(partId);
-          }, 500);
-        })(pipeTabs[ti]);
-      }
-    }
+    if (tagsEl) tagsEl.innerHTML = '';
   } else {
     if (timerEl) timerEl.style.display = 'none';
     if (tagsEl) tagsEl.innerHTML = '';
@@ -265,7 +240,6 @@ function renderExerciseCards() {
   var container = document.getElementById('workoutContent');
   if (!container || !_currentSession) return;
 
-  // 유효한 인덱스 확인
   if (_currentExerciseIndex >= _currentSession.exercises.length) {
     _currentExerciseIndex = _currentSession.exercises.length - 1;
   }
@@ -273,19 +247,46 @@ function renderExerciseCards() {
 
   var html = '';
 
-  // 1. 종목 네비게이션 버튼바 (상단)
+  // 1. 부위탭 + 종목네비 그룹 영역 (하나의 카드)
+  html += '<div class="exercise-nav-group">';
+
+  // 부위 탭 (여러 부위 선택 시에만 표시)
+  if (_selectedParts.length > 1) {
+    html += '<div class="exercise-nav-parts">';
+    for (var p = 0; p < _selectedParts.length; p++) {
+      var partInfo = getBodyPart(_selectedParts[p]);
+      var isActive = (_headerFilterPart === _selectedParts[p]);
+      html += '<button class="exercise-nav-part-tab' + (isActive ? ' active' : '') + '" ' +
+        'data-part-id="' + _selectedParts[p] + '" ' +
+        'onclick="filterByPart(\'' + _selectedParts[p] + '\')">' +
+        partInfo.name +
+      '</button>';
+    }
+    html += '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()" style="margin-left:auto;">⋮</button>';
+    html += '</div>';
+  } else {
+    html += '<div class="exercise-nav-parts" style="justify-content:flex-end;">';
+    html += '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()">⋮</button>';
+    html += '</div>';
+  }
+
+  // 종목 네비게이션
   html += renderExerciseNav();
+  html += '</div>';
 
   // 2. 현재 종목 카드
   html += '<div id="exercise-cards">' + renderExerciseCard(_currentExerciseIndex) + '</div>';
 
-  // 하단 고정 버튼과 겹치지 않도록 여백
+  // 하단 여백
   html += '<div style="height:80px"></div>';
 
   container.innerHTML = html;
 
-  // 3. 종목 네비 버튼에 롱프레스(종목 완료) 바인딩
+  // 3. 종목 네비 버튼 롱프레스(종목 완료) 바인딩
   bindNavLongPress();
+
+  // 4. 부위 탭 롱프레스(설정 진입) 바인딩
+  bindPartTabLongPress();
 }
 
 // ══ 종목 네비게이션 버튼바 ══
@@ -867,6 +868,20 @@ function bindNavLongPress() {
         btn.classList.remove('long-pressing');
       }, { passive: true });
     })(btns[i]);
+  }
+}
+
+function bindPartTabLongPress() {
+  var partTabs = document.querySelectorAll('.exercise-nav-part-tab');
+  for (var i = 0; i < partTabs.length; i++) {
+    (function(tab) {
+      var partId = tab.getAttribute('data-part-id');
+      if (!partId) return;
+
+      bindLongPress(tab, function() {
+        openSettingsForPart(partId);
+      }, 500);
+    })(partTabs[i]);
   }
 }
 

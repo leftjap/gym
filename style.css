@@ -12,6 +12,7 @@ html {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  background: var(--bg-gray);
 }
 
 /* ── 컬러 변수 (모노톤 + 블루 포인트) ── */
@@ -42,10 +43,6 @@ html, body {
   height: 100%;
   overflow-x: hidden;
   overscroll-behavior-x: none;
-}
-
-html {
-  background: var(--bg-gray);
 }
 
 body {
@@ -125,6 +122,8 @@ input {
   display: flex;
   gap: 4px;
   align-items: center;
+  width: 36px;
+  justify-content: flex-end;
 }
 
 .wh-center {
@@ -518,6 +517,60 @@ input {
   background: #1a1a1a;
 }
 
+/* ── 부위탭+종목네비 그룹 ── */
+.exercise-nav-group {
+  background: var(--white);
+  border-radius: 14px;
+  margin: 16px 0 0 0;
+  padding: 12px 0 4px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.exercise-nav-parts {
+  display: flex;
+  gap: 0;
+  padding: 0 16px 8px 16px;
+  border-bottom: 1px solid var(--light-gray);
+  align-items: center;
+}
+
+.exercise-nav-part-tab {
+  padding: 4px 12px 8px 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--gray);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  border: none;
+  background: none;
+}
+
+.exercise-nav-part-tab.active {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.exercise-nav-part-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+.exercise-nav-part-tab.long-pressing {
+  transform: scale(0.95);
+  opacity: 0.7;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), opacity 0.2s ease;
+}
+
 /* ── 종목 네비게이션 ── */
 .exercise-nav {
   display: flex;
@@ -534,6 +587,7 @@ input {
   overflow-x: auto;
   min-width: 0;
   -webkit-overflow-scrolling: touch;
+  padding: 0 16px;
 }
 
 .exercise-nav-scroll::-webkit-scrollbar {
