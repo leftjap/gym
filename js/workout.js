@@ -122,9 +122,12 @@ function renderWorkoutTimeline() {
 function startWorkout() {
   if (_selectedParts.length === 0) return;
 
-  // 이미 진행 중인 세션이 있으면 중복 생성 방지
+  // 이미 진행 중인 세션이 있으면 바로 운동 화면으로 전환
   if (_currentSession) {
-    console.warn('이미 진행 중인 세션이 있습니다.');
+    updateWorkoutHeader(true);
+    updateBottomButton('workout');
+    renderExerciseCards();
+    startWorkoutTimer();
     return;
   }
 
