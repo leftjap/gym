@@ -218,7 +218,7 @@ function updateWorkoutHeader(inProgress) {
         var isActive = (_headerFilterPart === _selectedParts[i]);
         tagsHtml += '<span class="wh-tag-improved' + (isActive ? ' wh-tag-active' : '') + '" onclick="filterByPart(\'' + _selectedParts[i] + '\')">' + p.name + '</span>';
       }
-      tagsHtml += '<button class="wh-settings-btn" onclick="openSettingsForPart(\'' + _selectedParts[0] + '\')">⋮</button>';
+      tagsHtml += '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()">⋮</button>';
       tagsEl.innerHTML = tagsHtml;
     }
   } else {
@@ -281,7 +281,6 @@ function renderExerciseNav() {
     var meta = getExercise(exData.exerciseId);
     var name = meta ? meta.name : exData.exerciseId;
 
-    // 부위 필터
     if (_headerFilterPart && meta && meta.bodyPart !== _headerFilterPart) continue;
 
     var allDone = true;
@@ -303,7 +302,6 @@ function renderExerciseNav() {
   }
 
   html += '</div>';
-  html += '<button class="ex-nav-more" onclick="showExerciseListSheet()">⋯</button>';
   html += '</div>';
   return html;
 }
@@ -359,6 +357,28 @@ function showExerciseListSheet() {
   }
 
   showActionSheet(sheetTitle, buttons);
+}
+
+// ══ 운동 메뉴 액션시트 ══
+function showWorkoutMenuSheet() {
+  if (!_currentSession) return;
+
+  var buttons = [
+    {
+      text: '종목 전체 보기',
+      onClick: function() {
+        showExerciseListSheet();
+      }
+    },
+    {
+      text: '종목 설정',
+      onClick: function() {
+        openSettingsForPart(_selectedParts[0] || '');
+      }
+    }
+  ];
+
+  showActionSheet('운동 메뉴', buttons);
 }
 
 function renderExerciseCard(exIdx) {
@@ -452,7 +472,7 @@ function renderExerciseCard(exIdx) {
     ? '<img src="' + exIconUrl + '" class="ex-card-icon" alt="" onerror="this.style.display=\'none\'">'
     : '';
   html +=
-    '<div class="ex-card-header-standalone" id="exHeader-' + exIdx + '" ontouchstart="startExHeaderLongPress(' + exIdx + ',event)" ontouchend="cancelExHeaderLongPress()" ontouchmove="cancelExHeaderLongPress()">' +
+    '<div class="ex-card-header-standalone" id="exHeader-' + exIdx + '" ontouchstart="startExHeaderLongPress(' + exIdx + ',event)" ontouchend="cancelExHeaderLongPress()" ontouchmove="moveExHeaderLongPress(event)">' +
       '<div class="ex-card-color" style="background:#e85040"></div>' +
       exIconHtml +
       '<div class="ex-card-info">' +
@@ -654,22 +674,27 @@ function completeExercise(exIdx) {
 
 // ══ 종목 카드 헤더 롱프레스 → 종목 완료 확인 ══
 var _exHeaderLongPressTimer = null;
+var _exHeaderTouchStart = null;
 
 function startExHeaderLongPress(exIdx, e) {
   cancelExHeaderLongPress();
+
+  var touch = e.touches ? e.touches[0] : e;
+  _exHeaderTouchStart = { x: touch.clientX, y: touch.clientY };
+
   var header = document.getElementById('exHeader-' + exIdx);
+  if (header) header.classList.add('long-pressing');
+
   _exHeaderLongPressTimer = setTimeout(function() {
     _exHeaderLongPressTimer = null;
-    // 햅틱 피드백 (지원 시)
+    _exHeaderTouchStart = null;
     if (navigator.vibrate) navigator.vibrate(30);
-    // 헤더 시각 피드백 해제
     if (header) header.classList.remove('long-pressing');
 
     var exData = _currentSession.exercises[exIdx];
     var meta = getExercise(exData.exerciseId);
     var name = meta ? meta.name : '';
 
-    // 완료된 세트가 없으면 무시
     var doneCount = 0;
     for (var k = 0; k < exData.sets.length; k++) {
       if (exData.sets[k].done) doneCount++;
@@ -685,9 +710,16 @@ function startExHeaderLongPress(exIdx, e) {
       }
     });
   }, 500);
+}
 
-  // 시각 피드백 시작
-  if (header) header.classList.add('long-pressing');
+function moveExHeaderLongPress(e) {
+  if (!_exHeaderLongPressTimer || !_exHeaderTouchStart) return;
+  var touch = e.touches ? e.touches[0] : e;
+  var dx = Math.abs(touch.clientX - _exHeaderTouchStart.x);
+  var dy = Math.abs(touch.clientY - _exHeaderTouchStart.y);
+  if (dx > 15 || dy > 15) {
+    cancelExHeaderLongPress();
+  }
 }
 
 function cancelExHeaderLongPress() {
@@ -695,7 +727,7 @@ function cancelExHeaderLongPress() {
     clearTimeout(_exHeaderLongPressTimer);
     _exHeaderLongPressTimer = null;
   }
-  // 모든 헤더의 시각 피드백 해제
+  _exHeaderTouchStart = null;
   var headers = document.querySelectorAll('.ex-card-header-standalone');
   for (var i = 0; i < headers.length; i++) {
     headers[i].classList.remove('long-pressing');
