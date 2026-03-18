@@ -211,8 +211,9 @@ function updateWorkoutHeader(inProgress) {
       var tagsHtml = '';
       for (var i = 0; i < _selectedParts.length; i++) {
         var p = getBodyPart(_selectedParts[i]);
-        tagsHtml += '<span class="wh-tag" onclick="openSettingsForPart(\'' + _selectedParts[i] + '\')" style="cursor:pointer;">' + p.name + '</span>';
+        tagsHtml += '<span class="wh-tag-improved" onclick="openSettingsForPart(\'' + _selectedParts[i] + '\')">' + p.name + '</span>';
       }
+      tagsHtml += '<button class="wh-settings-btn" onclick="openSettingsForPart(\'' + _selectedParts[0] + '\')">⋮</button>';
       tagsEl.innerHTML = tagsHtml;
     }
   } else {
@@ -430,11 +431,10 @@ function renderExerciseCard(exIdx) {
       (allDone ? '<span class="ex-card-check">✓</span>' : '') +
     '</div>';
 
-  // 2. 동기부여 문구 (모든 종목 공통)
+  // 2. 동기부여 문구
   html += motivateHtml;
 
   if (isCardio) {
-    // 유산소: 카드 안에 분 입력 (프로그레스바 없음)
     html +=
       '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
         '<div class="ex-card-body">' +
@@ -450,7 +450,6 @@ function renderExerciseCard(exIdx) {
         '</div>' +
       '</div>';
   } else if (isBodyweight) {
-    // 맨몸: 프로그레스바 (횟수 기준) + 세트 테이블 (KG 없음)
     var todayReps = 0;
     var lastTotalReps = 0;
     for (var i = 0; i < exData.sets.length; i++) {
@@ -461,67 +460,135 @@ function renderExerciseCard(exIdx) {
     }
     html += renderBodyweightProgress(todayReps, lastTotalReps, lastSetCount, doneCount);
 
-    html +=
-      '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
-        '<div class="ex-card-body" id="exBody-' + exIdx + '">' +
-          '<table class="set-table">' +
-            '<thead><tr>' +
-              '<th class="st-set"></th>' +
-              '<th class="st-reps">횟수</th>' +
-              '<th class="st-chk"></th>' +
-            '</tr></thead>' +
-            '<tbody>';
+    html += '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">';
+    html += '<div class="ex-card-body" id="exBody-' + exIdx + '">';
 
-    var nextShown = false;
+    // 완료 세트 요약 (접힘)
+    html += renderDoneSetsSummary(exIdx, true);
+
+    // 미완료 세트 테이블
+    var hasUndone = false;
     for (var s = 0; s < exData.sets.length; s++) {
-      if (exData.sets[s].done) {
-        html += renderSetRow(exIdx, s);
-      } else if (!nextShown) {
-        html += renderSetRow(exIdx, s);
-        nextShown = true;
+      if (!exData.sets[s].done) { hasUndone = true; break; }
+    }
+    if (hasUndone) {
+      html +=
+        '<table class="set-table">' +
+          '<thead><tr>' +
+            '<th class="st-set"></th>' +
+            '<th class="st-reps">횟수</th>' +
+          '</tr></thead>' +
+          '<tbody>';
+      var nextShown = false;
+      for (var s = 0; s < exData.sets.length; s++) {
+        if (!exData.sets[s].done && !nextShown) {
+          html += renderSetRow(exIdx, s);
+          nextShown = true;
+        }
       }
+      html += '</tbody></table>';
     }
 
-    html +=
-            '</tbody>' +
-          '</table>' +
-        '</div>' +
-      '</div>';
+    // +세트 추가 버튼
+    html += '<button class="add-set-btn" onclick="addSet(' + exIdx + ')">+ 세트 추가</button>';
+    html += '</div></div>';
   } else {
-    // 웨이트: 프로그레스바 + 세트 테이블 (KG + 횟수)
+    // 웨이트
     html += renderSetProgress(todayVol, lastVol, lastSetCount, doneCount);
 
-    html +=
-      '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
-        '<div class="ex-card-body" id="exBody-' + exIdx + '">' +
-          '<table class="set-table">' +
-            '<thead><tr>' +
-              '<th class="st-set"></th>' +
-              '<th class="st-kg">KG</th>' +
-              '<th class="st-gap"></th>' +
-              '<th class="st-reps">횟수</th>' +
-              '<th class="st-chk"></th>' +
-            '</tr></thead>' +
-            '<tbody>';
+    html += '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">';
+    html += '<div class="ex-card-body" id="exBody-' + exIdx + '">';
 
-    var nextShown = false;
+    // 완료 세트 요약 (접힘)
+    html += renderDoneSetsSummary(exIdx, false);
+
+    // 미완료 세트 테이블
+    var hasUndone = false;
     for (var s = 0; s < exData.sets.length; s++) {
-      if (exData.sets[s].done) {
-        html += renderSetRow(exIdx, s);
-      } else if (!nextShown) {
-        html += renderSetRow(exIdx, s);
-        nextShown = true;
+      if (!exData.sets[s].done) { hasUndone = true; break; }
+    }
+    if (hasUndone) {
+      html +=
+        '<table class="set-table">' +
+          '<thead><tr>' +
+            '<th class="st-set"></th>' +
+            '<th class="st-kg">KG</th>' +
+            '<th class="st-gap"></th>' +
+            '<th class="st-reps">횟수</th>' +
+          '</tr></thead>' +
+          '<tbody>';
+      var nextShown = false;
+      for (var s = 0; s < exData.sets.length; s++) {
+        if (!exData.sets[s].done && !nextShown) {
+          html += renderSetRow(exIdx, s);
+          nextShown = true;
+        }
       }
+      html += '</tbody></table>';
     }
 
-    html +=
-            '</tbody>' +
-          '</table>' +
-        '</div>' +
-      '</div>';
+    // +세트 추가 버튼
+    html += '<button class="add-set-btn" onclick="addSet(' + exIdx + ')">+ 세트 추가</button>';
+    html += '</div></div>';
   }
 
   return html;
+}
+
+// ══ 완료 세트 요약 (접힘) ══
+function renderDoneSetsSummary(exIdx, isBodyweight) {
+  var exData = _currentSession.exercises[exIdx];
+  var doneSets = [];
+  for (var i = 0; i < exData.sets.length; i++) {
+    if (exData.sets[i].done) doneSets.push({ idx: i, data: exData.sets[i] });
+  }
+  if (doneSets.length === 0) return '';
+
+  var html = '<div class="done-sets-summary" onclick="toggleDoneSets(' + exIdx + ')">';
+  for (var i = 0; i < doneSets.length; i++) {
+    var s = doneSets[i].data;
+    var chipClass = 'done-set-chip' + (s.isPR ? ' has-pr' : '');
+    var label = '';
+    if (isBodyweight) {
+      label = (s.reps || 0) + '회';
+    } else {
+      label = (s.weight || 0) + 'kg×' + (s.reps || 0);
+    }
+    html += '<span class="' + chipClass + '"><span class="chip-set-num">' + (doneSets[i].idx + 1) + '</span> ' + label + '</span>';
+  }
+  html += '</div>';
+
+  // 펼침 영역 (기본 숨김)
+  html += '<div class="done-sets-expanded" id="doneSetsExp-' + exIdx + '">';
+  html += '<table class="set-table"><tbody>';
+  for (var i = 0; i < doneSets.length; i++) {
+    html += renderSetRow(exIdx, doneSets[i].idx);
+  }
+  html += '</tbody></table></div>';
+
+  return html;
+}
+
+function toggleDoneSets(exIdx) {
+  var el = document.getElementById('doneSetsExp-' + exIdx);
+  if (el) el.classList.toggle('show');
+}
+
+// ══ 세트 수동 추가 ══
+function addSet(exIdx) {
+  var exData = _currentSession.exercises[exIdx];
+  if (!exData) return;
+
+  var lastSet = exData.sets[exData.sets.length - 1];
+  exData.sets.push({
+    weight: lastSet ? lastSet.weight : 0,
+    reps: lastSet ? lastSet.reps : 0,
+    done: false,
+    isPR: false
+  });
+
+  autoSaveSession();
+  renderExerciseCards();
 }
 
 function renderSetProgress(todayVol, lastVol, lastSetCount, doneCount) {
@@ -656,62 +723,52 @@ function renderSetRow(exIdx, setIdx) {
 
   var html = '<tr class="' + rowClass + '" id="setRow-' + exIdx + '-' + setIdx + '">';
 
-  // 세트 번호
-  html += '<td><span class="set-num">' + (setIdx + 1) + '</span></td>';
+  // 세트 번호 (탭 시 완료 처리)
+  var numClass = 'set-num' + (setData.done ? ' set-num-done' : '');
+  html += '<td><span class="' + numClass + '" onclick="completeSet(' + exIdx + ',' + setIdx + ')">' + (setIdx + 1) + '</span></td>';
 
   if (isBodyweight) {
-    // 맨몸: 횟수만
     html +=
       '<td>' +
         '<div class="set-adjust-group">' +
-          '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',-1)">－</button>' +
+          '<button class="set-adjust-btn adjust-minus" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',-1)">－</button>' +
           '<input type="text" class="set-input' + (setData.done ? ' filled' : '') + '" ' +
             'id="setR-' + exIdx + '-' + setIdx + '" ' +
             'value="' + (setData.reps || '') + '" ' +
             'placeholder="' + (prev ? prev.reps : (meta ? meta.defaultReps : '')) + '" ' +
             'inputmode="numeric" ' +
             focusHandler + '>' +
-          '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',1)">＋</button>' +
+          '<button class="set-adjust-btn adjust-plus" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',1)">＋</button>' +
         '</div>' +
       '</td>';
   } else {
-    // 웨이트: KG + gap + 횟수
     html +=
       '<td>' +
         '<div class="set-adjust-group">' +
-          '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'weight\',-1)">－</button>' +
+          '<button class="set-adjust-btn adjust-minus" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'weight\',-1)">－</button>' +
           '<input type="text" class="set-input' + (setData.done ? ' filled' : '') + '" ' +
             'id="setW-' + exIdx + '-' + setIdx + '" ' +
             'value="' + (setData.weight || '') + '" ' +
             'placeholder="' + (prev ? prev.weight : '') + '" ' +
             'inputmode="decimal" ' +
             focusHandler + '>' +
-          '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'weight\',1)">＋</button>' +
+          '<button class="set-adjust-btn adjust-plus" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'weight\',1)">＋</button>' +
         '</div>' +
       '</td>' +
       '<td class="st-gap"></td>' +
       '<td>' +
         '<div class="set-adjust-group">' +
-          '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',-1)">－</button>' +
+          '<button class="set-adjust-btn adjust-minus" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',-1)">－</button>' +
           '<input type="text" class="set-input' + (setData.done ? ' filled' : '') + '" ' +
             'id="setR-' + exIdx + '-' + setIdx + '" ' +
             'value="' + (setData.reps || '') + '" ' +
             'placeholder="' + (prev ? prev.reps : (meta ? meta.defaultReps : '')) + '" ' +
             'inputmode="numeric" ' +
             focusHandler + '>' +
-          '<button class="set-adjust-btn" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',1)">＋</button>' +
+          '<button class="set-adjust-btn adjust-plus" onclick="adjustSetValue(' + exIdx + ',' + setIdx + ',\'reps\',1)">＋</button>' +
         '</div>' +
       '</td>';
   }
-
-  // 체크 버튼
-  html +=
-    '<td>' +
-      '<button class="set-check-btn' + (setData.done ? ' done' : '') + '" ' +
-        'onclick="completeSet(' + exIdx + ',' + setIdx + ')">' +
-        '✓' +
-      '</button>' +
-    '</td>';
 
   html += '</tr>';
   return html;
@@ -776,22 +833,7 @@ function completeSet(exIdx, setIdx) {
   // 자동저장
   autoSaveSession();
 
-  // 모든 기존 세트가 완료되었으면 새 세트 자동 추가
-  var allSetsDone = true;
-  for (var k = 0; k < exData.sets.length; k++) {
-    if (!exData.sets[k].done) { allSetsDone = false; break; }
-  }
-  if (allSetsDone) {
-    var lastSet = exData.sets[exData.sets.length - 1];
-    exData.sets.push({
-      weight: lastSet ? lastSet.weight : 0,
-      reps: lastSet ? lastSet.reps : 0,
-      done: false,
-      isPR: false
-    });
-  }
-
-  // 전체 다시 렌더
+  // 전체 다시 렌더 (자동 세트 추가 없음)
   renderExerciseCards();
 }
 

@@ -462,6 +462,9 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 - `renderSetProgress(todayVol, lastVol, lastSetCount, doneCount)` — 웨이트 종목용 진행 바
 - `renderBodyweightProgress(todayReps, lastTotalReps, lastSetCount, doneCount)` — 맨몸 종목용 진행 바 (횟수 기준)
 - `renderSetRow(exIdx, setIdx)` — 세트 행 (웨이트/맨몸 분기, 맨몸은 KG 칼럼 숨김)
+- `renderDoneSetsSummary(exIdx, isBodyweight)` — 완료 세트를 1줄 칩으로 접어서 표시 (탭하면 펼침)
+- `toggleDoneSets(exIdx)` — 완료 세트 펼침/접힘 토글
+- `addSet(exIdx)` — 세트 수동 추가 (마지막 세트의 값을 복사)
 - `toggleExCard(exIdx)` — 카드 접기/펼치기
 - `completeSet(exIdx, setIdx)` — 세트 완료 처리 → PR 감지 + 타이머 + 자동 세트 추가 (맨몸/유산소 weight 처리)
 - `completeCardio(exIdx)` — 유산소 완료 처리
