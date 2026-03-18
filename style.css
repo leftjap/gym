@@ -527,34 +527,34 @@ input {
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 0 16px 8px 16px;
+  padding: 0 16px 8px 12px;
 }
 
 .exercise-nav-part-bar {
   width: 4px;
-  height: 20px;
+  height: 50px;
   border-radius: 2px;
   background: var(--accent);
   flex-shrink: 0;
-  margin-right: 8px;
+  margin-right: 12px;
 }
 
 .exercise-nav-part-tab {
   padding: 2px 6px;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 400;
   color: var(--gray);
   cursor: pointer;
   border: none;
   background: none;
-  transition: color 0.2s ease, font-weight 0.2s ease;
+  transition: color 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
 }
 
 .exercise-nav-part-tab.active {
-  font-weight: 700;
+  font-weight: 400;
   color: var(--accent);
 }
 
@@ -604,8 +604,8 @@ input {
 .ex-nav-btn {
   padding: 8px 14px;
   border-radius: 20px;
-  border: 1px solid var(--border-gray);
-  background: transparent;
+  border: none;
+  background: var(--light-gray);
   color: var(--dark);
   font-size: 14px;
   font-weight: 400;
@@ -623,14 +623,14 @@ input {
   background: var(--accent-bg);
   color: var(--dark);
   font-weight: 400;
-  border-color: transparent;
+  border: none;
   box-shadow: none;
 }
 
 .ex-nav-btn.done {
   background: var(--border-gray);
   color: var(--gray);
-  border-color: var(--border-gray);
+  border: none;
 }
 
 .ex-nav-more {
