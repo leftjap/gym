@@ -210,7 +210,7 @@ function updateWorkoutHeader(inProgress) {
   if (inProgress) {
     if (timerEl) timerEl.style.display = 'inline';
     if (tagsEl) {
-      tagsEl.innerHTML = '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()">⋮</button>';
+      tagsEl.innerHTML = '<button class="wh-settings-btn" onclick="openSettingsForPart(_selectedParts[0] || \'chest\')">⋮</button>';
     }
   } else {
     if (timerEl) timerEl.style.display = 'none';
