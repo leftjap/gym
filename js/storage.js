@@ -169,6 +169,15 @@ function getExercise(id) {
   return custom.find(function(e) { return e.id === id; }) || null;
 }
 
+// ── 종목 순서 관리 ──
+function getExerciseOrder() {
+  return L('wk_exercise_order') || {};
+}
+
+function saveExerciseOrder(orderMap) {
+  S('wk_exercise_order', orderMap);
+}
+
 function getExercisesByPart(partId) {
   var hidden = L(K.hiddenExercises) || [];
   var base = EXERCISES.filter(function(e) {
@@ -177,9 +186,31 @@ function getExercisesByPart(partId) {
   var custom = (L(K.customExercises) || []).filter(function(e) {
     return e.bodyPart === partId;
   });
-  return base.concat(custom).sort(function(a, b) {
-    return (a.sortOrder || 0) - (b.sortOrder || 0);
-  });
+  var all = base.concat(custom);
+
+  // 커스텀 순서 맵 확인
+  var orderMap = getExerciseOrder();
+  var order = orderMap[partId];
+
+  if (order && order.length > 0) {
+    // 순서 맵에 있는 종목은 맵 순서대로, 없는 종목은 뒤에 추가
+    var orderIndex = {};
+    for (var i = 0; i < order.length; i++) {
+      orderIndex[order[i]] = i;
+    }
+    all.sort(function(a, b) {
+      var ai = orderIndex[a.id] !== undefined ? orderIndex[a.id] : 9999;
+      var bi = orderIndex[b.id] !== undefined ? orderIndex[b.id] : 9999;
+      if (ai !== bi) return ai - bi;
+      return (a.sortOrder || 0) - (b.sortOrder || 0);
+    });
+  } else {
+    all.sort(function(a, b) {
+      return (a.sortOrder || 0) - (b.sortOrder || 0);
+    });
+  }
+
+  return all;
 }
 
 function getBodyPart(id) {

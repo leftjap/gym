@@ -24,7 +24,6 @@ function renderSettings() {
       '<div style="width:36px"></div>' +
     '</div>';
 
-  // 부위 탭
   html += '<div class="settings-part-tabs">';
   for (var i = 0; i < BODY_PARTS.length; i++) {
     var p = BODY_PARTS[i];
@@ -37,18 +36,15 @@ function renderSettings() {
   }
   html += '</div>';
 
-  // 종목 목록
   html += '<div class="settings-exercise-list" id="settingsExList">';
   html += renderSettingsExerciseList();
   html += '</div>';
 
-  // 종목 추가 버튼
   html +=
     '<div class="settings-add-area">' +
       '<button class="settings-add-btn" onclick="openAddExerciseForm()">+ 종목 추가</button>' +
     '</div>';
 
-  // 동기화 섹션 (시각만 표시)
   var lastSync = getLastSyncTime();
   var syncTimeText = formatSyncTime(lastSync);
   var onlineStatus = navigator.onLine ? '온라인' : '오프라인';
@@ -66,10 +62,12 @@ function renderSettings() {
       '<div class="settings-sync-time">마지막 동기화: ' + syncTimeText + '</div>' +
     '</div>';
 
-  // 종목 추가 폼 (숨김)
   html += '<div id="addExerciseForm" style="display:none;"></div>';
 
   container.innerHTML = html;
+
+  // 드래그 순서 변경 바인딩
+  bindSettingsExerciseDrag();
 }
 
 // ══ 설정 화면 뒤로가기 ══
@@ -97,80 +95,234 @@ function selectSettingsPart(partId) {
 // ══ 종목 목록 렌더 ══
 function renderSettingsExerciseList() {
   var partId = _settingsSelectedPart;
+  var allExercises = getExercisesByPart(partId);
   var hidden = getHiddenExercises();
 
-  var baseExercises = EXERCISES.filter(function(e) { return e.bodyPart === partId; })
-    .sort(function(a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
+  // 숨김 종목도 포함하여 표시 (숨김 표시 + 토글)
+  var hiddenBase = EXERCISES.filter(function(e) {
+    return e.bodyPart === partId && hidden.indexOf(e.id) >= 0;
+  });
 
-  var customExercises = getCustomExercises().filter(function(e) { return e.bodyPart === partId; });
+  // 합치기: getExercisesByPart는 숨김 제외이므로, 숨김 종목을 뒤에 추가
+  var displayList = allExercises.concat(hiddenBase);
 
   var html = '';
 
-  if (baseExercises.length > 0) {
-    html += '<div class="settings-section-label">기본 종목</div>';
-    for (var i = 0; i < baseExercises.length; i++) {
-      var ex = baseExercises[i];
-      var isHidden = hidden.indexOf(ex.id) >= 0;
-      var iconUrl = getExerciseIcon(ex.id);
-      var iconHtml = iconUrl
-        ? '<img src="' + iconUrl + '" class="settings-ex-icon" alt="" onerror="this.style.display=\'none\'">'
-        : '';
-      html +=
-        '<div class="settings-ex-item' + (isHidden ? ' hidden-ex' : '') + '">' +
-          '<div class="settings-ex-info" onclick="openEditExerciseIconForm(\'' + ex.id + '\')" style="cursor:pointer;">' +
-            '<div class="settings-ex-name-row">' +
-              iconHtml +
-              '<span class="settings-ex-name">' + ex.name + '</span>' +
-            '</div>' +
-            '<div class="settings-ex-meta">' +
-              (EQUIPMENT[ex.equipment] || ex.equipment) +
-              ' · ' + ex.defaultSets + '세트 · ' + ex.defaultReps + '회' +
-              (ex.defaultWeight ? ' · ' + ex.defaultWeight + 'kg' : '') +
-            '</div>' +
-          '</div>' +
-          '<button class="settings-ex-toggle' + (isHidden ? '' : ' active') + '" ' +
-            'onclick="event.stopPropagation(); onToggleHideExercise(\'' + ex.id + '\')">' +
-            '<div class="settings-toggle-knob"></div>' +
-          '</button>' +
-        '</div>';
-    }
-  }
-
-  if (customExercises.length > 0) {
-    html += '<div class="settings-section-label">추가한 종목</div>';
-    for (var i = 0; i < customExercises.length; i++) {
-      var ex = customExercises[i];
-      var isHidden = hidden.indexOf(ex.id) >= 0;
-      var iconUrl = getExerciseIcon(ex.id);
-      var iconHtml = iconUrl
-        ? '<img src="' + iconUrl + '" class="settings-ex-icon" alt="" onerror="this.style.display=\'none\'">'
-        : '';
-      html +=
-        '<div class="settings-ex-item' + (isHidden ? ' hidden-ex' : '') + '">' +
-          '<div class="settings-ex-info" onclick="openEditExerciseIconForm(\'' + ex.id + '\')" style="cursor:pointer;">' +
-            '<div class="settings-ex-name-row">' +
-              iconHtml +
-              '<span class="settings-ex-name">' + ex.name + '</span>' +
-            '</div>' +
-            '<div class="settings-ex-meta">' +
-              (EQUIPMENT[ex.equipment] || ex.equipment) +
-              ' · ' + ex.defaultSets + '세트 · ' + ex.defaultReps + '회' +
-              (ex.defaultWeight ? ' · ' + ex.defaultWeight + 'kg' : '') +
-            '</div>' +
-          '</div>' +
-          '<button class="settings-ex-toggle' + (isHidden ? '' : ' active') + '" ' +
-            'onclick="event.stopPropagation(); onToggleHideExercise(\'' + ex.id + '\')">' +
-            '<div class="settings-toggle-knob"></div>' +
-          '</button>' +
-        '</div>';
-    }
-  }
-
-  if (baseExercises.length === 0 && customExercises.length === 0) {
+  if (displayList.length === 0) {
     html += '<div class="settings-empty">이 부위에 등록된 종목이 없습니다</div>';
+    return html;
+  }
+
+  for (var i = 0; i < displayList.length; i++) {
+    var ex = displayList[i];
+    var isHidden = hidden.indexOf(ex.id) >= 0;
+    var isCustom = isCustomExercise(ex.id);
+    var iconUrl = getExerciseIcon(ex.id);
+    var iconHtml = iconUrl
+      ? '<img src="' + iconUrl + '" class="settings-ex-icon" alt="" onerror="this.style.display=\'none\'">'
+      : '';
+
+    html +=
+      '<div class="settings-ex-item' + (isHidden ? ' hidden-ex' : '') + '" data-exercise-id="' + ex.id + '">' +
+        '<div class="settings-ex-info" onclick="openEditExerciseIconForm(\'' + ex.id + '\')" style="cursor:pointer;">' +
+          '<div class="settings-ex-name-row">' +
+            iconHtml +
+            '<span class="settings-ex-name">' + ex.name + '</span>' +
+          '</div>' +
+          '<div class="settings-ex-meta">' +
+            (EQUIPMENT[ex.equipment] || ex.equipment) +
+            ' · ' + ex.defaultSets + '세트 · ' + ex.defaultReps + '회' +
+            (ex.defaultWeight ? ' · ' + ex.defaultWeight + 'kg' : '') +
+          '</div>' +
+        '</div>' +
+        '<button class="settings-ex-toggle' + (isHidden ? '' : ' active') + '" ' +
+          'onclick="event.stopPropagation(); onToggleHideExercise(\'' + ex.id + '\')">' +
+          '<div class="settings-toggle-knob"></div>' +
+        '</button>' +
+      '</div>';
   }
 
   return html;
+}
+
+function bindSettingsExerciseDrag() {
+  var listEl = document.getElementById('settingsExList');
+  if (!listEl) return;
+
+  var items = listEl.querySelectorAll('.settings-ex-item');
+  for (var i = 0; i < items.length; i++) {
+    (function(item) {
+      var exId = item.getAttribute('data-exercise-id');
+      if (!exId) return;
+
+      var timer = null;
+      var isDragging = false;
+      var startY = 0;
+      var startX = 0;
+      var ghostEl = null;
+      var placeholder = null;
+      var allItems = [];
+      var currentIdx = -1;
+      var originalIdx = -1;
+
+      item.addEventListener('touchstart', function(e) {
+        isDragging = false;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        item.classList.add('long-pressing');
+
+        timer = setTimeout(function() {
+          timer = null;
+          isDragging = true;
+          item.classList.remove('long-pressing');
+
+          // 모든 아이템 수집
+          allItems = Array.prototype.slice.call(listEl.querySelectorAll('.settings-ex-item'));
+          originalIdx = allItems.indexOf(item);
+          currentIdx = originalIdx;
+
+          // 고스트 생성
+          var rect = item.getBoundingClientRect();
+          ghostEl = item.cloneNode(true);
+          ghostEl.className = 'settings-ex-item settings-ex-drag-ghost';
+          ghostEl.style.position = 'fixed';
+          ghostEl.style.top = rect.top + 'px';
+          ghostEl.style.left = rect.left + 'px';
+          ghostEl.style.width = rect.width + 'px';
+          ghostEl.style.zIndex = '9999';
+          ghostEl.style.pointerEvents = 'none';
+          ghostEl.style.opacity = '0.9';
+          ghostEl.style.transform = 'scale(1.02)';
+          ghostEl.style.boxShadow = '0 8px 24px rgba(0,0,0,0.18)';
+          ghostEl.style.background = 'var(--white)';
+          ghostEl.style.borderRadius = '8px';
+          ghostEl.style.transition = 'none';
+          document.body.appendChild(ghostEl);
+
+          // 원본 자리에 플레이스홀더
+          placeholder = document.createElement('div');
+          placeholder.className = 'settings-ex-drag-placeholder';
+          placeholder.style.height = rect.height + 'px';
+          item.parentNode.insertBefore(placeholder, item);
+          item.style.display = 'none';
+
+        }, 500);
+      }, { passive: true });
+
+      item.addEventListener('touchmove', function(e) {
+        var dx = Math.abs(e.touches[0].clientX - startX);
+        var dy = Math.abs(e.touches[0].clientY - startY);
+
+        if (!isDragging && timer) {
+          if (dx > 10 || dy > 10) {
+            clearTimeout(timer);
+            timer = null;
+            item.classList.remove('long-pressing');
+          }
+          return;
+        }
+
+        if (!isDragging || !ghostEl) return;
+        e.preventDefault();
+
+        var touchY = e.touches[0].clientY;
+        var rect = ghostEl.getBoundingClientRect();
+        var offsetY = touchY - startY;
+        ghostEl.style.top = (rect.top + (touchY - (parseFloat(ghostEl._lastY) || touchY))) + 'px';
+        ghostEl._lastY = touchY;
+
+        // 드롭 위치 찾기
+        var newIdx = currentIdx;
+        for (var j = 0; j < allItems.length; j++) {
+          if (allItems[j] === item) continue;
+          if (allItems[j].style.display === 'none') continue;
+          var r = allItems[j].getBoundingClientRect();
+          var midY = r.top + r.height / 2;
+          if (touchY < midY && j < currentIdx) {
+            newIdx = j;
+            break;
+          }
+          if (touchY > midY && j > currentIdx) {
+            newIdx = j;
+          }
+        }
+
+        if (newIdx !== currentIdx) {
+          // 플레이스홀더 이동
+          if (placeholder && placeholder.parentNode) {
+            placeholder.parentNode.removeChild(placeholder);
+          }
+          if (newIdx < allItems.length) {
+            var targetItem = allItems[newIdx];
+            if (newIdx > currentIdx) {
+              targetItem.parentNode.insertBefore(placeholder, targetItem.nextSibling);
+            } else {
+              targetItem.parentNode.insertBefore(placeholder, targetItem);
+            }
+          }
+          currentIdx = newIdx;
+        }
+
+      }, { passive: false });
+
+      item.addEventListener('touchend', function(e) {
+        item.classList.remove('long-pressing');
+
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+
+        if (!isDragging) return;
+        isDragging = false;
+
+        // 고스트 제거
+        if (ghostEl) {
+          ghostEl.remove();
+          ghostEl = null;
+        }
+
+        // 원본 복원
+        item.style.display = '';
+
+        // 플레이스홀더 자리에 원본 삽입
+        if (placeholder && placeholder.parentNode) {
+          placeholder.parentNode.insertBefore(item, placeholder);
+          placeholder.remove();
+          placeholder = null;
+        }
+
+        // 순서 저장
+        if (originalIdx !== currentIdx) {
+          var newItems = listEl.querySelectorAll('.settings-ex-item');
+          var newOrder = [];
+          for (var k = 0; k < newItems.length; k++) {
+            var eid = newItems[k].getAttribute('data-exercise-id');
+            if (eid) newOrder.push(eid);
+          }
+
+          var orderMap = getExerciseOrder();
+          orderMap[_settingsSelectedPart] = newOrder;
+          saveExerciseOrder(orderMap);
+
+          saveLastSyncTime();
+          if (typeof syncToServer === 'function') syncToServer(null, true);
+        }
+
+        e.preventDefault();
+      }, { passive: false });
+
+      item.addEventListener('touchcancel', function() {
+        item.classList.remove('long-pressing');
+        if (timer) { clearTimeout(timer); timer = null; }
+        isDragging = false;
+        if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+        if (placeholder && placeholder.parentNode) { placeholder.remove(); placeholder = null; }
+        item.style.display = '';
+      }, { passive: true });
+
+    })(items[i]);
+  }
 }
 
 // ══ 기본 종목 숨김 토글 ══

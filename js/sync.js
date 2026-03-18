@@ -29,6 +29,7 @@ function syncToServer(callback, silent) {
     customExercises: L(K.customExercises) || [],
     hiddenExercises: L(K.hiddenExercises) || [],
     exerciseIcons: L(K.exerciseIcons) || {},
+    exerciseOrder: L('wk_exercise_order') || {},
     settings: L(K.settings) || {},
     lastSync: new Date().toISOString()
   };
@@ -123,6 +124,7 @@ function syncFromServer(callback, silent) {
         if (p.inbody) S(K.inbody, p.inbody);
         if (p.customExercises) S(K.customExercises, p.customExercises);
         if (p.hiddenExercises !== undefined) S(K.hiddenExercises, p.hiddenExercises);
+        if (p.exerciseOrder) S('wk_exercise_order', p.exerciseOrder);
       } else {
         // 로컬이 같거나 더 새로움 → 서버 덮어쓰기 건너뜀
         console.log('로컬이 서버보다 최신 — 서버 덮어쓰기 건너뜀');
