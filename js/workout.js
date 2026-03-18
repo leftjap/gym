@@ -7,6 +7,7 @@ var _workoutStartTime = null;
 var _restAnimFrame = null;
 var _currentExerciseIndex = 0;  // 현재 보고 있는 종목 인덱스
 var _isFinishing = false;  // finishWorkout 중복 실행 방지
+var _headerFilterPart = null;  // 헤더 부위 탭 필터 (null이면 전체)
 
 // ══ 화면 진입 ══
 function renderWorkoutScreen() {
@@ -177,6 +178,7 @@ function startWorkout() {
   updateWorkoutHeader(true);
   updateBottomButton('workout');
   _currentExerciseIndex = 0;
+  _headerFilterPart = null;
   renderExerciseCards();
   startWorkoutTimer();
 }
@@ -211,7 +213,8 @@ function updateWorkoutHeader(inProgress) {
       var tagsHtml = '';
       for (var i = 0; i < _selectedParts.length; i++) {
         var p = getBodyPart(_selectedParts[i]);
-        tagsHtml += '<span class="wh-tag-improved" onclick="openSettingsForPart(\'' + _selectedParts[i] + '\')">' + p.name + '</span>';
+        var isActive = (_headerFilterPart === _selectedParts[i]);
+        tagsHtml += '<span class="wh-tag-improved' + (isActive ? ' wh-tag-active' : '') + '" onclick="filterByPart(\'' + _selectedParts[i] + '\')">' + p.name + '</span>';
       }
       tagsHtml += '<button class="wh-settings-btn" onclick="openSettingsForPart(\'' + _selectedParts[0] + '\')">⋮</button>';
       tagsEl.innerHTML = tagsHtml;
@@ -220,6 +223,25 @@ function updateWorkoutHeader(inProgress) {
     if (timerEl) timerEl.style.display = 'none';
     if (tagsEl) tagsEl.innerHTML = '';
   }
+}
+
+// ══ 부위 탭 클릭 → 해당 부위 종목만 네비에 표시 ══
+function filterByPart(partId) {
+  if (_headerFilterPart === partId) {
+    // 같은 탭 재클릭 → 필터 해제 (전체 표시)
+    _headerFilterPart = null;
+  } else {
+    _headerFilterPart = partId;
+    // 해당 부위의 첫 번째 종목으로 자동 이동
+    for (var i = 0; i < _currentSession.exercises.length; i++) {
+      var meta = getExercise(_currentSession.exercises[i].exerciseId);
+      if (meta && meta.bodyPart === partId) {
+        _currentExerciseIndex = i;
+        break;
+      }
+    }
+  }
+  renderExerciseCards();
 }
 
 // ══ 종목 카드 렌더링 ══
@@ -250,39 +272,32 @@ function renderExerciseCards() {
 // ══ 종목 네비게이션 버튼바 ══
 function renderExerciseNav() {
   var html = '<div class="exercise-nav">';
-
-  // 종목 버튼 영역 (overflow hidden으로 잘림)
   html += '<div class="exercise-nav-scroll">';
+
   for (var i = 0; i < _currentSession.exercises.length; i++) {
     var exData = _currentSession.exercises[i];
     var meta = getExercise(exData.exerciseId);
     var name = meta ? meta.name : exData.exerciseId;
 
+    // 부위 필터 적용: 필터가 활성화되어 있고 이 종목이 해당 부위가 아니면 건너뜀
+    if (_headerFilterPart && meta && meta.bodyPart !== _headerFilterPart) continue;
+
     var allDone = true;
     for (var j = 0; j < exData.sets.length; j++) {
-      if (!exData.sets[j].done) {
-        allDone = false;
-        break;
-      }
+      if (!exData.sets[j].done) { allDone = false; break; }
     }
 
     var btnClass = 'ex-nav-btn';
-    if (i === _currentExerciseIndex) {
-      btnClass += ' active';
-    } else if (allDone) {
-      btnClass += ' done';
-    }
+    if (i === _currentExerciseIndex) btnClass += ' active';
+    else if (allDone) btnClass += ' done';
 
-    var btnContent = name;
-    if (allDone) btnContent = '✓ ' + name;
+    var btnContent = allDone ? '✓ ' + name : name;
 
     html += '<button class="' + btnClass + '" onclick="switchExercise(' + i + ')">' + btnContent + '</button>';
   }
+
   html += '</div>';
-
-  // 더보기 버튼 (항상 보임)
   html += '<button class="ex-nav-more" onclick="showExerciseListSheet()">⋯</button>';
-
   html += '</div>';
   return html;
 }
@@ -422,7 +437,7 @@ function renderExerciseCard(exIdx) {
     ? '<img src="' + exIconUrl + '" class="ex-card-icon" alt="" onerror="this.style.display=\'none\'">'
     : '';
   html +=
-    '<div class="ex-card-header-standalone">' +
+    '<div class="ex-card-header-standalone" id="exHeader-' + exIdx + '" ontouchstart="startExHeaderLongPress(' + exIdx + ',event)" ontouchend="cancelExHeaderLongPress()" ontouchmove="cancelExHeaderLongPress()">' +
       '<div class="ex-card-color" style="background:#e85040"></div>' +
       exIconHtml +
       '<div class="ex-card-info">' +
@@ -490,11 +505,6 @@ function renderExerciseCard(exIdx) {
       html += '</tbody></table>';
     }
 
-    // 종목 완료 버튼 (세트가 1개 이상 완료되었을 때만 표시)
-    if (doneCount > 0) {
-      html += '<button class="complete-ex-btn" onclick="completeExercise(' + exIdx + ')">종목 완료 →</button>';
-    }
-
     html += '</div></div>';
   } else {
     // 웨이트
@@ -529,11 +539,6 @@ function renderExerciseCard(exIdx) {
         }
       }
       html += '</tbody></table>';
-    }
-
-    // 종목 완료 버튼 (세트가 1개 이상 완료되었을 때만 표시)
-    if (doneCount > 0) {
-      html += '<button class="complete-ex-btn" onclick="completeExercise(' + exIdx + ')">종목 완료 →</button>';
     }
 
     html += '</div></div>';
@@ -630,6 +635,54 @@ function completeExercise(exIdx) {
   // 미완료 종목이 없으면 현재 위치 유지 (모든 종목 완료 상태)
 
   renderExerciseCards();
+}
+
+// ══ 종목 카드 헤더 롱프레스 → 종목 완료 확인 ══
+var _exHeaderLongPressTimer = null;
+
+function startExHeaderLongPress(exIdx, e) {
+  cancelExHeaderLongPress();
+  var header = document.getElementById('exHeader-' + exIdx);
+  _exHeaderLongPressTimer = setTimeout(function() {
+    _exHeaderLongPressTimer = null;
+    // 햅틱 피드백 (지원 시)
+    if (navigator.vibrate) navigator.vibrate(30);
+    // 헤더 시각 피드백 해제
+    if (header) header.classList.remove('long-pressing');
+
+    var exData = _currentSession.exercises[exIdx];
+    var meta = getExercise(exData.exerciseId);
+    var name = meta ? meta.name : '';
+
+    // 완료된 세트가 없으면 무시
+    var doneCount = 0;
+    for (var k = 0; k < exData.sets.length; k++) {
+      if (exData.sets[k].done) doneCount++;
+    }
+    if (doneCount === 0) {
+      showConfirm('완료된 세트가 없습니다.\n세트를 먼저 완료해주세요.', function() {});
+      return;
+    }
+
+    showConfirm(name + ' 종목을 완료하시겠습니까?', function() {
+      completeExercise(exIdx);
+    });
+  }, 500);
+
+  // 시각 피드백 시작
+  if (header) header.classList.add('long-pressing');
+}
+
+function cancelExHeaderLongPress() {
+  if (_exHeaderLongPressTimer) {
+    clearTimeout(_exHeaderLongPressTimer);
+    _exHeaderLongPressTimer = null;
+  }
+  // 모든 헤더의 시각 피드백 해제
+  var headers = document.querySelectorAll('.ex-card-header-standalone');
+  for (var i = 0; i < headers.length; i++) {
+    headers[i].classList.remove('long-pressing');
+  }
 }
 
 function renderSetProgress(todayVol, lastVol, lastSetCount, doneCount) {
@@ -1094,6 +1147,7 @@ function finishWorkout() {
   _selectedParts = [];
   _workoutStartTime = null;
   _currentExerciseIndex = 0;
+  _headerFilterPart = null;
   _isFinishing = false;  // 플래그 해제
 }
 
@@ -1206,6 +1260,7 @@ function restoreSession() {
     _selectedParts = saved.tags.slice();
     _workoutStartTime = saved.startTime;
     _currentExerciseIndex = 0;
+    _headerFilterPart = null;
 
     // 타이머 재시작
     if (_workoutStartTime && !_workoutTimerInterval) {
@@ -1327,6 +1382,7 @@ function cancelWorkout() {
   _selectedParts = [];
   _workoutStartTime = null;
   _currentExerciseIndex = 0;
+  _headerFilterPart = null;
   _isFinishing = false;  // 플래그도 초기화
 
   showScreen('home');
@@ -1356,6 +1412,7 @@ function enterEditMode(sessionId, focusExerciseId) {
 
   // 포커스 종목 인덱스 찾기
   _currentExerciseIndex = 0;
+  _headerFilterPart = null;
   if (focusExerciseId) {
     for (var i = 0; i < _currentSession.exercises.length; i++) {
       if (_currentSession.exercises[i].exerciseId === focusExerciseId) {
@@ -1448,6 +1505,7 @@ function cancelEditMode() {
   _selectedParts = [];
   _workoutStartTime = null;
   _currentExerciseIndex = 0;
+  _headerFilterPart = null;
   _editMode = false;
   _editSessionId = null;
 
