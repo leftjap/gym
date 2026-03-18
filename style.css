@@ -519,39 +519,28 @@ input {
 
 /* ── 부위탭+종목네비 영역 ── */
 .exercise-nav-area {
-  display: flex;
-  padding: 0 0 0 0;
-  margin: 16px 0 0 0;
-}
-
-.exercise-nav-area-bar {
-  width: 4px;
-  border-radius: 2px;
-  background: var(--border-gray);
-  flex-shrink: 0;
-  margin-left: 16px;
-  transition: background 0.2s ease;
-}
-
-.exercise-nav-area-bar.active {
-  background: var(--accent);
-}
-
-.exercise-nav-area-content {
-  flex: 1;
-  min-width: 0;
-  padding-left: 12px;
+  padding: 16px 0 0 0;
+  margin: 0;
 }
 
 .exercise-nav-part-row {
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 4px 0 8px 0;
+  padding: 0 16px 8px 16px;
+}
+
+.exercise-nav-part-bar {
+  width: 4px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-right: 8px;
 }
 
 .exercise-nav-part-tab {
-  padding: 2px 8px;
+  padding: 2px 6px;
   font-size: 15px;
   font-weight: 500;
   color: var(--gray);

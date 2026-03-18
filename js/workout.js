@@ -247,24 +247,16 @@ function renderExerciseCards() {
   }
   if (_currentExerciseIndex < 0) _currentExerciseIndex = 0;
 
-  // 현재 종목의 부위 판별 (세로 막대바 색상용)
-  var currentExData = _currentSession.exercises[_currentExerciseIndex];
-  var currentMeta = currentExData ? getExercise(currentExData.exerciseId) : null;
-  var hasFilter = _headerFilterPart !== null;
-
   var html = '';
 
-  // 1. 부위탭 + 종목네비 영역 (카드 없이 배치)
+  // 1. 부위탭 + 종목네비 영역
   html += '<div class="exercise-nav-area">';
 
-  // 세로 막대바 (필터 활성 시 accent 색)
-  html += '<div class="exercise-nav-area-bar' + (hasFilter ? ' active' : '') + '"></div>';
+  // 부위 탭 행: 세로바 + 부위 이름들 (부위 수 관계없이 항상 표시)
+  html += '<div class="exercise-nav-part-row">';
+  html += '<div class="exercise-nav-part-bar"></div>';
 
-  html += '<div class="exercise-nav-area-content">';
-
-  // 부위 탭 (여러 부위 선택 시에만 표시)
   if (_selectedParts.length > 1) {
-    html += '<div class="exercise-nav-part-row">';
     for (var p = 0; p < _selectedParts.length; p++) {
       if (p > 0) html += '<span class="exercise-nav-pipe">|</span>';
       var partInfo = getBodyPart(_selectedParts[p]);
@@ -275,14 +267,17 @@ function renderExerciseCards() {
         partInfo.name +
       '</button>';
     }
-    html += '</div>';
+  } else if (_selectedParts.length === 1) {
+    var partInfo = getBodyPart(_selectedParts[0]);
+    html += '<span class="exercise-nav-part-tab active" style="cursor:default;">' + partInfo.name + '</span>';
   }
+
+  html += '</div>';
 
   // 종목 네비게이션
   html += renderExerciseNav();
 
-  html += '</div>'; // exercise-nav-area-content
-  html += '</div>'; // exercise-nav-area
+  html += '</div>';
 
   // 구분선
   html += '<div class="exercise-nav-area-divider"></div>';
