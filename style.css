@@ -3684,29 +3684,40 @@ input {
   transform: scale(0.98);
 }
 
-/* ── 헤더 부위 탭 개선 ── */
-.wh-tag-improved {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--dark);
-  background: transparent;
-  border: 1.5px solid var(--border-gray);
+/* ── 부위 탭 파이프 스타일 ── */
+.wh-pipe-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.wh-pipe-tab {
+  padding: 4px 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--gray);
   cursor: pointer;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.wh-tag-improved:active {
-  background: var(--light-gray);
+.wh-pipe-tab:active {
+  opacity: 0.6;
 }
 
-.wh-tag-improved.wh-tag-active {
-  background: var(--dark);
-  color: var(--white);
-  border-color: var(--dark);
+.wh-pipe-tab.wh-pipe-active {
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.wh-pipe {
+  font-size: 14px;
+  color: var(--border-gray);
+  font-weight: 300;
+  padding: 0 2px;
+  user-select: none;
 }
 
 .ex-card-header-standalone.long-pressing {

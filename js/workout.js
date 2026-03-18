@@ -212,14 +212,30 @@ function updateWorkoutHeader(inProgress) {
   if (inProgress) {
     if (timerEl) timerEl.style.display = 'inline';
     if (tagsEl) {
-      var tagsHtml = '';
+      var tagsHtml = '<div class="wh-pipe-group">';
       for (var i = 0; i < _selectedParts.length; i++) {
+        if (i > 0) tagsHtml += '<span class="wh-pipe">|</span>';
         var p = getBodyPart(_selectedParts[i]);
         var isActive = (_headerFilterPart === _selectedParts[i]);
-        tagsHtml += '<span class="wh-tag-improved' + (isActive ? ' wh-tag-active' : '') + '" onclick="filterByPart(\'' + _selectedParts[i] + '\')">' + p.name + '</span>';
+        tagsHtml += '<span class="wh-pipe-tab' + (isActive ? ' wh-pipe-active' : '') + '" ' +
+          'onclick="filterByPart(\'' + _selectedParts[i] + '\')" ' +
+          'data-part-id="' + _selectedParts[i] + '">' +
+          p.name + '</span>';
       }
+      tagsHtml += '</div>';
       tagsHtml += '<button class="wh-settings-btn" onclick="showWorkoutMenuSheet()">⋮</button>';
       tagsEl.innerHTML = tagsHtml;
+
+      // 부위 탭 롱프레스 바인딩
+      var pipeTabs = tagsEl.querySelectorAll('.wh-pipe-tab');
+      for (var ti = 0; ti < pipeTabs.length; ti++) {
+        (function(tab) {
+          var partId = tab.getAttribute('data-part-id');
+          bindLongPress(tab, function() {
+            openSettingsForPart(partId);
+          }, 500);
+        })(pipeTabs[ti]);
+      }
     }
   } else {
     if (timerEl) timerEl.style.display = 'none';
@@ -732,6 +748,46 @@ function cancelExHeaderLongPress() {
   for (var i = 0; i < headers.length; i++) {
     headers[i].classList.remove('long-pressing');
   }
+}
+
+// ══ 롱프레스 유틸 ══
+function bindLongPress(element, callback, duration) {
+  var timer = null;
+  var touchStart = null;
+
+  function start(e) {
+    var touch = e.touches ? e.touches[0] : e;
+    touchStart = { x: touch.clientX, y: touch.clientY };
+    timer = setTimeout(function() {
+      timer = null;
+      touchStart = null;
+      if (navigator.vibrate) navigator.vibrate(30);
+      if (callback) callback();
+    }, duration || 500);
+  }
+
+  function move(e) {
+    if (!timer || !touchStart) return;
+    var touch = e.touches ? e.touches[0] : e;
+    var dx = Math.abs(touch.clientX - touchStart.x);
+    var dy = Math.abs(touch.clientY - touchStart.y);
+    if (dx > 15 || dy > 15) {
+      cancel();
+    }
+  }
+
+  function cancel() {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    touchStart = null;
+  }
+
+  element.addEventListener('touchstart', start);
+  element.addEventListener('touchmove', move);
+  element.addEventListener('touchend', cancel);
+  element.addEventListener('touchcancel', cancel);
 }
 
 // ══ 종목 네비 드래그 순서 변경 ══
