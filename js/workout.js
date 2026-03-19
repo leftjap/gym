@@ -541,7 +541,6 @@ function renderExerciseCard(exIdx) {
               '✓' +
             '</button>' +
           '</div>' +
-          '<button class="complete-ex-btn" onclick="completeExercise(' + exIdx + ')">종목 완료 →</button>' +
         '</div>' +
       '</div>';
   } else if (isBodyweight) {
