@@ -1469,11 +1469,9 @@ function finishWorkout() {
   // 완료 요약 표시
   renderWorkoutSummary(_currentSession);
 
-  // 히스토리: 다중 summary 엔트리로 뒤로 가기 강화
-  // iOS Safari 네이티브 스와이프 방어를 위해 히스토리 스택 깊게 구성
+  // 히스토리: 현재 엔트리를 summary로 교체 + 1개 push
+  // popstate 리스너가 매 스와이프마다 즉시 복원하므로 2개면 충분
   history.replaceState({ screen: 'summary' }, '');
-  history.pushState({ screen: 'summary' }, '');
-  history.pushState({ screen: 'summary' }, '');
   history.pushState({ screen: 'summary' }, '');
 
   // 상태 초기화

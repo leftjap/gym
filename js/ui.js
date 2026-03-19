@@ -943,36 +943,26 @@ function bindLongPress(el, callback, ms) {
 
 // ══ 브라우저 뒤로 가기 지원 (History API) ══
 window.addEventListener('popstate', function(e) {
-  var state = e.state;
-
-  // state가 없으면 (히스토리 최초 엔트리) 홈으로
-  if (!state || !state.screen) {
-    // 운동 완료 요약 화면이면 차단 (다중 pushState로 강화)
-    var summaryEl = document.querySelector('.workout-summary');
-    if (summaryEl) {
-      history.pushState({ screen: 'summary' }, '');
-      history.pushState({ screen: 'summary' }, '');
-      return;
-    }
-    _isPopState = true;
-    _cleanupBeforeScreenSwitch();
-    showScreen('home', 'none');
-    _isPopState = false;
-    return;
-  }
-
-  var targetScreen = state.screen;
-
-  // 운동 완료 요약 화면에서 뒤로 가기 차단 (다중 pushState로 강화)
+  // ── 1. 요약 화면이면 무조건 차단 (DOM 기준, state 무관) ──
   var summaryEl = document.querySelector('.workout-summary');
-  if (summaryEl && targetScreen !== 'summary') {
-    history.pushState({ screen: 'summary' }, '');
+  if (summaryEl) {
     history.pushState({ screen: 'summary' }, '');
     return;
   }
 
-  // summary 상태로 popstate가 왔으면 (이중 엔트리 소모) 아무것도 안 함
+  var state = e.state;
+  var targetScreen = (state && state.screen) ? state.screen : 'home';
+
+  // ── 2. summary state가 왔는데 DOM에 요약이 없으면 (이미 떠난 뒤) 홈으로 ──
   if (targetScreen === 'summary') {
+    history.replaceState({ screen: 'home' }, '');
+    targetScreen = 'home';
+  }
+
+  // ── 3. 홈 화면이 이미 보이고 있으면 차단 (앱 밖으로 빠져나가기 방지) ──
+  var mainView = document.getElementById('main-view');
+  if (targetScreen === 'home' && mainView && mainView.style.display !== 'none') {
+    history.pushState({ screen: 'home' }, '');
     return;
   }
 
@@ -981,7 +971,7 @@ window.addEventListener('popstate', function(e) {
   // 화면 전환 전 정리
   _cleanupBeforeScreenSwitch();
 
-  // 현재 상태별 뒤로 가기 처리
+  // ── 4. 현재 상태별 뒤로 가기 처리 ──
   if (targetScreen === 'home') {
     // 운동 진행 중이면 세션 보존 (일시정지)
     if (_currentSession && !_isFinishing) {
