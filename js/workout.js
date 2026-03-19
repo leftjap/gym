@@ -844,11 +844,13 @@ function bindCardSwipe() {
   container.addEventListener('touchstart', function(e) {
     // 종목 네비 스크롤 영역에서 시작된 터치는 무시
     disabled = e.target.closest('.exercise-nav-scroll') ? true : false;
-    // 왼쪽 가장자리 30px에서 시작된 터치는 무시 (스와이프 뒤로가기 전용)
-    if (!disabled && e.touches[0].clientX <= 30) {
-      disabled = true;
-    }
     if (disabled) return;
+
+    // 왼쪽 가장자리(30px 이내)에서 시작된 터치는 스와이프 뒤로가기에 양보
+    if (e.touches[0].clientX <= 30) {
+      disabled = true;
+      return;
+    }
 
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
