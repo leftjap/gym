@@ -224,7 +224,9 @@ function updateWorkoutHeader(inProgress) {
   if (inProgress) {
     if (timerEl) timerEl.style.display = 'inline';
     if (tagsEl) {
-      tagsEl.innerHTML = '<button class="wh-settings-btn" onclick="openSettingsForPart(_selectedParts[0] || \'chest\')">⋮</button>';
+      tagsEl.innerHTML = '<button class="wh-settings-btn" onclick="openSettingsForPart(_selectedParts[0] || \'chest\')">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>' +
+      '</button>';
     }
   } else {
     if (timerEl) timerEl.style.display = 'none';
