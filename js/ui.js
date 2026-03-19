@@ -956,6 +956,15 @@ window.addEventListener('popstate', function(e) {
 
   var targetScreen = state.screen;
 
+  // 운동 완료 요약 화면에서 뒤로 가기 차단
+  // summary에서 뒤로 가면 home state로 popstate가 발생하는데,
+  // 이때 다시 summary로 되돌린다
+  var summaryEl = document.querySelector('.workout-summary');
+  if (summaryEl && targetScreen !== 'summary') {
+    history.pushState({ screen: 'summary' }, '');
+    return;
+  }
+
   _isPopState = true;
 
   // 화면 전환 전 정리

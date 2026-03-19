@@ -1429,7 +1429,7 @@ function finishWorkout() {
   }
   if (!_currentSession) return;
 
-  _isFinishing = true;  // 플래그 설정
+  _isFinishing = true;
 
   // 경과 시간
   _currentSession.endTime = Date.now();
@@ -1444,11 +1444,12 @@ function finishWorkout() {
   // 임시 저장 제거
   localStorage.removeItem('wk_current_session');
 
-  // 서버에 동기화 (silent 모드 — 토스트 미표시)
+  // 서버에 동기화 (silent 모드)
   syncToServer(null, true);
 
   // 타이머 정리
   if (_workoutTimerInterval) clearInterval(_workoutTimerInterval);
+  _workoutTimerInterval = null;
   dismissRestTimer();
 
   // 버튼 스타일 확실히 복원
@@ -1466,13 +1467,16 @@ function finishWorkout() {
   // 완료 요약 표시
   renderWorkoutSummary(_currentSession);
 
+  // 히스토리: workout → summary로 교체 (뒤로 가기 시 home으로 가지 않도록)
+  history.replaceState({ screen: 'summary' }, '');
+
   // 상태 초기화
   _currentSession = null;
   _selectedParts = [];
   _workoutStartTime = null;
   _currentExerciseIndex = 0;
   _headerFilterPart = null;
-  _isFinishing = false;  // 플래그 해제
+  _isFinishing = false;
 }
 
 // ══ 운동 완료 요약 ══
