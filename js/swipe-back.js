@@ -22,11 +22,6 @@
 
   // ── 스와이프 가능한 화면인지 판단 ──
   function getSwipeableScreen() {
-    // 운동 진행 중이면 비활성 (세션이 있고 부위 선택 단계가 아닌 경우)
-    if (typeof _currentSession !== 'undefined' && _currentSession !== null) {
-      return null;
-    }
-
     // 현재 보이는 화면 찾기
     var stats    = document.getElementById('screen-stats');
     var settings = document.getElementById('screen-settings');
@@ -39,8 +34,9 @@
       return { el: settings, back: 'home' };
     }
     if (workout && workout.style.display !== 'none') {
-      // 부위 선택 단계(세션 없음)에서만 허용
-      return { el: workout, back: 'home' };
+      // 운동 진행 중이면 onWorkoutBack() 호출, 아니면 home 으로
+      var screenType = typeof _currentSession !== 'undefined' && _currentSession !== null ? 'workout-back' : 'home';
+      return { el: workout, back: screenType };
     }
 
     return null;
@@ -162,6 +158,7 @@
       var screenEl = _screenEl;
       var mainView = _mainView;
       var overlay  = _overlay;
+      var swipeable = getSwipeableScreen();
 
       setTimeout(function() {
         cleanup(screenEl, mainView, overlay);
@@ -169,6 +166,9 @@
         if (typeof _settingsReturnTo !== 'undefined' && _settingsReturnTo === 'workout' &&
             screenEl === document.getElementById('screen-settings')) {
           goBackFromSettings();
+        } else if (swipeable && swipeable.back === 'workout-back') {
+          // 운동 화면에서 뒤로가기 시 onWorkoutBack() 호출 (세션 저장 포함)
+          onWorkoutBack();
         } else {
           showScreen('home');
         }

@@ -20,8 +20,10 @@ function renderStatsScreen() {
 
   container.innerHTML = html;
 
-  // ── 월간 캘린더 터치 바인딩 (짧은탭 + 롱프레스 통합) ──
+  // ── 월간 캘린더 터치 바인딩 (짧은탭 + 롱프레스 통합) + PC 클릭 ──
   var calCells = container.querySelectorAll('.stats-cal-cell:not(.empty):not(.future)');
+  var _lastTouchEnd = 0;
+
   for (var ci = 0; ci < calCells.length; ci++) {
     (function(cell) {
       var dateStr = cell.getAttribute('data-date');
@@ -82,6 +84,7 @@ function renderStatsScreen() {
       }, { passive: true });
 
       cell.addEventListener('touchend', function(e) {
+        _lastTouchEnd = Date.now();
         if (timer) { clearTimeout(timer); timer = null; }
         cell.classList.remove('long-pressing');
 
@@ -106,6 +109,20 @@ function renderStatsScreen() {
         triggered = false;
         cell.classList.remove('long-pressing');
       }, { passive: true });
+
+      // PC(마우스) 클릭 지원
+      cell.addEventListener('click', function(e) {
+        // 터치 디바이스에서 touchend 직후 발생하는 click 무시 (200ms 이내)
+        if (Date.now() - _lastTouchEnd < 200) return;
+
+        var allCells = container.querySelectorAll('.stats-cal-cell');
+        for (var k = 0; k < allCells.length; k++) {
+          allCells[k].classList.remove('selected');
+        }
+        cell.classList.add('selected');
+        _statsSelectedDate = dateStr;
+        renderStatsWorkoutCard();
+      });
 
     })(calCells[ci]);
   }

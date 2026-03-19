@@ -384,8 +384,10 @@ function renderWeekCal() {
 
   el.innerHTML = html;
 
-  // ── 터치 바인딩 (짧은탭 + 롱프레스 통합) ──
+  // ── 터치 바인딩 (짧은탭 + 롱프레스 통합) + PC 클릭 ──
   var weekDays = el.querySelectorAll('.week-day');
+  var _lastTouchEnd = 0;
+
   for (var wi = 0; wi < weekDays.length; wi++) {
     (function(dayEl) {
       var dateStr = dayEl.getAttribute('data-date');
@@ -449,6 +451,7 @@ function renderWeekCal() {
       }, { passive: true });
 
       dayEl.addEventListener('touchend', function(e) {
+        _lastTouchEnd = Date.now();
         if (timer) { clearTimeout(timer); timer = null; }
         dayEl.classList.remove('long-pressing');
 
@@ -473,6 +476,20 @@ function renderWeekCal() {
         triggered = false;
         dayEl.classList.remove('long-pressing');
       }, { passive: true });
+
+      // PC(마우스) 클릭 지원
+      dayEl.addEventListener('click', function(e) {
+        // 터치 디바이스에서 touchend 직후 발생하는 click 무시 (200ms 이내)
+        if (Date.now() - _lastTouchEnd < 200) return;
+
+        var allDays = el.querySelectorAll('.week-day');
+        for (var k = 0; k < allDays.length; k++) {
+          allDays[k].classList.remove('selected');
+        }
+        dayEl.classList.add('selected');
+        _selectedWeekDate = dateStr;
+        renderLastWorkoutCard();
+      });
 
     })(weekDays[wi]);
   }
