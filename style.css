@@ -108,7 +108,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(env(safe-area-inset-top, 0px) + 12px) 20px 12px 20px;
+  padding: calc(env(safe-area-inset-top, 0px) + 32px) 20px 12px 20px;
   background: var(--bg-gray);
   color: var(--dark);
   box-shadow: none;
@@ -437,7 +437,7 @@ input {
 
 /* ── 운동 화면 ── */
 .workout-content {
-  padding: calc(env(safe-area-inset-top, 0px) + 60px) 16px 16px 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 80px) 16px 16px 16px;
 }
 
 .part-selector {
