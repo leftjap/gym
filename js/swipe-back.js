@@ -23,6 +23,10 @@
 
   // ── 스와이프 가능한 화면인지 판단 ──
   function getSwipeableScreen() {
+    if (document.querySelector('.workout-summary')) {
+      return null;
+    }
+
     var stats    = document.getElementById('screen-stats');
     var settings = document.getElementById('screen-settings');
     var workout  = document.getElementById('screen-workout');
