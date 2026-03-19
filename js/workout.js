@@ -1604,8 +1604,8 @@ function onWorkoutBack() {
     if (_currentSession) {
       autoSaveSession();
     }
-    // 세션 유지한 채 홈으로 이동 (일시정지 개념)
-    showScreen('home');
+    // 브라우저 히스토리 뒤로 가기 (popstate에서 home 전환 처리)
+    history.back();
   }
 }
 
@@ -1711,9 +1711,9 @@ function cancelWorkout() {
   _workoutStartTime = null;
   _currentExerciseIndex = 0;
   _headerFilterPart = null;
-  _isFinishing = false;  // 플래그도 초기화
+  _isFinishing = false;
 
-  showScreen('home');
+  showScreen('home', 'replace');
 }
 
 // ══ 수정 모드 ══
@@ -1814,8 +1814,8 @@ function saveEditChanges() {
   _editMode = false;
   _editSessionId = null;
 
-  // 통계 화면으로 복귀
-  showScreen(returnScreen);
+  // 수정 완료 후 원래 화면으로 (히스토리 대체)
+  showScreen(returnScreen, 'replace');
 }
 
 /**
@@ -1837,5 +1837,5 @@ function cancelEditMode() {
   _editMode = false;
   _editSessionId = null;
 
-  showScreen('stats');
+  showScreen('stats', 'replace');
 }

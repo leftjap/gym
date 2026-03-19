@@ -21,7 +21,8 @@ function init() {
   updateMonthTitle();
 
   // 메인 화면 표시 (로컬 데이터로 즉시)
-  showScreen('home');
+  // replaceState로 초기 히스토리 상태 설정
+  showScreen('home', 'replace');
 
   // 서버 동기화 — silent 모드
   syncFromServer(function(success) {

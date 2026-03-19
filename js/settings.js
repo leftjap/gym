@@ -72,18 +72,8 @@ function renderSettings() {
 
 // ══ 설정 화면 뒤로가기 ══
 function goBackFromSettings() {
-  var returnTo = _settingsReturnTo;
   _settingsReturnTo = null;
-
-  if (returnTo === 'workout') {
-    // 운동 화면으로 복귀 — 종목 목록 동기화
-    if (_currentSession) {
-      syncExercisesWithSettings();
-    }
-    showScreen('workout');
-  } else {
-    showScreen('home');
-  }
+  history.back();
 }
 
 // ══ 부위 탭 전환 ══

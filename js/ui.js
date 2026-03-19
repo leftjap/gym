@@ -1,11 +1,15 @@
 /* ═══ ui.js — 메인 화면, 캘린더, 화면 전환 ═══ */
 
 var _currentYM = getYM(); // 현재 선택된 월
+var _isPopState = false; // popstate 핸들러 실행 중 플래그
 var _bottomSheetOpen = false;
 var _selectedWeekDate = today(); // 주간 캘린더에서 선택된 날짜 (기본: 오늘)
 
 // ══ 화면 전환 ══
-function showScreen(screenId) {
+function showScreen(screenId, historyAction) {
+  // historyAction: 'push' (기본), 'replace', 'none'
+  if (!historyAction) historyAction = 'push';
+
   var mainView = document.getElementById('main-view');
   var workoutScreen = document.getElementById('screen-workout');
   var statsScreen = document.getElementById('screen-stats');
@@ -47,6 +51,14 @@ function showScreen(screenId) {
     renderSettings();
     window.scrollTo(0, 0);
   }
+
+  // History API
+  if (historyAction === 'push') {
+    history.pushState({ screen: screenId }, '');
+  } else if (historyAction === 'replace') {
+    history.replaceState({ screen: screenId }, '');
+  }
+  // 'none'이면 히스토리 조작 안 함
 }
 
 function startWorkoutFlow() {
@@ -817,7 +829,7 @@ function onBottomBtnClick() {
       finishWorkout();
       break;
     case 'summary':
-      showScreen('home');
+      showScreen('home', 'replace');
       break;
     case 'partSelect':
       // disabled 상태, 동작 없음
@@ -920,3 +932,43 @@ function bindLongPress(el, callback, ms) {
     el.classList.remove(pressClass);
   }, { passive: true });
 }
+
+// ══ 브라우저 뒤로 가기 지원 (History API) ══
+window.addEventListener('popstate', function(e) {
+  var state = e.state;
+
+  // state가 없으면 (히스토리 최초 엔트리) 홈으로
+  if (!state || !state.screen) {
+    _isPopState = true;
+    showScreen('home', 'none');
+    _isPopState = false;
+    return;
+  }
+
+  var targetScreen = state.screen;
+
+  _isPopState = true;
+
+  // 현재 상태별 뒤로 가기 처리
+  if (targetScreen === 'home') {
+    // 운동 진행 중이면 세션 보존 (일시정지)
+    if (_currentSession && !_isFinishing) {
+      autoSaveSession();
+    }
+    showScreen('home', 'none');
+  } else if (targetScreen === 'workout') {
+    // 설정에서 운동으로 복귀하는 경우
+    if (_currentSession && typeof syncExercisesWithSettings === 'function') {
+      syncExercisesWithSettings();
+    }
+    showScreen('workout', 'none');
+  } else if (targetScreen === 'stats') {
+    showScreen('stats', 'none');
+  } else if (targetScreen === 'settings') {
+    showScreen('settings', 'none');
+  } else {
+    showScreen('home', 'none');
+  }
+
+  _isPopState = false;
+});

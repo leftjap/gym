@@ -424,7 +424,7 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 **역할:** 화면 전환, 대시보드 렌더링, 캘린더, 주간 캘린더 선택.
 
 **화면 전환:**
-- `showScreen(screenId)` — **핵심 함수**. 화면 전환 ('home'|'workout')
+- `showScreen(screenId, historyAction)` — **핵심 함수**. 화면 전환 ('home'|'workout'|'stats'|'settings'). historyAction: 'push'(기본)/'replace'/'none'
 - `startWorkoutFlow()` — 운동 화면으로 전환
 
 **홈 화면:**
@@ -452,6 +452,9 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 **하단 버튼:**
 - `updateBottomButton(state)` — 하단 고정 버튼 상태 ('start'|'partSelect'|'partSelectReady'|'workout'|'summary')
 - `onBottomBtnClick()` — 하단 버튼 클릭 시 상태에 따라 분기
+
+**History API:**
+- `popstate 리스너` — 브라우저 뒤로 가기 시 화면 전환 처리 (운동 중이면 세션 보존, 설정→운동 복귀 시 종목 동기화)
 
 ---
 
@@ -590,6 +593,7 @@ WORKFLOW.md        — AI 작업 가이드 (이 파일)
 | 변수명 | 파일 | 역할 |
 |---|---|---|
 | activeScreen | ui.js | 현재 화면 ID (미사용, showScreen 내부에서 직접 관리) |
+| _isPopState | ui.js | popstate 핸들러 실행 중 플래그 |
 | _currentYM | ui.js | 현재 선택된 월 (YYYY-MM) |
 | _bottomSheetOpen | ui.js | 바텀시트 열림 상태 |
 | _selectedWeekDate | ui.js | 주간 캘린더에서 선택된 날짜 (기본: 오늘) |
@@ -673,7 +677,21 @@ showScreen('settings')
 → [숨김 토글] onToggleHideExercise(id) → toggleHideExercise(id) → renderSettings()
 → [삭제] onDeleteCustomExercise(id) → showConfirm() → deleteCustomExercise(id) → renderSettings()
 → [종목 추가] openAddExerciseForm() → saveNewExercise() → addCustomExercise() → renderSettings()
-→ [뒤로] showScreen('home')
+→ [뒤로] goBackFromSettings() → history.back() → popstate 이벤트
+```
+
+### 브라우저 뒤로 가기 (History API)
+```
+[모바일 스와이프 / 뒤로 버튼]
+→ popstate 이벤트
+  → state.screen에 따라 showScreen(targetScreen, 'none')
+  → workout 복귀 시: syncExercisesWithSettings() (설정에서 온 경우)
+  → home 복귀 시: autoSaveSession() (운동 진행 중이면)
+
+화면 전환 히스토리 액션:
+  - 일반 전환: pushState (앞으로 쌓기)
+  - 최초 진입 / 운동 완료 / 취소 / 수정 완료: replaceState (현재 대체)
+  - popstate 핸들러: none (히스토리 조작 안 함)
 ```
 
 ---
