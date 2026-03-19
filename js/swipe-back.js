@@ -10,6 +10,7 @@
 
   // ── 상태 ──
   var _tracking     = false;
+  var _blocking     = false; // 차단 모드 (에지 터치를 먹어서 네이티브 스와이프 방지)
   var _startX       = 0;
   var _startY       = 0;
   var _currentX     = 0;
@@ -19,14 +20,28 @@
   var _overlay      = null;
   var _mainView     = null;
   var _screenWidth  = 0;
-  var _backTarget   = null; // 뒤로가기 대상 ('home' | 'workout-back' | 'settings-to-workout')
+  var _backTarget   = null;
+
+  // ── 스와이프 차단 대상인지 판단 ──
+  function shouldBlockSwipe() {
+    // 요약 화면
+    if (document.querySelector('.workout-summary')) return true;
+    // 홈 화면 (main-view가 보이고 다른 화면이 안 보일 때)
+    var mainView = document.getElementById('main-view');
+    var workout  = document.getElementById('screen-workout');
+    var stats    = document.getElementById('screen-stats');
+    var settings = document.getElementById('screen-settings');
+    if (mainView && mainView.style.display !== 'none') {
+      var otherVisible = (workout && workout.style.display !== 'none') ||
+                         (stats && stats.style.display !== 'none') ||
+                         (settings && settings.style.display !== 'none');
+      if (!otherVisible) return true;
+    }
+    return false;
+  }
 
   // ── 스와이프 가능한 화면인지 판단 ──
   function getSwipeableScreen() {
-    if (document.querySelector('.workout-summary')) {
-      return null;
-    }
-
     var stats    = document.getElementById('screen-stats');
     var settings = document.getElementById('screen-settings');
     var workout  = document.getElementById('screen-workout');
@@ -35,14 +50,12 @@
       return { el: stats, back: 'home' };
     }
     if (settings && settings.style.display !== 'none') {
-      // 설정 화면에서 운동으로 돌아가는 경우
       if (typeof _settingsReturnTo !== 'undefined' && _settingsReturnTo === 'workout') {
         return { el: settings, back: 'settings-to-workout' };
       }
       return { el: settings, back: 'home' };
     }
     if (workout && workout.style.display !== 'none') {
-      // 운동 화면: 세션 유무와 관계없이 스와이프 허용
       return { el: workout, back: 'workout-back' };
     }
 
@@ -65,8 +78,19 @@
   function onTouchStart(e) {
     var touch = e.touches[0];
 
-    // 왼쪽 가장자리에서만 시작
+    // 왼쪽 가장자리에서만 처리
     if (touch.clientX > EDGE_WIDTH) return;
+
+    // 차단 대상 화면이면 touchstart에서 바로 preventDefault
+    // iOS Safari는 touchstart에서 preventDefault해야 네이티브 에지 스와이프가 차단됨
+    if (shouldBlockSwipe()) {
+      _blocking = true;
+      _tracking = false;
+      e.preventDefault();
+      return;
+    }
+
+    _blocking = false;
 
     var swipeable = getSwipeableScreen();
     if (!swipeable) return;
@@ -86,13 +110,18 @@
 
   // ── 터치 이동 ──
   function onTouchMove(e) {
+    // 차단 모드: 보조 방어선
+    if (_blocking) {
+      e.preventDefault();
+      return;
+    }
+
     if (!_tracking || !_screenEl) return;
 
     var touch  = e.touches[0];
     var deltaX = touch.clientX - _startX;
     var deltaY = touch.clientY - _startY;
 
-    // 방향 판정 (최초 10px 이동 시 결정)
     if (!_decided) {
       if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) return;
       _decided = true;
@@ -103,7 +132,6 @@
         return;
       }
 
-      // 수평 스와이프 확정 — 화면 준비
       _screenEl.classList.add('swiping');
       _overlay.classList.add('visible');
 
@@ -136,6 +164,11 @@
 
   // ── 터치 종료 ──
   function onTouchEnd(e) {
+    if (_blocking) {
+      _blocking = false;
+      return;
+    }
+
     if (!_tracking || !_screenEl || !_isHorizontal) {
       _tracking = false;
       return;
@@ -203,10 +236,15 @@
   }
 
   // ── 이벤트 등록 ──
-  document.addEventListener('touchstart', onTouchStart, { passive: true });
+  // touchstart: passive:false 필수 — iOS Safari에서 preventDefault()로 에지 스와이프 차단하려면
+  document.addEventListener('touchstart', onTouchStart, { passive: false });
   document.addEventListener('touchmove', onTouchMove, { passive: false });
   document.addEventListener('touchend', onTouchEnd, { passive: true });
   document.addEventListener('touchcancel', function() {
+    if (_blocking) {
+      _blocking = false;
+      return;
+    }
     if (_tracking && _screenEl && _isHorizontal) {
       _screenEl.classList.add('swipe-animating');
       _screenEl.style.transform = 'translateX(0px)';
