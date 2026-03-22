@@ -346,6 +346,7 @@ js/app.js          — 초기화, 진입점
 manifest.json      — PWA 매니페스트 (앱 이름, 아이콘, 테마 색상)
 icon.jpg           — 앱 아이콘 (고릴라)
 AGENTS.md        — AI 작업 가이드 (이 파일)
+gas/Code.js        — 운동앱 전용 GAS 서버
 ```
 
 ---
