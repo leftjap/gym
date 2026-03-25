@@ -834,7 +834,7 @@ function onBottomBtnClick() {
       startWorkout();
       break;
     case 'workout':
-      finishWorkout();
+      confirmFinishWorkout();
       break;
     case 'summary':
       showScreen('home', 'replace');

@@ -1623,6 +1623,28 @@ function stopPeriodicSave() {
   }
 }
 
+// ══ 운동 완료 확인 ══
+function confirmFinishWorkout() {
+  if (!_currentSession) return;
+
+  var doneCount = 0;
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    for (var j = 0; j < _currentSession.exercises[i].sets.length; j++) {
+      if (_currentSession.exercises[i].sets[j].done) doneCount++;
+    }
+  }
+
+  var msg = doneCount > 0
+    ? doneCount + '세트 완료. 운동을 종료하시겠습니까?'
+    : '완료된 세트가 없습니다. 운동을 종료하시겠습니까?';
+
+  showConfirm(msg, function(confirmed) {
+    if (confirmed) {
+      finishWorkout();
+    }
+  });
+}
+
 // ══ 운동 완료 ══
 function finishWorkout() {
   if (_isFinishing) {
