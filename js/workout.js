@@ -922,6 +922,7 @@ function bindCardSwipe() {
   var startY = 0;
   var currentX = 0;
   var isSwiping = false;
+  var decided = false;
   var swipeThreshold = 50;
   var card = container.querySelector('.swipe-card');
   var disabled = false;
@@ -941,8 +942,9 @@ function bindCardSwipe() {
     startY = e.touches[0].clientY;
     currentX = 0;
     isSwiping = false;
+    decided = false;
     if (card) card.classList.add('swiping');
-  }, { passive: true });
+  }, { passive: false });
 
   container.addEventListener('touchmove', function(e) {
     if (disabled) return;
@@ -950,18 +952,26 @@ function bindCardSwipe() {
     var dx = e.touches[0].clientX - startX;
     var dy = e.touches[0].clientY - startY;
 
-    // 세로 스크롤이 더 크면 스와이프 무시
-    if (!isSwiping && Math.abs(dy) > Math.abs(dx)) return;
-
-    if (Math.abs(dx) > 10) {
+    // 방향 미결정 상태: 세로가 더 크면 스와이프 포기 (세로 스크롤 허용)
+    if (!decided) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      decided = true;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        // 세로 스크롤 → 카드 스와이프 비활성
+        isSwiping = false;
+        if (card) card.classList.remove('swiping');
+        return;
+      }
       isSwiping = true;
     }
 
-    if (isSwiping) {
-      currentX = dx;
-      if (card) card.style.transform = 'translateX(' + dx + 'px)';
-    }
-  }, { passive: true });
+    if (!isSwiping) return;
+
+    // 좌우 스와이프 확정 → 브라우저 기본 스크롤 차단
+    e.preventDefault();
+    currentX = dx;
+    if (card) card.style.transform = 'translateX(' + dx + 'px)';
+  }, { passive: false });
 
   container.addEventListener('touchend', function(e) {
     if (disabled) {
