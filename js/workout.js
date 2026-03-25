@@ -9,6 +9,7 @@ var _currentExerciseIndex = 0;  // 현재 보고 있는 종목 인덱스
 var _isFinishing = false;  // finishWorkout 중복 실행 방지
 var _headerFilterPart = null;  // 헤더 부위 탭 필터 (null이면 전체)
 var _autoSaveInterval = null;  // 30초 주기 자동저장 타이머
+var _cardioTimers = {};  // 유산소 스톱워치 상태 { exIdx: { startedAt, elapsed, running, intervalId } }
 
 // ══ 종목 완료 여부 판정 ══
 function isExerciseComplete(exIdx) {
@@ -546,18 +547,66 @@ function renderExerciseCard(exIdx) {
   html += motivateHtml;
 
   if (isCardio) {
+    var cTimer = _cardioTimers[exIdx];
+    var cRunning = cTimer && cTimer.running;
+    var cHasElapsed = cTimer && cTimer.elapsed > 0;
+    var cDone = exData.sets[0] && exData.sets[0].done;
+    var cDisplayTime = '00:00';
+    if (cTimer) {
+      var cMs = cTimer.elapsed;
+      if (cTimer.running) cMs += Date.now() - cTimer.startedAt;
+      cDisplayTime = formatCardioTime(cMs);
+    }
+
     html +=
       '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
-        '<div class="ex-card-body">' +
-          '<div class="cardio-input">' +
-            '<input type="number" class="cardio-min-input" id="cardioMin-' + exIdx + '" ' +
-              'value="' + (exData.sets[0] ? exData.sets[0].reps : '') + '" placeholder="' + (lastCardioMin > 0 ? lastCardioMin : '분') + '" inputmode="numeric">' +
-            '<span class="cardio-label">분</span>' +
-            '<button class="set-check-btn' + (exData.sets[0] && exData.sets[0].done ? ' done' : '') + '" ' +
-              'onclick="completeCardio(' + exIdx + ')">' +
-              '✓' +
-            '</button>' +
+        '<div class="ex-card-body">';
+
+    if (cDone) {
+      // 완료 상태: 결과 표시
+      html +=
+          '<div class="cardio-result">' +
+            '<span class="cardio-result-time">' + (exData.sets[0].reps || 0) + '분</span>' +
+            '<button class="set-check-btn done" onclick="completeCardio(' + exIdx + ')">✓</button>' +
+          '</div>';
+    } else if (cRunning) {
+      // 진행 중: 타이머 표시 + 일시정지/완료 버튼
+      html +=
+          '<div class="cardio-timer-display">' +
+            '<span class="cardio-timer-time" id="cardioTimerDisplay-' + exIdx + '">' + cDisplayTime + '</span>' +
           '</div>' +
+          '<div class="cardio-timer-actions">' +
+            '<button class="cardio-action-btn cardio-pause" onclick="pauseCardioTimer(' + exIdx + ')">일시정지</button>' +
+            '<button class="cardio-action-btn cardio-complete" onclick="completeCardio(' + exIdx + ')">완료</button>' +
+          '</div>';
+    } else if (cHasElapsed) {
+      // 일시정지 상태: 경과 시간 + 재개/완료 버튼
+      html +=
+          '<div class="cardio-timer-display">' +
+            '<span class="cardio-timer-time paused" id="cardioTimerDisplay-' + exIdx + '">' + cDisplayTime + '</span>' +
+          '</div>' +
+          '<div class="cardio-timer-actions">' +
+            '<button class="cardio-action-btn cardio-resume" onclick="startCardioTimer(' + exIdx + ')">재개</button>' +
+            '<button class="cardio-action-btn cardio-complete" onclick="completeCardio(' + exIdx + ')">완료</button>' +
+          '</div>';
+    } else {
+      // 초기 상태: 시작 버튼 + 수동 입력
+      html +=
+          '<div class="cardio-start-area">' +
+            '<button class="cardio-start-btn" onclick="startCardioTimer(' + exIdx + ')">▶ 시작</button>' +
+          '</div>' +
+          '<div class="cardio-manual">' +
+            '<span class="cardio-manual-label">또는 직접 입력</span>' +
+            '<div class="cardio-input">' +
+              '<input type="number" class="cardio-min-input" id="cardioMin-' + exIdx + '" ' +
+                'value="' + (exData.sets[0] ? exData.sets[0].reps : '') + '" placeholder="' + (lastCardioMin > 0 ? lastCardioMin : '분') + '" inputmode="numeric">' +
+              '<span class="cardio-label">분</span>' +
+              '<button class="set-check-btn" onclick="completeCardio(' + exIdx + ')">✓</button>' +
+            '</div>' +
+          '</div>';
+    }
+
+    html +=
         '</div>' +
       '</div>';
   } else if (isBodyweight) {
@@ -1276,14 +1325,145 @@ function completeSet(exIdx, setIdx) {
   renderExerciseCards();
 }
 
+// ══ 유산소 스톱워치 ══
+function startCardioTimer(exIdx) {
+  var timer = _cardioTimers[exIdx];
+  if (timer && timer.running) return; // 이미 진행 중
+
+  if (!timer) {
+    _cardioTimers[exIdx] = { startedAt: Date.now(), elapsed: 0, running: true, intervalId: null };
+  } else {
+    // 일시정지 후 재개: startedAt을 현재 시점으로 갱신
+    _cardioTimers[exIdx].startedAt = Date.now();
+    _cardioTimers[exIdx].running = true;
+  }
+
+  // 세션 데이터에 타이머 상태 저장 (복원용)
+  if (_currentSession && _currentSession.exercises[exIdx]) {
+    _currentSession.exercises[exIdx]._cardioTimer = {
+      elapsed: _cardioTimers[exIdx].elapsed,
+      startedAt: _cardioTimers[exIdx].startedAt,
+      running: true
+    };
+  }
+  autoSaveSession();
+
+  // 1초마다 디스플레이 갱신
+  _cardioTimers[exIdx].intervalId = setInterval(function() {
+    updateCardioTimerDisplay(exIdx);
+  }, 1000);
+
+  renderExerciseCards();
+}
+
+function pauseCardioTimer(exIdx) {
+  var timer = _cardioTimers[exIdx];
+  if (!timer || !timer.running) return;
+
+  // 누적 경과 시간 계산
+  timer.elapsed += Date.now() - timer.startedAt;
+  timer.running = false;
+
+  if (timer.intervalId) {
+    clearInterval(timer.intervalId);
+    timer.intervalId = null;
+  }
+
+  // 분 단위로 세션 데이터에 반영
+  var totalSec = Math.floor(timer.elapsed / 1000);
+  var totalMin = Math.round(totalSec / 60);
+  if (_currentSession && _currentSession.exercises[exIdx]) {
+    if (!_currentSession.exercises[exIdx].sets[0]) {
+      _currentSession.exercises[exIdx].sets[0] = { weight: 0, reps: 0, done: false, isPR: false };
+    }
+    _currentSession.exercises[exIdx].sets[0].reps = totalMin;
+    _currentSession.exercises[exIdx]._cardioTimer = {
+      elapsed: timer.elapsed,
+      startedAt: null,
+      running: false
+    };
+  }
+  autoSaveSession();
+
+  renderExerciseCards();
+}
+
+function updateCardioTimerDisplay(exIdx) {
+  var timer = _cardioTimers[exIdx];
+  if (!timer) return;
+
+  var totalMs = timer.elapsed;
+  if (timer.running) {
+    totalMs += Date.now() - timer.startedAt;
+  }
+
+  var el = document.getElementById('cardioTimerDisplay-' + exIdx);
+  if (el) {
+    el.textContent = formatCardioTime(totalMs);
+  }
+
+  // 진행 중이면 매 분마다 세션 데이터에 반영 (자동저장 보완)
+  if (timer.running && _currentSession && _currentSession.exercises[exIdx]) {
+    var totalMin = Math.round(totalMs / 60000);
+    if (!_currentSession.exercises[exIdx].sets[0]) {
+      _currentSession.exercises[exIdx].sets[0] = { weight: 0, reps: 0, done: false, isPR: false };
+    }
+    _currentSession.exercises[exIdx].sets[0].reps = totalMin;
+  }
+}
+
+function formatCardioTime(ms) {
+  var totalSec = Math.floor(ms / 1000);
+  var min = Math.floor(totalSec / 60);
+  var sec = totalSec % 60;
+  return String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+}
+
 function completeCardio(exIdx) {
   var exData = _currentSession.exercises[exIdx];
-  var input = document.getElementById('cardioMin-' + exIdx);
-  var min = parseInt(input.value) || 0;
+  var timer = _cardioTimers[exIdx];
+
+  // 이미 완료된 상태면 토글 해제
+  if (exData.sets[0] && exData.sets[0].done) {
+    exData.sets[0].done = false;
+    autoSaveSession();
+    renderExerciseCards();
+    return;
+  }
+
+  // 스톱워치가 진행 중이면 정지
+  if (timer && timer.running) {
+    timer.elapsed += Date.now() - timer.startedAt;
+    timer.running = false;
+    if (timer.intervalId) {
+      clearInterval(timer.intervalId);
+      timer.intervalId = null;
+    }
+  }
+
+  // 시간 결정: 스톱워치 값 우선, 없으면 수동 입력
+  var min = 0;
+  if (timer && timer.elapsed > 0) {
+    min = Math.round(timer.elapsed / 60000);
+    if (min < 1 && timer.elapsed > 0) min = 1; // 최소 1분
+  } else {
+    var input = document.getElementById('cardioMin-' + exIdx);
+    min = input ? (parseInt(input.value) || 0) : 0;
+  }
 
   if (!exData.sets[0]) exData.sets[0] = { weight: 0, reps: 0, done: false, isPR: false };
-  exData.sets[0].reps = min; // reps에 분 저장
-  exData.sets[0].done = !exData.sets[0].done;
+  exData.sets[0].reps = min;
+  exData.sets[0].done = true;
+
+  // 타이머 상태 정리
+  if (timer && timer.intervalId) {
+    clearInterval(timer.intervalId);
+    timer.intervalId = null;
+  }
+  delete _cardioTimers[exIdx];
+  if (_currentSession.exercises[exIdx]._cardioTimer) {
+    delete _currentSession.exercises[exIdx]._cardioTimer;
+  }
 
   autoSaveSession();
   renderExerciseCards();
@@ -1465,6 +1645,16 @@ function finishWorkout() {
   if (_workoutTimerInterval) clearInterval(_workoutTimerInterval);
   _workoutTimerInterval = null;
   stopPeriodicSave();
+
+  // 유산소 타이머 정리
+  var ctKeys = Object.keys(_cardioTimers);
+  for (var ci = 0; ci < ctKeys.length; ci++) {
+    if (_cardioTimers[ctKeys[ci]].intervalId) {
+      clearInterval(_cardioTimers[ctKeys[ci]].intervalId);
+    }
+  }
+  _cardioTimers = {};
+
   dismissRestTimer();
 
   var bottomBtn = document.getElementById('bottomBtn');
@@ -1602,6 +1792,28 @@ function restoreSession() {
     _currentExerciseIndex = 0;
     _headerFilterPart = null;
 
+    // 유산소 타이머 상태 복원
+    _cardioTimers = {};
+    for (var i = 0; i < _currentSession.exercises.length; i++) {
+      var ct = _currentSession.exercises[i]._cardioTimer;
+      if (ct) {
+        _cardioTimers[i] = {
+          elapsed: ct.elapsed || 0,
+          startedAt: ct.running ? Date.now() : null,
+          running: ct.running || false,
+          intervalId: null
+        };
+        // 진행 중이었으면 interval 재시작
+        if (_cardioTimers[i].running) {
+          (function(idx) {
+            _cardioTimers[idx].intervalId = setInterval(function() {
+              updateCardioTimerDisplay(idx);
+            }, 1000);
+          })(i);
+        }
+      }
+    }
+
     // 타이머 재시작
     if (_workoutStartTime && !_workoutTimerInterval) {
       startWorkoutTimer();
@@ -1721,6 +1933,16 @@ function cancelWorkout() {
   // 타이머 정리
   if (_workoutTimerInterval) clearInterval(_workoutTimerInterval);
   stopPeriodicSave();
+
+  // 유산소 타이머 정리
+  var ctKeys = Object.keys(_cardioTimers);
+  for (var ci = 0; ci < ctKeys.length; ci++) {
+    if (_cardioTimers[ctKeys[ci]].intervalId) {
+      clearInterval(_cardioTimers[ctKeys[ci]].intervalId);
+    }
+  }
+  _cardioTimers = {};
+
   dismissRestTimer();
 
   // 상태 초기화
