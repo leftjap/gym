@@ -1,7 +1,7 @@
 /* ═══ sync.js — GAS 서버 동기화 ═══ */
 
 var GAS_URL = 'https://script.google.com/macros/s/AKfycby9cBU92KAnTveGQWtALcbTmpExMKvSbtkvyC6vdWZttt8kEIEmxaTuTHan474rbzA3/exec';
-var GAS_TOKEN = 'gorilla2026';
+var GAS_TOKEN = 'gym2026';
 var _syncInProgress = false;
 
 // ══ 서버에 데이터 저장 ══
