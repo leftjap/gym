@@ -1227,7 +1227,7 @@ input {
 
 @supports (padding: env(safe-area-inset-bottom)) {
   .rest-timer-bar {
-    bottom: calc(env(safe-area-inset-bottom) + 80px);
+    bottom: calc(env(safe-area-inset-bottom) + 88px);
   }
 }
 
@@ -3184,7 +3184,7 @@ input {
 
 @supports (padding: env(safe-area-inset-bottom)) {
   .start-workout {
-    bottom: calc(env(safe-area-inset-bottom));
+    bottom: calc(env(safe-area-inset-bottom) + 8px);
   }
 }
 
@@ -3782,7 +3782,7 @@ input {
   left: 0;
   right: 0;
   bottom: -50px;
-  background: var(--white);
+  background: var(--bg-gray);
   display: flex;
   flex-direction: column;
   align-items: center;
