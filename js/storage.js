@@ -8,7 +8,8 @@ const K = {
   settings: 'wk_settings',
   customExercises: 'wk_custom_exercises',
   hiddenExercises: 'wk_hidden_exercises',
-  exerciseIcons: 'wk_exercise_icons'
+  exerciseIcons: 'wk_exercise_icons',
+  partOverrides: 'wk_exercise_part_override'
 };
 
 // ── LocalStorage 읽기/쓰기 ──
@@ -164,7 +165,16 @@ const EXERCISES = [
 // ── 종목 조회 헬퍼 ──
 function getExercise(id) {
   var found = EXERCISES.find(function(e) { return e.id === id; });
-  if (found) return found;
+  if (found) {
+    var overrides = getPartOverrides();
+    if (overrides[id]) {
+      var copy = {};
+      for (var key in found) { copy[key] = found[key]; }
+      copy.bodyPart = overrides[id];
+      return copy;
+    }
+    return found;
+  }
   var custom = L(K.customExercises) || [];
   return custom.find(function(e) { return e.id === id; }) || null;
 }
@@ -180,9 +190,24 @@ function saveExerciseOrder(orderMap) {
 
 function getExercisesByPart(partId) {
   var hidden = L(K.hiddenExercises) || [];
+  var overrides = getPartOverrides();
+
   var base = EXERCISES.filter(function(e) {
-    return e.bodyPart === partId && hidden.indexOf(e.id) < 0;
+    var effectivePart = overrides[e.id] || e.bodyPart;
+    return effectivePart === partId && hidden.indexOf(e.id) < 0;
   });
+
+  // 오버라이드된 기본 종목은 복사본을 반환 (bodyPart 반영)
+  base = base.map(function(e) {
+    if (overrides[e.id]) {
+      var copy = {};
+      for (var key in e) { copy[key] = e[key]; }
+      copy.bodyPart = overrides[e.id];
+      return copy;
+    }
+    return e;
+  });
+
   var custom = (L(K.customExercises) || []).filter(function(e) {
     return e.bodyPart === partId;
   });
@@ -344,4 +369,26 @@ function getExerciseIcon(exerciseId) {
   // 기본 아이콘 폴백: EXERCISES 마스터의 icon 필드
   var ex = EXERCISES.find(function(e) { return e.id === exerciseId; });
   return (ex && ex.icon) ? ex.icon : '';
+}
+
+// ── 종목 부위 오버라이드 ──
+function getPartOverrides() {
+  return L(K.partOverrides) || {};
+}
+
+function setPartOverride(exerciseId, newPartId) {
+  var map = getPartOverrides();
+  var original = EXERCISES.find(function(e) { return e.id === exerciseId; });
+  if (original && original.bodyPart === newPartId) {
+    delete map[exerciseId];
+  } else {
+    map[exerciseId] = newPartId;
+  }
+  S(K.partOverrides, map);
+}
+
+function removePartOverride(exerciseId) {
+  var map = getPartOverrides();
+  delete map[exerciseId];
+  S(K.partOverrides, map);
 }

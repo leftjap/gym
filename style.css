@@ -3985,6 +3985,16 @@ input {
   color: var(--dark);
 }
 
+/* ── 부위 탭 드래그 호버 ── */
+.settings-part-tab.drag-hover {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(232, 80, 64, 0.3);
+  transition: all 0.15s ease;
+}
+
 /* ── 가로모드 차단 ── */
 @media screen and (orientation: landscape) and (max-height: 600px) {
   #app {

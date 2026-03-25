@@ -87,10 +87,12 @@ function renderSettingsExerciseList() {
   var partId = _settingsSelectedPart;
   var allExercises = getExercisesByPart(partId);
   var hidden = getHiddenExercises();
+  var overrides = getPartOverrides();
 
-  // 숨김 종목도 포함하여 표시 (숨김 표시 + 토글)
+  // 숨김 종목도 포함하여 표시 (오버라이드 반영)
   var hiddenBase = EXERCISES.filter(function(e) {
-    return e.bodyPart === partId && hidden.indexOf(e.id) >= 0;
+    var effectivePart = overrides[e.id] || e.bodyPart;
+    return effectivePart === partId && hidden.indexOf(e.id) >= 0;
   });
 
   // 합치기: getExercisesByPart는 숨김 제외이므로, 숨김 종목을 뒤에 추가
@@ -112,6 +114,16 @@ function renderSettingsExerciseList() {
       ? '<img src="' + iconUrl + '" class="settings-ex-icon" alt="" onerror="this.style.display=\'none\'">'
       : '';
 
+    // 원래 부위에서 이동해온 종목인지 표시
+    var originalEx = EXERCISES.find(function(e) { return e.id === ex.id; });
+    var movedFromHtml = '';
+    if (originalEx && overrides[ex.id]) {
+      var origPart = getBodyPart(originalEx.bodyPart);
+      if (origPart) {
+        movedFromHtml = ' · <span style="color:var(--accent)">' + origPart.name + '에서 이동</span>';
+      }
+    }
+
     html +=
       '<div class="settings-ex-item' + (isHidden ? ' hidden-ex' : '') + '" data-exercise-id="' + ex.id + '"' + (isHidden ? ' data-hidden="true"' : '') + '>' +
         '<div class="settings-ex-info" data-ex-id="' + ex.id + '">' +
@@ -123,6 +135,7 @@ function renderSettingsExerciseList() {
             (EQUIPMENT[ex.equipment] || ex.equipment) +
             ' · ' + ex.defaultSets + '세트 · ' + ex.defaultReps + '회' +
             (ex.defaultWeight ? ' · ' + ex.defaultWeight + 'kg' : '') +
+            movedFromHtml +
           '</div>' +
         '</div>' +
         '<button class="settings-ex-toggle' + (isHidden ? '' : ' active') + '" ' +
@@ -155,12 +168,14 @@ function bindSettingsExerciseDrag() {
       var allItems = [];
       var currentIdx = -1;
       var originalIdx = -1;
+      var hoveredPartTab = null;
 
       item.addEventListener('touchstart', function(e) {
         if (item.getAttribute('data-hidden') === 'true') return;
 
         isDragging = false;
         wasDragged = false;
+        hoveredPartTab = null;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         item.classList.add('long-pressing');
@@ -220,37 +235,62 @@ function bindSettingsExerciseDrag() {
         if (!isDragging || !ghostEl) return;
         e.preventDefault();
 
+        var touchX = e.touches[0].clientX;
         var touchY = e.touches[0].clientY;
         ghostEl.style.top = (ghostEl._startGhostTop + (touchY - ghostEl._startTouchY)) + 'px';
 
-        var newIdx = currentIdx;
-        for (var j = 0; j < allItems.length; j++) {
-          if (allItems[j] === item) continue;
-          if (allItems[j].style.display === 'none') continue;
-          var r = allItems[j].getBoundingClientRect();
-          var midY = r.top + r.height / 2;
-          if (touchY < midY && j < currentIdx) {
-            newIdx = j;
+        // 부위 탭 호버 감지
+        var prevHovered = hoveredPartTab;
+        hoveredPartTab = null;
+        var partTabs = document.querySelectorAll('.settings-part-tab');
+        for (var t = 0; t < partTabs.length; t++) {
+          var tabRect = partTabs[t].getBoundingClientRect();
+          if (touchX >= tabRect.left && touchX <= tabRect.right &&
+              touchY >= tabRect.top && touchY <= tabRect.bottom) {
+            hoveredPartTab = partTabs[t];
             break;
-          }
-          if (touchY > midY && j > currentIdx) {
-            newIdx = j;
           }
         }
 
-        if (newIdx !== currentIdx) {
-          if (placeholder && placeholder.parentNode) {
-            placeholder.parentNode.removeChild(placeholder);
-          }
-          if (newIdx < allItems.length) {
-            var targetItem = allItems[newIdx];
-            if (newIdx > currentIdx) {
-              targetItem.parentNode.insertBefore(placeholder, targetItem.nextSibling);
-            } else {
-              targetItem.parentNode.insertBefore(placeholder, targetItem);
+        // 하이라이트 갱신
+        for (var t2 = 0; t2 < partTabs.length; t2++) {
+          partTabs[t2].classList.remove('drag-hover');
+        }
+        if (hoveredPartTab) {
+          hoveredPartTab.classList.add('drag-hover');
+        }
+
+        // 부위 탭 위가 아닐 때만 리스트 내 순서 변경 처리
+        if (!hoveredPartTab) {
+          var newIdx = currentIdx;
+          for (var j = 0; j < allItems.length; j++) {
+            if (allItems[j] === item) continue;
+            if (allItems[j].style.display === 'none') continue;
+            var r = allItems[j].getBoundingClientRect();
+            var midY = r.top + r.height / 2;
+            if (touchY < midY && j < currentIdx) {
+              newIdx = j;
+              break;
+            }
+            if (touchY > midY && j > currentIdx) {
+              newIdx = j;
             }
           }
-          currentIdx = newIdx;
+
+          if (newIdx !== currentIdx) {
+            if (placeholder && placeholder.parentNode) {
+              placeholder.parentNode.removeChild(placeholder);
+            }
+            if (newIdx < allItems.length) {
+              var targetItem = allItems[newIdx];
+              if (newIdx > currentIdx) {
+                targetItem.parentNode.insertBefore(placeholder, targetItem.nextSibling);
+              } else {
+                targetItem.parentNode.insertBefore(placeholder, targetItem);
+              }
+            }
+            currentIdx = newIdx;
+          }
         }
       }, { passive: false });
 
@@ -260,6 +300,12 @@ function bindSettingsExerciseDrag() {
         if (timer) {
           clearTimeout(timer);
           timer = null;
+        }
+
+        // 부위 탭 하이라이트 제거
+        var partTabs = document.querySelectorAll('.settings-part-tab');
+        for (var t = 0; t < partTabs.length; t++) {
+          partTabs[t].classList.remove('drag-hover');
         }
 
         if (!isDragging && !wasDragged) {
@@ -288,6 +334,60 @@ function bindSettingsExerciseDrag() {
           placeholder = null;
         }
 
+        // 부위 탭 위에 드롭한 경우 → 부위 이동
+        if (hoveredPartTab) {
+          var targetPartId = null;
+          for (var pi = 0; pi < BODY_PARTS.length; pi++) {
+            if (hoveredPartTab.textContent.trim() === BODY_PARTS[pi].name) {
+              targetPartId = BODY_PARTS[pi].id;
+              break;
+            }
+          }
+
+          if (targetPartId && targetPartId !== _settingsSelectedPart) {
+            var meta = getExercise(exId);
+            var exName = meta ? meta.name : exId;
+            var targetPart = getBodyPart(targetPartId);
+            var targetName = targetPart ? targetPart.name : targetPartId;
+
+            showConfirm(exName + '을(를) ' + targetName + '(으)로 이동하시겠습니까?', function(confirmed) {
+              if (confirmed) {
+                if (isCustomExercise(exId)) {
+                  var customs = getCustomExercises();
+                  for (var ci = 0; ci < customs.length; ci++) {
+                    if (customs[ci].id === exId) {
+                      customs[ci].bodyPart = targetPartId;
+                      break;
+                    }
+                  }
+                  S(K.customExercises, customs);
+                } else {
+                  setPartOverride(exId, targetPartId);
+                }
+
+                // 원래 부위 순서에서 제거
+                var orderMap = getExerciseOrder();
+                var srcOrder = orderMap[_settingsSelectedPart];
+                if (srcOrder) {
+                  orderMap[_settingsSelectedPart] = srcOrder.filter(function(eid) { return eid !== exId; });
+                  saveExerciseOrder(orderMap);
+                }
+
+                saveLastSyncTime();
+                if (typeof syncToServer === 'function') syncToServer(null, true);
+                renderSettings();
+              }
+            });
+          }
+
+          hoveredPartTab = null;
+          e.preventDefault();
+          return;
+        }
+
+        hoveredPartTab = null;
+
+        // 같은 부위 내 순서 변경 (기존 로직)
         if (originalIdx !== currentIdx) {
           var newItems = listEl.querySelectorAll('.settings-ex-item');
           var newOrder = [];
@@ -314,9 +414,15 @@ function bindSettingsExerciseDrag() {
         if (timer) { clearTimeout(timer); timer = null; }
         isDragging = false;
         wasDragged = false;
+        hoveredPartTab = null;
         if (ghostEl) { ghostEl.remove(); ghostEl = null; }
         if (placeholder && placeholder.parentNode) { placeholder.remove(); placeholder = null; }
         item.style.display = '';
+
+        var partTabs = document.querySelectorAll('.settings-part-tab');
+        for (var t = 0; t < partTabs.length; t++) {
+          partTabs[t].classList.remove('drag-hover');
+        }
       }, { passive: true });
 
     })(items[i]);
