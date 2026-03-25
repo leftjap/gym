@@ -540,7 +540,7 @@ function renderExerciseCard(exIdx) {
         '<div class="ex-card-name">' + meta.name + '</div>' +
       '</div>' +
       exIconHtml +
-      (allDone ? '<span class="ex-card-check">✓</span>' : '') +
+      (allDone && !isCardio ? '<span class="ex-card-check">✓</span>' : '') +
     '</div>';
 
   // 2. 동기부여 문구
@@ -563,11 +563,23 @@ function renderExerciseCard(exIdx) {
         '<div class="ex-card-body">';
 
     if (cDone) {
-      // 완료 상태: 결과 표시
+      // 완료 상태: 시작 버튼 + 수동 입력 (기존값 채움)
+      var doneMin = exData.sets[0] ? exData.sets[0].reps : 0;
       html +=
-          '<div class="cardio-result">' +
-            '<span class="cardio-result-time">' + (exData.sets[0].reps || 0) + '분</span>' +
-            '<button class="set-check-btn done" onclick="completeCardio(' + exIdx + ')">✓</button>' +
+          '<div class="cardio-done-chip" onclick="completeCardio(' + exIdx + ')">' +
+            '<span class="done-set-chip"><span class="chip-set-num">1</span> ' + doneMin + '분</span>' +
+          '</div>' +
+          '<div class="cardio-start-area">' +
+            '<button class="cardio-start-btn" onclick="completeCardio(' + exIdx + '); setTimeout(function(){startCardioTimer(' + exIdx + ')},100)">▶ 다시 시작</button>' +
+          '</div>' +
+          '<div class="cardio-manual">' +
+            '<span class="cardio-manual-label">또는 직접 수정</span>' +
+            '<div class="cardio-input">' +
+              '<input type="number" class="cardio-min-input" id="cardioMin-' + exIdx + '" ' +
+                'value="' + doneMin + '" placeholder="분" inputmode="numeric">' +
+              '<span class="cardio-label">분</span>' +
+              '<button class="set-check-btn done" onclick="updateCardioDone(' + exIdx + ')">✓</button>' +
+            '</div>' +
           '</div>';
     } else if (cRunning) {
       // 진행 중: 타이머 표시 + 일시정지/완료 버튼
@@ -1465,6 +1477,20 @@ function completeCardio(exIdx) {
     delete _currentSession.exercises[exIdx]._cardioTimer;
   }
 
+  autoSaveSession();
+  renderExerciseCards();
+}
+
+// ══ 유산소 시간 수정 ══
+function updateCardioDone(exIdx) {
+  var exData = _currentSession.exercises[exIdx];
+  if (!exData || !exData.sets[0] || !exData.sets[0].done) return;
+
+  var input = document.getElementById('cardioMin-' + exIdx);
+  var min = input ? (parseInt(input.value) || 0) : 0;
+  if (min <= 0) return;
+
+  exData.sets[0].reps = min;
   autoSaveSession();
   renderExerciseCards();
 }
