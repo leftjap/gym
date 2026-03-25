@@ -13,28 +13,20 @@ function init() {
   // 데이터 마이그레이션 (부위/종목 ID 변환, 1회만 실행)
   migrateData();
 
-  // 진행 중인 세션 복원 (있으면)
-  var restored = restoreSession();
+  // 진행 중인 세션 복원 (있으면 메모리에 올림)
+  restoreSession();
 
   // 초기 월 설정
   _currentYM = getYM();
   updateMonthTitle();
 
-  // 복원된 세션이 있으면 운동 화면, 없으면 홈 화면
-  if (restored) {
-    showScreen('workout', 'replace');
-  } else {
-    showScreen('home', 'replace');
-  }
+  // 항상 홈 화면 표시 (진행 중 세션이 있으면 CONTINUE 버튼 자동 표시)
+  showScreen('home', 'replace');
 
   // 서버 동기화 — silent 모드
   syncFromServer(function(success) {
     if (success) {
-      // 운동 화면이면 renderHome 불필요
-      var mainView = document.getElementById('main-view');
-      if (mainView && mainView.style.display !== 'none') {
-        renderHome();
-      }
+      renderHome();
     }
     hideLoadingScreen();
   }, true);
