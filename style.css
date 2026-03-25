@@ -1226,10 +1226,6 @@ input {
   outline: none;
 }
 
-.ios-pwa .rest-timer-bar {
-  bottom: 122px;
-}
-
 .rest-timer {
   background: var(--white);
   border-radius: 12px;
@@ -3184,10 +3180,6 @@ input {
 
 .start-workout:active {
   transform: scale(0.98);
-}
-
-.ios-pwa .start-workout {
-  bottom: 42px;
 }
 
 /* ── 스크린 (기존 구조) ── */
