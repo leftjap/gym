@@ -4031,9 +4031,9 @@ input {
 
 /* ── iOS PWA standalone: Safari 탭용 env() 값이 PWA에서 과도하므로 고정값 사용 ── */
 .ios-pwa .start-workout {
-  bottom: 8px;
+  bottom: 0px;
 }
 
 .ios-pwa .rest-timer-bar {
-  bottom: 88px;
+  bottom: 0px;
 }
