@@ -1214,6 +1214,7 @@ input {
 .rest-timer-bar {
   position: fixed;
   bottom: 88px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 88px);
   left: 20px;
   right: 20px;
   z-index: 150;
@@ -1223,12 +1224,6 @@ input {
   background: none;
   box-shadow: none;
   outline: none;
-}
-
-@supports (padding: env(safe-area-inset-bottom)) {
-  .rest-timer-bar {
-    bottom: calc(env(safe-area-inset-bottom) + 88px);
-  }
 }
 
 .rest-timer {
@@ -3166,6 +3161,7 @@ input {
 .start-workout {
   position: fixed;
   bottom: 8px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
   left: 20px;
   right: 20px;
   height: 72px;
@@ -3180,12 +3176,6 @@ input {
   z-index: 100;
   transition: all 0.2s ease;
   letter-spacing: 2px;
-}
-
-@supports (padding: env(safe-area-inset-bottom)) {
-  .start-workout {
-    bottom: calc(env(safe-area-inset-bottom) + 8px);
-  }
 }
 
 .start-workout:active {
