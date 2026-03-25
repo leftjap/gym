@@ -1213,7 +1213,7 @@ input {
 /* ── 휴식 타이머 ── */
 .rest-timer-bar {
   position: fixed;
-  bottom: calc(max(8px, env(safe-area-inset-bottom)) + 80px);
+  bottom: 88px;
   left: 20px;
   right: 20px;
   z-index: 150;
@@ -1223,6 +1223,12 @@ input {
   background: none;
   box-shadow: none;
   outline: none;
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .rest-timer-bar {
+    bottom: calc(env(safe-area-inset-bottom) + 80px);
+  }
 }
 
 .rest-timer {
@@ -3159,7 +3165,7 @@ input {
 /* ── 운동 시작 버튼 ── */
 .start-workout {
   position: fixed;
-  bottom: max(8px, env(safe-area-inset-bottom));
+  bottom: 8px;
   left: 20px;
   right: 20px;
   height: 72px;
@@ -3174,6 +3180,12 @@ input {
   z-index: 100;
   transition: all 0.2s ease;
   letter-spacing: 2px;
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .start-workout {
+    bottom: calc(env(safe-area-inset-bottom));
+  }
 }
 
 .start-workout:active {
