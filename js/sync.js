@@ -34,6 +34,7 @@ function syncToServer(callback, silent) {
     hiddenExercises: L(K.hiddenExercises) || [],
     exerciseIcons: L(K.exerciseIcons) || {},
     exerciseOrder: L('wk_exercise_order') || {},
+    partOverrides: L(K.partOverrides) || {},
     settings: L(K.settings) || {},
     lastSync: new Date().toISOString()
   };
@@ -216,6 +217,7 @@ function syncFromServer(callback, silent) {
       if (p.customExercises) S(K.customExercises, p.customExercises);
       if (p.hiddenExercises !== undefined) S(K.hiddenExercises, p.hiddenExercises);
       if (p.exerciseOrder) S('wk_exercise_order', p.exerciseOrder);
+      if (p.partOverrides !== undefined) S(K.partOverrides, p.partOverrides);
       if (p.settings) S(K.settings, p.settings);
 
       // exerciseIcons: 서버와 로컬 병합 (로컬 우선)

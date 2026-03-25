@@ -240,24 +240,19 @@ function bindSettingsExerciseDrag() {
         ghostEl.style.top = (ghostEl._startGhostTop + (touchY - ghostEl._startTouchY)) + 'px';
 
         // 부위 탭 호버 감지
-        var prevHovered = hoveredPartTab;
         hoveredPartTab = null;
         var partTabs = document.querySelectorAll('.settings-part-tab');
         for (var t = 0; t < partTabs.length; t++) {
-          var tabRect = partTabs[t].getBoundingClientRect();
+          partTabs[t].classList.remove('drag-hover');
+        }
+        for (var t2 = 0; t2 < partTabs.length; t2++) {
+          var tabRect = partTabs[t2].getBoundingClientRect();
           if (touchX >= tabRect.left && touchX <= tabRect.right &&
               touchY >= tabRect.top && touchY <= tabRect.bottom) {
-            hoveredPartTab = partTabs[t];
+            hoveredPartTab = partTabs[t2];
+            partTabs[t2].classList.add('drag-hover');
             break;
           }
-        }
-
-        // 하이라이트 갱신
-        for (var t2 = 0; t2 < partTabs.length; t2++) {
-          partTabs[t2].classList.remove('drag-hover');
-        }
-        if (hoveredPartTab) {
-          hoveredPartTab.classList.add('drag-hover');
         }
 
         // 부위 탭 위가 아닐 때만 리스트 내 순서 변경 처리
@@ -302,13 +297,12 @@ function bindSettingsExerciseDrag() {
           timer = null;
         }
 
-        // 부위 탭 하이라이트 제거
-        var partTabs = document.querySelectorAll('.settings-part-tab');
-        for (var t = 0; t < partTabs.length; t++) {
-          partTabs[t].classList.remove('drag-hover');
-        }
-
         if (!isDragging && !wasDragged) {
+          // 부위 탭 하이라이트 제거
+          var ptabs = document.querySelectorAll('.settings-part-tab');
+          for (var t = 0; t < ptabs.length; t++) {
+            ptabs[t].classList.remove('drag-hover');
+          }
           // 짧은 탭 → 아이콘 편집 폼 열기
           var infoEl = item.querySelector('.settings-ex-info');
           var tapExId = infoEl ? infoEl.getAttribute('data-ex-id') : exId;
@@ -318,23 +312,42 @@ function bindSettingsExerciseDrag() {
           return;
         }
 
-        if (!isDragging) return;
+        if (!isDragging) {
+          var ptabs2 = document.querySelectorAll('.settings-part-tab');
+          for (var t2 = 0; t2 < ptabs2.length; t2++) {
+            ptabs2[t2].classList.remove('drag-hover');
+          }
+          return;
+        }
         isDragging = false;
 
+        // ── 핵심 수정: touchend 시점에 changedTouches로 탭 재판정 ──
+        var finalX = e.changedTouches[0].clientX;
+        var finalY = e.changedTouches[0].clientY;
+        hoveredPartTab = null;
+        var partTabs = document.querySelectorAll('.settings-part-tab');
+        for (var t3 = 0; t3 < partTabs.length; t3++) {
+          partTabs[t3].classList.remove('drag-hover');
+          var tabRect = partTabs[t3].getBoundingClientRect();
+          if (finalX >= tabRect.left && finalX <= tabRect.right &&
+              finalY >= tabRect.top && finalY <= tabRect.bottom) {
+            hoveredPartTab = partTabs[t3];
+          }
+        }
+
+        // 고스트/플레이스홀더 정리
         if (ghostEl) {
           ghostEl.remove();
           ghostEl = null;
         }
-
         item.style.display = '';
-
         if (placeholder && placeholder.parentNode) {
           placeholder.parentNode.insertBefore(item, placeholder);
           placeholder.remove();
           placeholder = null;
         }
 
-        // 부위 탭 위에 드롭한 경우 → 부위 이동
+        // ── 부위 탭 위에 드롭 → 부위 이동 ──
         if (hoveredPartTab) {
           var targetPartId = null;
           for (var pi = 0; pi < BODY_PARTS.length; pi++) {
@@ -387,7 +400,7 @@ function bindSettingsExerciseDrag() {
 
         hoveredPartTab = null;
 
-        // 같은 부위 내 순서 변경 (기존 로직)
+        // ── 같은 부위 내 순서 변경 ──
         if (originalIdx !== currentIdx) {
           var newItems = listEl.querySelectorAll('.settings-ex-item');
           var newOrder = [];
