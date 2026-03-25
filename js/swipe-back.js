@@ -200,7 +200,7 @@
       if (overlay) overlay.style.opacity = '0';
 
       setTimeout(function() {
-        cleanup(screenEl, peekEl, overlay, origDisplay);
+        cleanup(screenEl, peekEl, overlay, origDisplay, true);
 
         if (backTarget === 'settings-to-workout') {
           _settingsReturnTo = null;
@@ -213,7 +213,7 @@
       if (overlay) overlay.style.opacity = '0.1';
 
       setTimeout(function() {
-        cleanup(screenEl, peekEl, overlay, origDisplay);
+        cleanup(screenEl, peekEl, overlay, origDisplay, false);
       }, 300);
     }
 
@@ -221,7 +221,7 @@
   }
 
   // ── 정리 ──
-  function cleanup(screenEl, peekEl, overlay, origDisplay) {
+  function cleanup(screenEl, peekEl, overlay, origDisplay, confirmed) {
     if (screenEl) {
       screenEl.classList.remove('swiping', 'swipe-animating');
       screenEl.style.transform = '';
@@ -229,7 +229,9 @@
     if (peekEl) {
       peekEl.classList.remove('swipe-peek', 'swipe-animating');
       peekEl.style.transform = '';
-      peekEl.style.display = origDisplay;
+      if (!confirmed) {
+        peekEl.style.display = origDisplay;
+      }
     }
     if (overlay) {
       overlay.classList.remove('visible');
@@ -259,7 +261,7 @@
         peekEl.style.transform = 'translateX(-' + PEEK_OFFSET + 'px)';
       }
       setTimeout(function() {
-        cleanup(screenEl, peekEl, overlay, origDisplay);
+        cleanup(screenEl, peekEl, overlay, origDisplay, false);
       }, 300);
     }
     _tracking = false;
