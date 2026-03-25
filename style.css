@@ -3766,10 +3766,10 @@ input {
 /* ── 로딩 화면 ── */
 .loading-screen {
   position: fixed;
-  top: 0;
+  top: -50px;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: -50px;
   background: var(--white);
   display: flex;
   flex-direction: column;
