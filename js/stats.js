@@ -94,7 +94,9 @@ function renderStatsScreen() {
           return;
         }
 
-        // 짧은 탭: 모든 날짜 선택 가능 (데이터 없는 날도 포함)
+        // 짧은 탭: 데이터 있는 날만 선택 가능
+        if (!hasData) return;
+
         var allCells = container.querySelectorAll('.stats-cal-cell');
         for (var k = 0; k < allCells.length; k++) {
           allCells[k].classList.remove('selected');
@@ -114,6 +116,7 @@ function renderStatsScreen() {
       cell.addEventListener('click', function(e) {
         // 터치 디바이스에서 touchend 직후 발생하는 click 무시 (200ms 이내)
         if (Date.now() - _lastTouchEnd < 200) return;
+        if (!hasData) return;
 
         var allCells = container.querySelectorAll('.stats-cal-cell');
         for (var k = 0; k < allCells.length; k++) {

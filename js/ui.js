@@ -481,7 +481,9 @@ function renderWeekCal() {
           return;
         }
 
-        // 짧은 탭: 모든 날짜 선택 가능 (데이터 없는 날도 포함)
+        // 짧은 탭: 데이터 있는 날만 선택 가능
+        if (!hasData) return;
+
         var allDays = el.querySelectorAll('.week-day');
         for (var k = 0; k < allDays.length; k++) {
           allDays[k].classList.remove('selected');
@@ -501,6 +503,7 @@ function renderWeekCal() {
       dayEl.addEventListener('click', function(e) {
         // 터치 디바이스에서 touchend 직후 발생하는 click 무시 (200ms 이내)
         if (Date.now() - _lastTouchEnd < 200) return;
+        if (!hasData) return;
 
         var allDays = el.querySelectorAll('.week-day');
         for (var k = 0; k < allDays.length; k++) {
