@@ -60,7 +60,7 @@ function renderPartSelector() {
   var defaultPart = BODY_PARTS[0].id;
 
   var html =
-    '<div class="ex-select-header">' +
+    '<div class="ex-select-header" style="padding:20px 0 10px 0">' +
       '<button class="summary-msg-icon" onclick="onWorkoutBack()">' +
         '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
       '</button>' +

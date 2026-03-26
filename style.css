@@ -4034,7 +4034,7 @@ input {
 
 /* ── 종목 선택 모드 (홈과 동일 패딩) ── */
 .workout-content.workout-select-mode {
-  padding: calc(env(safe-area-inset-top, 0px) + 32px) 20px 0 20px;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 20px 0 20px;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -4052,8 +4052,10 @@ input {
 /* ── 선택된 종목 하단 영역 ── */
 .ex-select-chosen {
   flex-shrink: 0;
-  padding: 20px 0 calc(env(safe-area-inset-bottom, 0px) + 100px) 0;
-  border-top: 1px solid var(--light-gray);
+  margin-top: 24px;
+  padding: 20px 0 calc(env(safe-area-inset-bottom, 0px) + 88px) 0;
+  border-top: 1px solid var(--border-gray);
+  background: var(--bg-gray);
 }
 
 .ex-select-chosen:empty {
@@ -4253,8 +4255,8 @@ input {
 }
 
 .ex-select-chip.selected {
-  background: #E8E8E8;
-  color: var(--dark);
+  background: var(--dark);
+  color: var(--white);
   border-color: var(--dark);
   font-weight: 600;
 }
