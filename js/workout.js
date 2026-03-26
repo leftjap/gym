@@ -662,12 +662,12 @@ function showAddExerciseSheet() {
   _addExerciseMode = true;
   _selectedExercises = {};
 
-  // 이미 세션에 있는 종목을 '_inSession' 마킹용으로 수집
-  var container = document.getElementById('workoutContent');
-  var workoutHeader = document.getElementById('workoutHeader');
-  if (workoutHeader) workoutHeader.style.display = 'none';
+  // 오버레이 표시 (운동 화면은 그대로 유지)
+  var overlay = document.getElementById('addExerciseOverlay');
+  var container = document.getElementById('addExerciseContent');
+  if (!overlay || !container) return;
 
-  container.style.padding = '';
+  overlay.style.display = 'block';
   container.className = 'workout-content workout-select-mode';
 
   var defaultPart = BODY_PARTS[0].id;
@@ -700,6 +700,9 @@ function showAddExerciseSheet() {
   container.innerHTML = html;
   updateBottomButton('addExercise');
   renderSelectList(defaultPart);
+
+  // 히스토리에 push (브라우저 뒤로 버튼 대응)
+  history.pushState({ screen: 'addExercise' }, '');
 }
 
 function addExerciseToSession(exerciseId) {
@@ -759,32 +762,31 @@ function addExerciseToSession(exerciseId) {
 function cancelAddExercise() {
   _addExerciseMode = false;
   _selectedExercises = {};
-  var container = document.getElementById('workoutContent');
-  container.className = 'workout-content';
-  container.style.padding = '';
+
+  var overlay = document.getElementById('addExerciseOverlay');
+  if (overlay) overlay.style.display = 'none';
+
+  // 운동 화면 복원 (workoutContent는 그대로이므로 재렌더만)
   var workoutHeader = document.getElementById('workoutHeader');
   if (workoutHeader) workoutHeader.style.display = 'flex';
   updateWorkoutHeader(true);
   updateBottomButton('workout');
-  renderExerciseCards();
 }
 
 function confirmAddExercises() {
   if (!_currentSession) return;
-  var addedCount = 0;
   var keys = Object.keys(_selectedExercises);
   for (var i = 0; i < keys.length; i++) {
     if (_selectedExercises[keys[i]]) {
       addExerciseToSession(keys[i]);
-      addedCount++;
     }
   }
   _addExerciseMode = false;
   _selectedExercises = {};
 
-  var container = document.getElementById('workoutContent');
-  container.className = 'workout-content';
-  container.style.padding = '';
+  var overlay = document.getElementById('addExerciseOverlay');
+  if (overlay) overlay.style.display = 'none';
+
   var workoutHeader = document.getElementById('workoutHeader');
   if (workoutHeader) workoutHeader.style.display = 'flex';
   updateWorkoutHeader(true);

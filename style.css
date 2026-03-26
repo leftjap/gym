@@ -4256,3 +4256,14 @@ input {
   cursor: default;
   opacity: 0.5;
 }
+
+/* ── 종목 추가 오버레이 ── */
+.add-exercise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--bg-gray);
+}

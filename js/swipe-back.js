@@ -44,6 +44,12 @@
     var stats    = document.getElementById('screen-stats');
     var settings = document.getElementById('screen-settings');
     var workout  = document.getElementById('screen-workout');
+    var addOverlay = document.getElementById('addExerciseOverlay');
+
+    // 종목 추가 오버레이가 열려있으면 이것을 스와이프 대상으로
+    if (addOverlay && addOverlay.style.display !== 'none') {
+      return { el: addOverlay, back: 'add-exercise-back' };
+    }
 
     if (stats && stats.style.display !== 'none') {
       return { el: stats, back: 'home' };
@@ -55,10 +61,6 @@
       return { el: settings, back: 'home' };
     }
     if (workout && workout.style.display !== 'none') {
-      // 종목 추가 모드에서는 스와이프 뒤로가기 차단
-      if (typeof _addExerciseMode !== 'undefined' && _addExerciseMode) {
-        return null;
-      }
       return { el: workout, back: 'workout-back' };
     }
 
@@ -71,8 +73,7 @@
       return document.getElementById('screen-workout');
     }
     if (backTarget === 'add-exercise-back') {
-      // 종목 추가 → 운동 화면 복귀이므로 peek 불필요
-      return null;
+      return document.getElementById('screen-workout');
     }
     return document.getElementById('main-view');
   }
@@ -215,9 +216,7 @@
         }
 
         if (backTarget === 'add-exercise-back') {
-          // 종목 추가 모드만 닫고 운동 화면으로 복귀
-          screenEl.style.transform = '';
-          cancelAddExercise();
+          if (typeof cancelAddExercise === 'function') cancelAddExercise();
           return;
         }
 
