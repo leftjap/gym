@@ -1543,10 +1543,10 @@ function bindNavLongPress() {
   var scrollEl = document.getElementById('exNavScroll');
   if (!scrollEl) return;
 
-  var btns = scrollEl.querySelectorAll('.ex-nav-btn');
+  var btns = scrollEl.querySelectorAll('.ex-nav-btn:not(.ex-nav-add)');
   for (var i = 0; i < btns.length; i++) {
     (function(btn) {
-      var exIdx = parseInt(btn.getAttribute('data-ex-idx'));
+      var exIdx = parseInt(btn.getAttribute('data-idx'));
       if (isNaN(exIdx)) return;
 
       var timer = null;
@@ -1563,8 +1563,8 @@ function bindNavLongPress() {
         timer = setTimeout(function() {
           triggered = true;
           btn.classList.remove('long-pressing');
+          if (navigator.vibrate) navigator.vibrate(30);
 
-          // 종목 완료 처리
           var exData = _currentSession.exercises[exIdx];
           if (!exData) return;
           var meta = getExercise(exData.exerciseId);
@@ -1575,16 +1575,42 @@ function bindNavLongPress() {
             if (exData.sets[k].done) doneCount++;
           }
 
-          if (doneCount === 0) {
-            showConfirm('완료된 세트가 없습니다.\n세트를 먼저 완료해주세요.', function(confirmed) {});
+          var buttons = [];
+
+          if (doneCount > 0) {
+            buttons.push({
+              text: '종목 완료',
+              onClick: function() {
+                showConfirm(name + ' 종목을 완료하시겠습니까?', function(confirmed) {
+                  if (confirmed) {
+                    completeExercise(exIdx);
+                  }
+                });
+              }
+            });
+          }
+
+          if (_currentSession.exercises.length > 1) {
+            var deleteText = doneCount > 0 ? '종목 삭제 (' + doneCount + '세트 기록 포함)' : '종목 삭제';
+            buttons.push({
+              text: deleteText,
+              cls: 'destructive',
+              onClick: function() {
+                showConfirm(name + ' 종목을 삭제하시겠습니까?', function(confirmed) {
+                  if (confirmed) {
+                    removeExerciseFromSession(exIdx);
+                  }
+                });
+              }
+            });
+          }
+
+          if (buttons.length === 0) {
+            showConfirm('완료된 세트가 없습니다.\n세트를 먼저 완료해주세요.', function() {});
             return;
           }
 
-          showConfirm(name + ' 종목을 완료하시겠습니까?', function(confirmed) {
-            if (confirmed) {
-              completeExercise(exIdx);
-            }
-          });
+          showActionSheet(name, buttons);
         }, 500);
       }, { passive: true });
 
