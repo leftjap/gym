@@ -11,6 +11,7 @@ var _headerFilterPart = null;  // 헤더 부위 탭 필터 (null이면 전체)
 var _autoSaveInterval = null;  // 30초 주기 자동저장 타이머
 var _cardioTimers = {};  // 유산소 스톱워치 상태 { exIdx: { startedAt, elapsed, running, intervalId } }
 var _selectedExercises = {};  // 종목 선택 화면 체크 상태 { exerciseId: true/false }
+var _addExerciseMode = false;  // 운동 중 종목 추가 모드 플래그
 
 // ══ 종목 완료 여부 판정 ══
 function isExerciseComplete(exIdx) {
@@ -126,10 +127,31 @@ function renderSelectList(partId) {
     if (_selectedExercises[ex.id] === undefined) {
       _selectedExercises[ex.id] = false;
     }
-    var isChecked = _selectedExercises[ex.id] === true;
-    var chipClass = 'ex-select-chip' + (isChecked ? ' selected' : '');
 
-    html += '<button class="' + chipClass + '" onclick="toggleSelectExercise(\'' + ex.id + '\',\'' + partId + '\')">' + ex.name + '</button>';
+    // 추가 모드에서 이미 세션에 있는 종목 확인
+    var inSession = false;
+    if (_addExerciseMode && _currentSession) {
+      for (var si = 0; si < _currentSession.exercises.length; si++) {
+        if (_currentSession.exercises[si].exerciseId === ex.id) {
+          inSession = true;
+          break;
+        }
+      }
+    }
+
+    var isChecked = _selectedExercises[ex.id] === true;
+    var chipClass = 'ex-select-chip';
+    if (inSession) {
+      chipClass += ' in-session';
+    } else if (isChecked) {
+      chipClass += ' selected';
+    }
+
+    if (inSession) {
+      html += '<button class="' + chipClass + '" disabled>✓ ' + ex.name + '</button>';
+    } else {
+      html += '<button class="' + chipClass + '" onclick="toggleSelectExercise(\'' + ex.id + '\',\'' + partId + '\')">' + ex.name + '</button>';
+    }
   }
 
   container.innerHTML = html;
@@ -211,10 +233,18 @@ function updateSelectButton() {
   for (var i = 0; i < keys.length; i++) {
     if (_selectedExercises[keys[i]]) count++;
   }
-  if (count > 0) {
-    updateBottomButton('partSelectReady');
+  if (_addExerciseMode) {
+    if (count > 0) {
+      updateBottomButton('addExerciseReady');
+    } else {
+      updateBottomButton('addExercise');
+    }
   } else {
-    updateBottomButton('partSelect');
+    if (count > 0) {
+      updateBottomButton('partSelectReady');
+    } else {
+      updateBottomButton('partSelect');
+    }
   }
 }
 
@@ -629,50 +659,47 @@ function showWorkoutMenuSheet() {
 
 function showAddExerciseSheet() {
   if (!_currentSession) return;
+  _addExerciseMode = true;
+  _selectedExercises = {};
 
-  // 현재 세션에 있는 종목 ID 세트
-  var existingIds = {};
-  for (var i = 0; i < _currentSession.exercises.length; i++) {
-    existingIds[_currentSession.exercises[i].exerciseId] = true;
+  // 이미 세션에 있는 종목을 '_inSession' 마킹용으로 수집
+  var container = document.getElementById('workoutContent');
+  var workoutHeader = document.getElementById('workoutHeader');
+  if (workoutHeader) workoutHeader.style.display = 'none';
+
+  container.style.padding = '';
+  container.className = 'workout-content workout-select-mode';
+
+  var defaultPart = BODY_PARTS[0].id;
+
+  var html =
+    '<div class="ex-select-header" style="padding:20px 0 10px 0">' +
+      '<button class="summary-msg-icon" onclick="cancelAddExercise()">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+      '</button>' +
+      '<span style="font-size:17px;font-weight:700;color:var(--dark)">종목 추가</span>' +
+      '<div style="width:26px"></div>' +
+    '</div>' +
+    '<div class="part-selector" style="display:flex;flex-direction:column;flex:1;min-height:0">' +
+      '<div class="exercise-select-tabs" id="exSelectTabs">';
+
+  for (var i = 0; i < BODY_PARTS.length; i++) {
+    var p = BODY_PARTS[i];
+    var isActive = p.id === defaultPart;
+    html += '<button class="exercise-select-tab' + (isActive ? ' active' : '') + '" data-part="' + p.id + '" onclick="switchSelectTab(\'' + p.id + '\')">' + p.name + '</button>';
   }
 
-  // 부위별로 추가 가능한 종목 수집
-  var buttons = [];
-  for (var pi = 0; pi < BODY_PARTS.length; pi++) {
-    var part = BODY_PARTS[pi];
-    var partExercises = getExercisesByPart(part.id);
-    var available = [];
-    for (var j = 0; j < partExercises.length; j++) {
-      if (!existingIds[partExercises[j].id]) {
-        available.push(partExercises[j]);
-      }
-    }
-    if (available.length === 0) continue;
+  html +=
+      '</div>' +
+      '<div class="ex-select-scroll">' +
+        '<div class="exercise-select-chips" id="exSelectList"></div>' +
+      '</div>' +
+      '<div class="ex-select-chosen" id="exSelectChosen"></div>' +
+    '</div>';
 
-    // 부위 헤더 (비활성 버튼)
-    buttons.push({
-      text: '── ' + part.name + ' ──',
-      onClick: function() {}
-    });
-
-    for (var k = 0; k < available.length; k++) {
-      (function(ex) {
-        buttons.push({
-          text: ex.name,
-          onClick: function() {
-            addExerciseToSession(ex.id);
-          }
-        });
-      })(available[k]);
-    }
-  }
-
-  if (buttons.length === 0) {
-    showConfirm('추가할 수 있는 종목이 없습니다.', function() {});
-    return;
-  }
-
-  showActionSheet('종목 추가', buttons);
+  container.innerHTML = html;
+  updateBottomButton('addExercise');
+  renderSelectList(defaultPart);
 }
 
 function addExerciseToSession(exerciseId) {
@@ -726,6 +753,42 @@ function addExerciseToSession(exerciseId) {
   _headerFilterPart = meta.bodyPart;
 
   autoSaveSession();
+  renderExerciseCards();
+}
+
+function cancelAddExercise() {
+  _addExerciseMode = false;
+  _selectedExercises = {};
+  var container = document.getElementById('workoutContent');
+  container.className = 'workout-content';
+  container.style.padding = '';
+  var workoutHeader = document.getElementById('workoutHeader');
+  if (workoutHeader) workoutHeader.style.display = 'flex';
+  updateWorkoutHeader(true);
+  updateBottomButton('workout');
+  renderExerciseCards();
+}
+
+function confirmAddExercises() {
+  if (!_currentSession) return;
+  var addedCount = 0;
+  var keys = Object.keys(_selectedExercises);
+  for (var i = 0; i < keys.length; i++) {
+    if (_selectedExercises[keys[i]]) {
+      addExerciseToSession(keys[i]);
+      addedCount++;
+    }
+  }
+  _addExerciseMode = false;
+  _selectedExercises = {};
+
+  var container = document.getElementById('workoutContent');
+  container.className = 'workout-content';
+  container.style.padding = '';
+  var workoutHeader = document.getElementById('workoutHeader');
+  if (workoutHeader) workoutHeader.style.display = 'flex';
+  updateWorkoutHeader(true);
+  updateBottomButton('workout');
   renderExerciseCards();
 }
 

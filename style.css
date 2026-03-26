@@ -4248,3 +4248,11 @@ input {
   border-color: var(--dark);
   font-weight: 600;
 }
+
+.ex-select-chip.in-session {
+  background: var(--light-gray);
+  color: var(--icon-inactive);
+  border-color: var(--border-gray);
+  cursor: default;
+  opacity: 0.5;
+}

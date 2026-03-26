@@ -764,6 +764,20 @@ function updateBottomButton(state) {
       btn.style.color = 'var(--white)';
       btn.onclick = onBottomBtnClick;
       break;
+    case 'addExercise':
+      btn.textContent = '종목을 선택하세요';
+      btn.disabled = true;
+      btn.style.background = 'var(--border-gray)';
+      btn.style.color = 'var(--icon-inactive)';
+      btn.onclick = null;
+      break;
+    case 'addExerciseReady':
+      btn.textContent = '종목 추가';
+      btn.disabled = false;
+      btn.style.background = 'var(--dark)';
+      btn.style.color = 'var(--white)';
+      btn.onclick = function() { confirmAddExercises(); };
+      break;
   }
 }
 
