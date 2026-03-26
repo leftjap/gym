@@ -1159,6 +1159,68 @@ function completeExercise(exIdx) {
   renderExerciseCards();
 }
 
+// ══ 운동 중 종목 삭제 ══
+function removeExerciseFromSession(exIdx) {
+  if (!_currentSession) return;
+  if (_currentSession.exercises.length <= 1) return;
+
+  // 유산소 타이머 정리
+  if (_cardioTimers[exIdx]) {
+    if (_cardioTimers[exIdx].intervalId) {
+      clearInterval(_cardioTimers[exIdx].intervalId);
+    }
+    delete _cardioTimers[exIdx];
+  }
+
+  // 종목 제거
+  _currentSession.exercises.splice(exIdx, 1);
+
+  // 유산소 타이머 인덱스 재매핑 (삭제된 인덱스 이후 전부 -1)
+  var newCardioTimers = {};
+  var ctKeys = Object.keys(_cardioTimers);
+  for (var i = 0; i < ctKeys.length; i++) {
+    var oldIdx = parseInt(ctKeys[i]);
+    if (oldIdx > exIdx) {
+      newCardioTimers[oldIdx - 1] = _cardioTimers[oldIdx];
+    } else {
+      newCardioTimers[oldIdx] = _cardioTimers[oldIdx];
+    }
+  }
+  _cardioTimers = newCardioTimers;
+
+  // sortOrder 재정렬
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    _currentSession.exercises[i].sortOrder = i;
+  }
+
+  // 부위 태그 재계산
+  var tagSet = {};
+  var tagList = [];
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    var meta = getExercise(_currentSession.exercises[i].exerciseId);
+    if (meta && !tagSet[meta.bodyPart]) {
+      tagSet[meta.bodyPart] = true;
+      tagList.push(meta.bodyPart);
+    }
+  }
+  _selectedParts = tagList;
+  _currentSession.tags = tagList.slice();
+
+  // 현재 인덱스 보정
+  if (_currentExerciseIndex >= _currentSession.exercises.length) {
+    _currentExerciseIndex = _currentSession.exercises.length - 1;
+  }
+  if (_currentExerciseIndex < 0) _currentExerciseIndex = 0;
+
+  // 부위 필터 보정 (필터 중인 부위가 사라졌으면 해제)
+  if (_headerFilterPart && _selectedParts.indexOf(_headerFilterPart) < 0) {
+    _headerFilterPart = null;
+  }
+
+  autoSaveSession();
+  renderExerciseCards();
+}
+
 // ══ 종목 카드 헤더 롱프레스 → 종목 완료 확인 ══
 var _exHeaderLongPressTimer = null;
 var _exHeaderTouchStart = null;
@@ -1186,16 +1248,45 @@ function startExHeaderLongPress(exIdx, e) {
     for (var k = 0; k < exData.sets.length; k++) {
       if (exData.sets[k].done) doneCount++;
     }
-    if (doneCount === 0) {
-      showConfirm('완료된 세트가 없습니다.\n세트를 먼저 완료해주세요.', function(confirmed) {});
+
+    var buttons = [];
+
+    // 종목 완료 옵션
+    if (doneCount > 0) {
+      buttons.push({
+        text: '종목 완료',
+        onClick: function() {
+          showConfirm(name + ' 종목을 완료하시겠습니까?', function(confirmed) {
+            if (confirmed) {
+              completeExercise(exIdx);
+            }
+          });
+        }
+      });
+    }
+
+    // 종목 삭제 옵션 (종목이 2개 이상일 때만)
+    if (_currentSession.exercises.length > 1) {
+      var deleteText = doneCount > 0 ? '종목 삭제 (' + doneCount + '세트 기록 포함)' : '종목 삭제';
+      buttons.push({
+        text: deleteText,
+        cls: 'destructive',
+        onClick: function() {
+          showConfirm(name + ' 종목을 삭제하시겠습니까?', function(confirmed) {
+            if (confirmed) {
+              removeExerciseFromSession(exIdx);
+            }
+          });
+        }
+      });
+    }
+
+    if (buttons.length === 0) {
+      showConfirm('완료된 세트가 없습니다.\n세트를 먼저 완료해주세요.', function() {});
       return;
     }
 
-    showConfirm(name + ' 종목을 완료하시겠습니까?', function(confirmed) {
-      if (confirmed) {
-        completeExercise(exIdx);
-      }
-    });
+    showActionSheet(name, buttons);
   }, 500);
 }
 
