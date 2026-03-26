@@ -522,6 +522,7 @@ function renderExerciseNav() {
   }
 
   html += '</div>';
+  html += '<button class="ex-nav-more" onclick="showAddExerciseSheet()">+</button>';
   html += '</div>';
   return html;
 }
@@ -620,6 +621,108 @@ function showWorkoutMenuSheet() {
   ];
 
   showActionSheet('운동 메뉴', buttons);
+}
+
+function showAddExerciseSheet() {
+  if (!_currentSession) return;
+
+  // 현재 세션에 있는 종목 ID 세트
+  var existingIds = {};
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    existingIds[_currentSession.exercises[i].exerciseId] = true;
+  }
+
+  // 부위별로 추가 가능한 종목 수집
+  var buttons = [];
+  for (var pi = 0; pi < BODY_PARTS.length; pi++) {
+    var part = BODY_PARTS[pi];
+    var partExercises = getExercisesByPart(part.id);
+    var available = [];
+    for (var j = 0; j < partExercises.length; j++) {
+      if (!existingIds[partExercises[j].id]) {
+        available.push(partExercises[j]);
+      }
+    }
+    if (available.length === 0) continue;
+
+    // 부위 헤더 (비활성 버튼)
+    buttons.push({
+      text: '── ' + part.name + ' ──',
+      onClick: function() {}
+    });
+
+    for (var k = 0; k < available.length; k++) {
+      (function(ex) {
+        buttons.push({
+          text: ex.name,
+          onClick: function() {
+            addExerciseToSession(ex.id);
+          }
+        });
+      })(available[k]);
+    }
+  }
+
+  if (buttons.length === 0) {
+    showConfirm('추가할 수 있는 종목이 없습니다.', function() {});
+    return;
+  }
+
+  showActionSheet('종목 추가', buttons);
+}
+
+function addExerciseToSession(exerciseId) {
+  if (!_currentSession) return;
+
+  // 이미 세션에 있으면 무시
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    if (_currentSession.exercises[i].exerciseId === exerciseId) return;
+  }
+
+  var meta = getExercise(exerciseId);
+  if (!meta) return;
+
+  // 이전 기록 기반 세트 생성
+  var lastSets = getLastExerciseSets(exerciseId);
+  var sets = [];
+  var numSets = meta.defaultSets;
+  if (lastSets && lastSets.length > numSets) numSets = lastSets.length;
+
+  for (var s = 0; s < numSets; s++) {
+    var prev = lastSets && lastSets[s] ? lastSets[s] : null;
+    sets.push({
+      weight: prev ? prev.weight : (meta.defaultWeight || 0),
+      reps: prev ? prev.reps : meta.defaultReps,
+      done: false,
+      isPR: false
+    });
+  }
+
+  var maxSort = 0;
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    if (_currentSession.exercises[i].sortOrder > maxSort) {
+      maxSort = _currentSession.exercises[i].sortOrder;
+    }
+  }
+
+  _currentSession.exercises.push({
+    exerciseId: exerciseId,
+    sortOrder: maxSort + 1,
+    sets: sets
+  });
+
+  // 부위 태그 추가 (새 부위면)
+  if (_selectedParts.indexOf(meta.bodyPart) < 0) {
+    _selectedParts.push(meta.bodyPart);
+    _currentSession.tags = _selectedParts.slice();
+  }
+
+  // 추가된 종목으로 이동
+  _currentExerciseIndex = _currentSession.exercises.length - 1;
+  _headerFilterPart = meta.bodyPart;
+
+  autoSaveSession();
+  renderExerciseCards();
 }
 
 function renderExerciseCard(exIdx) {
