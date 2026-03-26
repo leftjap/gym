@@ -4052,8 +4052,11 @@ input {
 /* ── 선택된 종목 하단 영역 ── */
 .ex-select-chosen {
   flex-shrink: 0;
-  margin-top: auto;
-  padding: 24px 0 calc(env(safe-area-inset-bottom, 0px) + 88px) 0;
+  background: var(--white);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 88px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .ex-select-chosen:empty {
@@ -4061,8 +4064,10 @@ input {
 }
 
 .ex-select-scroll {
+  flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 .ex-select-chosen-title {
