@@ -55,6 +55,10 @@
       return { el: settings, back: 'home' };
     }
     if (workout && workout.style.display !== 'none') {
+      // 종목 추가 모드이면 추가 모드만 닫기
+      if (typeof _addExerciseMode !== 'undefined' && _addExerciseMode) {
+        return { el: workout, back: 'add-exercise-back' };
+      }
       return { el: workout, back: 'workout-back' };
     }
 
@@ -65,6 +69,10 @@
   function getPeekElement(backTarget) {
     if (backTarget === 'settings-to-workout') {
       return document.getElementById('screen-workout');
+    }
+    if (backTarget === 'add-exercise-back') {
+      // 종목 추가 → 운동 화면 복귀이므로 peek 불필요
+      return null;
     }
     return document.getElementById('main-view');
   }
@@ -205,6 +213,14 @@
         if (backTarget === 'settings-to-workout') {
           _settingsReturnTo = null;
         }
+
+        if (backTarget === 'add-exercise-back') {
+          // 종목 추가 모드만 닫고 운동 화면으로 복귀
+          screenEl.style.transform = '';
+          cancelAddExercise();
+          return;
+        }
+
         history.back();
       }, 300);
     } else {

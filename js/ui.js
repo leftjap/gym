@@ -993,6 +993,16 @@ window.addEventListener('popstate', function(e) {
 
   // ── 4. 모든 화면을 먼저 정리 (스와이프 애니메이션 잔여 상태 제거) ──
   _isPopState = true;
+
+  // 종목 추가 모드에서 뒤로가기 → 추가 모드만 닫기
+  if (typeof _addExerciseMode !== 'undefined' && _addExerciseMode) {
+    cancelAddExercise();
+    // 히스토리를 다시 push해서 운동 화면 state 유지
+    history.pushState({ screen: 'workout' }, '');
+    _isPopState = false;
+    return;
+  }
+
   _cleanupBeforeScreenSwitch();
 
   // ── 5. 화면 전환 ──
