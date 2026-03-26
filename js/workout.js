@@ -439,9 +439,64 @@ function updateWorkoutHeader(inProgress) {
         '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>' +
       '</button>';
     }
+
+    // 볼륨 표시 영역 세팅 (최초 1회)
+    var volEl = document.getElementById('workoutHeaderVol');
+    if (!volEl) {
+      var centerEl = document.querySelector('.wh-center');
+      if (centerEl) {
+        var span = document.createElement('span');
+        span.id = 'workoutHeaderVol';
+        span.className = 'wh-vol';
+        centerEl.appendChild(span);
+      }
+    }
+    updateHeaderVolume();
   } else {
     if (timerEl) timerEl.style.display = 'none';
     if (tagsEl) tagsEl.innerHTML = '';
+    var volEl = document.getElementById('workoutHeaderVol');
+    if (volEl) volEl.remove();
+  }
+}
+
+function updateHeaderVolume() {
+  var volEl = document.getElementById('workoutHeaderVol');
+  if (!volEl || !_currentSession) return;
+
+  // 현재 세션 총 볼륨 계산
+  var currentVol = 0;
+  for (var i = 0; i < _currentSession.exercises.length; i++) {
+    var ex = _currentSession.exercises[i];
+    var meta = getExercise(ex.exerciseId);
+    if (meta && meta.equipment === 'cardio') continue;
+    for (var j = 0; j < ex.sets.length; j++) {
+      var s = ex.sets[j];
+      if (s.done) {
+        currentVol += (s.weight || 0) * (s.reps || 0);
+      }
+    }
+  }
+
+  // 지난번 동일 부위 조합 세션의 총 볼륨
+  var lastVol = 0;
+  var sessions = getSessions();
+  var tagKey = _currentSession.tags.slice().sort().join(',');
+  for (var i = 0; i < sessions.length; i++) {
+    if (sessions[i].id === _currentSession.id) continue;
+    var sKey = sessions[i].tags.slice().sort().join(',');
+    if (sKey === tagKey) {
+      lastVol = sessions[i].totalVolumeExWarmup || sessions[i].totalVolume || 0;
+      break;
+    }
+  }
+
+  if (lastVol > 0) {
+    volEl.textContent = formatNum(currentVol) + ' / ' + formatNum(lastVol) + 'kg';
+  } else if (currentVol > 0) {
+    volEl.textContent = formatNum(currentVol) + 'kg';
+  } else {
+    volEl.textContent = '';
   }
 }
 
@@ -479,21 +534,8 @@ function renderExerciseCards() {
   // 1. 부위탭 + 종목네비 영역
   html += '<div class="exercise-nav-area">';
 
-  // 부위 탭 행: 둥근 pill 형태 (부위 수 관계없이 항상 표시)
-  if (_selectedParts.length > 1) {
-    html += '<div class="exercise-nav-part-row">';
-    for (var p = 0; p < _selectedParts.length; p++) {
-      var partInfo = getBodyPart(_selectedParts[p]);
-      var isActive = _headerFilterPart === _selectedParts[p];
-      html += '<button class="exercise-nav-part-tab' + (isActive ? ' active' : '') + '" data-part-id="' + _selectedParts[p] + '" onclick="filterByPart(\'' + _selectedParts[p] + '\')">' + partInfo.name + '</button>';
-    }
-    html += '</div>';
-  } else if (_selectedParts.length === 1) {
-    html += '<div class="exercise-nav-part-row">';
-    var partInfo = getBodyPart(_selectedParts[0]);
-    html += '<button class="exercise-nav-part-tab active" data-part-id="' + _selectedParts[0] + '">' + partInfo.name + '</button>';
-    html += '</div>';
-  }
+  // 부위 탭 제거 (Phase 3-A), 부위 필터 해제
+  _headerFilterPart = null;
 
   // 종목 네비게이션
   html += renderExerciseNav();
@@ -514,13 +556,10 @@ function renderExerciseCards() {
   // 4. 종목 네비 버튼 롱프레스(종목 완료) 바인딩
   bindNavLongPress();
 
-  // 5. 부위 탭 롱프레스(설정 진입) 바인딩
-  bindPartTabLongPress();
-
-  // 6. 카드 좌우 스와이프 종목 전환
+  // 5. 카드 좌우 스와이프 종목 전환
   bindCardSwipe();
 
-  // 7. 활성 종목이 네비 중앙에 오도록 자동 스크롤
+  // 6. 활성 종목이 네비 중앙에 오도록 자동 스크롤
   scrollNavToActive();
 }
 
@@ -1900,6 +1939,7 @@ function completeSet(exIdx, setIdx) {
 
   // 자동저장
   autoSaveSession();
+  updateHeaderVolume();
 
   // 모든 기존 세트가 완료되었으면 새 세트 자동 추가
   var allSetsDone = true;

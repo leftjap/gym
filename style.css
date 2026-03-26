@@ -135,8 +135,8 @@ input {
   text-align: center;
   display: flex;
   gap: 6px;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: baseline;
 }
 
 .wh-timer {
@@ -144,6 +144,15 @@ input {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--dark);
+}
+
+.wh-vol {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray);
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .wh-tag {
