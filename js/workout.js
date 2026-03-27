@@ -451,45 +451,67 @@ function updateWorkoutHeader(inProgress) {
 
 function updateHeaderVolume() {
   var volEl = document.getElementById('workoutHeaderVol');
-  if (!volEl || !_currentSession) return;
+  var sepEl = document.querySelector('.wh-sep');
+  if (!volEl) return;
 
-  // 현재 세션 총 볼륨 계산
-  var currentVol = 0;
-  for (var i = 0; i < _currentSession.exercises.length; i++) {
-    var ex = _currentSession.exercises[i];
-    var meta = getExercise(ex.exerciseId);
-    if (meta && meta.equipment === 'cardio') continue;
-    for (var j = 0; j < ex.sets.length; j++) {
-      var s = ex.sets[j];
-      if (s.done) {
-        currentVol += (s.weight || 0) * (s.reps || 0);
+  var session = JSON.parse(localStorage.getItem('wk_current_session'));
+  if (!session || !session.exercises) {
+    volEl.innerHTML = '';
+    if (sepEl) sepEl.style.display = 'none';
+    return;
+  }
+
+  // 현재 총 볼륨 계산
+  var curVol = 0;
+  session.exercises.forEach(function(ex) {
+    if (ex.mode === 'cardio') return;
+    (ex.sets || []).forEach(function(s) {
+      if (s.done) curVol += (s.weight || 0) * (s.reps || 0);
+    });
+  });
+
+  // 과거 세션 부분 매칭: 겹치는 태그 수가 가장 많은 세션 선택
+  var lastVol = 0;
+  var curTags = (session.tags || []).slice().sort();
+  if (curTags.length > 0) {
+    var ss = JSON.parse(localStorage.getItem('wk_sessions')) || [];
+    var bestScore = 0;
+    var bestSession = null;
+    for (var i = ss.length - 1; i >= 0; i--) {
+      var s = ss[i];
+      if (s.id === session.id) continue;
+      if (!s.tags || s.tags.length === 0) continue;
+      var sTags = s.tags.slice().sort();
+      var overlap = 0;
+      for (var j = 0; j < curTags.length; j++) {
+        if (sTags.indexOf(curTags[j]) !== -1) overlap++;
+      }
+      if (overlap > bestScore) {
+        bestScore = overlap;
+        bestSession = s;
+      } else if (overlap === bestScore && bestSession) {
+        // 동일 점수면 더 최근 세션 유지 (역순 순회이므로 먼저 �은 게 최신)
+        continue;
       }
     }
-  }
-
-  // 지난번 동일 부위 조합 세션의 총 볼륨
-  var lastVol = 0;
-  var sessions = getSessions();
-  var tagKey = _currentSession.tags.slice().sort().join(',');
-  for (var i = 0; i < sessions.length; i++) {
-    if (sessions[i].id === _currentSession.id) continue;
-    var sKey = sessions[i].tags.slice().sort().join(',');
-    if (sKey === tagKey) {
-      lastVol = sessions[i].totalVolumeExWarmup || sessions[i].totalVolume || 0;
-      break;
+    if (bestSession) {
+      lastVol = bestSession.totalVolumeExWarmup || bestSession.totalVolume || 0;
     }
   }
 
-  if (lastVol > 0) {
-    volEl.innerHTML = '<span class="vol-current">' + formatNum(currentVol) + '</span>'
-      + ' <span class="vol-target">/ ' + formatNum(lastVol) + 'kg</span>';
-  } else if (currentVol > 0) {
-    volEl.innerHTML = '<span class="vol-current">' + formatNum(currentVol) + 'kg</span>';
+  // 표시
+  if (curVol > 0) {
+    if (sepEl) sepEl.style.display = '';
+    if (lastVol > 0) {
+      volEl.innerHTML = '<span class="vol-current">' + curVol.toLocaleString() + '</span>'
+        + ' <span class="vol-target">/ ' + lastVol.toLocaleString() + 'kg</span>';
+    } else {
+      volEl.innerHTML = '<span class="vol-current">' + curVol.toLocaleString() + 'kg</span>';
+    }
   } else {
-    volEl.textContent = '';
+    volEl.innerHTML = '';
+    if (sepEl) sepEl.style.display = 'none';
   }
-  var sepEl = document.querySelector('.wh-sep');
-  if (sepEl) sepEl.style.display = currentVol > 0 ? '' : 'none';
 }
 
 // ══ 부위 탭 클릭 → 해당 부위 종목만 네비에 표시 ══
