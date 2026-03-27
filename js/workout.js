@@ -2138,7 +2138,12 @@ function completeSet(exIdx, setIdx) {
   if (setData.done) {
     setData.done = false;
     setData.isPR = false;
+    // 맨몸 종목: weight를 0으로 복원 (재완료 시 체중 재적용)
+    if (isBodyweight) {
+      setData.weight = 0;
+    }
     autoSaveSession();
+    updateHeaderVolume();
     renderExerciseCards();
     return;
   }
