@@ -502,7 +502,8 @@ function updateHeaderVolume() {
   // 현재 총 볼륨 계산
   var curVol = 0;
   session.exercises.forEach(function(ex) {
-    if (ex.mode === 'cardio') return;
+    var exMeta = getExercise(ex.exerciseId);
+    if (exMeta && exMeta.equipment === 'cardio') return;
     (ex.sets || []).forEach(function(s) {
       if (s.done) curVol += (s.weight || 0) * (s.reps || 0);
     });
@@ -2148,6 +2149,10 @@ function completeSet(exIdx, setIdx) {
     return;
   }
 
+  // 맨몸 종목: weight를 체중으로 설정하여 볼륨에 반영
+  if (isBodyweight) {
+    w = getLatestWeight();
+  }
   setData.weight = w;
   setData.reps = r;
   setData.done = true;

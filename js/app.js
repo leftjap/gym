@@ -13,6 +13,12 @@ function init() {
   // 데이터 마이그레이션 (부위/종목 ID 변환, 1회만 실행)
   migrateData();
 
+  // 인바디 초기 데이터 (기록이 없으면 1건 추가)
+  var inbodyArr = L(K.inbody) || [];
+  if (inbodyArr.length === 0) {
+    addInbodyRecord({ date: '2026-03-27', weight: 73, height: 173 });
+  }
+
   // 진행 중인 세션 복원 (있으면 메모리에 올림)
   restoreSession();
 
