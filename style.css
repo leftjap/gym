@@ -148,9 +148,15 @@ input {
 .wh-vol {
   font-size: 14px;
   font-weight: 600;
-  color: var(--gray);
+  margin-left: 8px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+.wh-vol .vol-current {
+  color: var(--accent);
+}
+.wh-vol .vol-target {
+  color: var(--gray);
 }
 
 .wh-tag {

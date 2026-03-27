@@ -492,9 +492,10 @@ function updateHeaderVolume() {
   }
 
   if (lastVol > 0) {
-    volEl.textContent = formatNum(currentVol) + ' / ' + formatNum(lastVol) + 'kg';
+    volEl.innerHTML = '<span class="vol-current">' + formatNum(currentVol) + '</span>'
+      + ' <span class="vol-target">/ ' + formatNum(lastVol) + 'kg</span>';
   } else if (currentVol > 0) {
-    volEl.textContent = formatNum(currentVol) + 'kg';
+    volEl.innerHTML = '<span class="vol-current">' + formatNum(currentVol) + 'kg</span>';
   } else {
     volEl.textContent = '';
   }
