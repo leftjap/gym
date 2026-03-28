@@ -184,6 +184,20 @@ function syncFromServer(callback, silent) {
 
       S(K.sessions, merged);
 
+      // ── 진행 중 세션 무효화: 서버에 완료 기록이 있으면 로컬 current_session 삭제 ──
+      var currentSession = L('wk_current_session');
+      if (currentSession && currentSession.id) {
+        for (var ci = 0; ci < merged.length; ci++) {
+          if (merged[ci].id === currentSession.id && merged[ci].endTime) {
+            localStorage.removeItem('wk_current_session');
+            if (typeof _currentSession !== 'undefined') {
+              _currentSession = null;
+            }
+            break;
+          }
+        }
+      }
+
       // ── PR: 서버와 로컬 병합 (exerciseId별, 더 높은 기록 유지) ──
       if (p.prs) {
         var localPrs = L(K.prs) || {};
