@@ -985,10 +985,55 @@ function renderExerciseCard(exIdx) {
     if (!lastSets || lastSets.length === 0) {
       motivateHtml = '<div class="ex-motivate-msg"><span class="ex-motivate-main">첫 기록을 만들어보세요!</span></div>';
     } else {
-      motivateHtml = '<div class="ex-motivate-msg">' +
-        (dateDisplay ? '<span class="ex-motivate-sub">' + dateDisplay + '</span>' : '') +
-        '<span class="ex-motivate-main">' + lastSetCount + '세트 총 <strong>' + formatNum(lastVol) + 'kg</strong>을 들었어요</span>' +
-      '</div>';
+      // PR 기준 자극 메시지
+      var bestVol = getExerciseBestSessionVolume(meta.id);
+
+      if (bestVol <= 0) {
+        // 과거 기록은 있지만 볼륨 PR이 0 (이전 세션이 모두 현재 세션인 경우 등)
+        motivateHtml = '<div class="ex-motivate-msg">' +
+          (dateDisplay ? '<span class="ex-motivate-sub">' + dateDisplay + '</span>' : '') +
+          '<span class="ex-motivate-main">' + lastSetCount + '세트 총 <strong>' + formatNum(lastVol) + 'kg</strong>을 들었어요</span>' +
+        '</div>';
+      } else if (todayVol >= bestVol) {
+        // PR 돌파
+        var overVol = todayVol - bestVol;
+        motivateHtml = '<div class="ex-motivate-msg">' +
+          '<span class="ex-motivate-main ex-motivate-pr-hit">새 기록 달성! <strong class="motivate-accent">+' + formatNum(overVol) + 'kg</strong></span>' +
+        '</div>';
+      } else {
+        // PR까지 남은 볼륨 → 세트 환산
+        var remainVol = bestVol - todayVol;
+        var avgSetVol = doneCount > 0 ? Math.round(todayVol / doneCount) : 0;
+        var remainSets = avgSetVol > 0 ? Math.ceil(remainVol / avgSetVol) : 0;
+
+        if (remainSets <= 0 || avgSetVol <= 0) {
+          // 아직 완료 세트 없음 → 직전 기록 기반 표시
+          motivateHtml = '<div class="ex-motivate-msg">' +
+            (dateDisplay ? '<span class="ex-motivate-sub">' + dateDisplay + '</span>' : '') +
+            '<span class="ex-motivate-main">새 기록까지 <strong>' + formatNum(remainVol) + 'kg</strong> 남았어요</span>' +
+          '</div>';
+        } else if (remainSets === 1) {
+          // 임박 — 경어체 제거, 강한 톤
+          motivateHtml = '<div class="ex-motivate-msg">' +
+            '<span class="ex-motivate-main"><strong class="motivate-accent">' + remainSets + '세트 ' + formatNum(remainVol) + 'kg</strong>이면 새 기록!</span>' +
+          '</div>';
+        } else if (remainSets <= 2) {
+          // 가까움
+          motivateHtml = '<div class="ex-motivate-msg">' +
+            '<span class="ex-motivate-main">새 기록까지 <strong class="motivate-accent">' + remainSets + '세트 ' + formatNum(remainVol) + 'kg</strong>, 거의 다 왔어요</span>' +
+          '</div>';
+        } else if (remainSets <= 3) {
+          // 중간
+          motivateHtml = '<div class="ex-motivate-msg">' +
+            '<span class="ex-motivate-main">새 기록까지 <strong>' + remainSets + '세트 ' + formatNum(remainVol) + 'kg</strong> — 충분히 가능해요</span>' +
+          '</div>';
+        } else {
+          // 멀 때 — 정보 전달
+          motivateHtml = '<div class="ex-motivate-msg">' +
+            '<span class="ex-motivate-main">새 기록까지 <strong>' + remainSets + '세트 ' + formatNum(remainVol) + 'kg</strong> 남았어요</span>' +
+          '</div>';
+        }
+      }
     }
   }
 

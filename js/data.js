@@ -255,6 +255,34 @@ function getLastExerciseSets(exerciseId) {
 }
 
 /**
+ * 특정 종목의 역대 최고 세션 볼륨 반환 (현재 세션 제외)
+ * @param {string} exerciseId
+ * @returns {number} 최고 볼륨 (kg). 기록 없으면 0
+ */
+function getExerciseBestSessionVolume(exerciseId) {
+  var sessions = getSessions();
+  var currentId = null;
+  if (typeof _currentSession !== 'undefined' && _currentSession) {
+    currentId = _currentSession.id;
+  }
+  var best = 0;
+  for (var i = 0; i < sessions.length; i++) {
+    if (currentId && sessions[i].id === currentId) continue;
+    var exs = sessions[i].exercises;
+    for (var j = 0; j < exs.length; j++) {
+      if (exs[j].exerciseId !== exerciseId) continue;
+      var vol = 0;
+      for (var k = 0; k < exs[j].sets.length; k++) {
+        var s = exs[j].sets[k];
+        if (s.done) vol += (s.weight || 0) * (s.reps || 0);
+      }
+      if (vol > best) best = vol;
+    }
+  }
+  return best;
+}
+
+/**
  * 가장 최근 세션 반환 (오늘 포함)
  */
 function getLastSession() {

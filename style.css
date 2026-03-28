@@ -799,6 +799,16 @@ input {
   font-weight: 700;
 }
 
+/* PR 자극 메시지 포인트 색상 */
+.motivate-accent {
+  color: var(--accent);
+}
+
+/* PR 돌파 메시지 */
+.ex-motivate-pr-hit {
+  color: var(--accent);
+}
+
 .ex-card-icon {
   width: 80px;
   height: 80px;
