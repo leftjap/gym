@@ -1038,6 +1038,8 @@ function renderExerciseCard(exIdx) {
       '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
         '<div class="ex-card-body">';
 
+    html += renderPrevSetsSummary(meta.id, false, true);
+
     // 완료 세트 칩 표시
     if (doneSets.length > 0) {
       html += '<div class="done-sets-summary">';
@@ -1118,6 +1120,8 @@ function renderExerciseCard(exIdx) {
     html += '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">';
     html += '<div class="ex-card-body" id="exBody-' + exIdx + '">';
 
+    html += renderPrevSetsSummary(meta.id, true, false);
+
     // 완료 세트 요약 (접힘)
     html += renderDoneSetsSummary(exIdx, true);
 
@@ -1152,6 +1156,8 @@ function renderExerciseCard(exIdx) {
     html += '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">';
     html += '<div class="ex-card-body" id="exBody-' + exIdx + '">';
 
+    html += renderPrevSetsSummary(meta.id, false, false);
+
     // 완료 세트 요약 (접힘)
     html += renderDoneSetsSummary(exIdx, false);
 
@@ -1183,6 +1189,28 @@ function renderExerciseCard(exIdx) {
     html += '</div></div>';
   }
 
+  return html;
+}
+
+// ══ 직전 세션 세트 요약 (흐리게) ══
+function renderPrevSetsSummary(exerciseId, isBodyweight, isCardio) {
+  var lastSets = getLastExerciseSets(exerciseId);
+  if (!lastSets || lastSets.length === 0) return '';
+
+  var html = '<div class="prev-sets-summary">';
+  for (var i = 0; i < lastSets.length; i++) {
+    var s = lastSets[i];
+    var label = '';
+    if (isCardio) {
+      label = (s.reps || 0) + '분';
+    } else if (isBodyweight) {
+      label = (s.reps || 0) + '회';
+    } else {
+      label = (s.weight || 0) + 'kg×' + (s.reps || 0);
+    }
+    html += '<span class="prev-set-chip"><span class="chip-set-num">' + (i + 1) + '</span> ' + label + '</span>';
+  }
+  html += '</div>';
   return html;
 }
 

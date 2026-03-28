@@ -3947,6 +3947,33 @@ input {
   color: var(--accent);
 }
 
+/* ── 직전 세션 세트 요약 (흐리게) ── */
+.prev-sets-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 12px 8px 12px;
+}
+
+.prev-set-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px dashed var(--border-gray);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--icon-inactive);
+  opacity: 0.45;
+}
+
+.prev-set-chip .chip-set-num {
+  font-weight: 600;
+  color: var(--gray);
+}
+
 .done-sets-expanded {
   display: none;
 }
