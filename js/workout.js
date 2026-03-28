@@ -1038,31 +1038,7 @@ function renderExerciseCard(exIdx) {
       '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">' +
         '<div class="ex-card-body">';
 
-    html += renderPrevSetsSummary(meta.id, false, true);
-
-    // 완료 세트 칩 표시
-    if (doneSets.length > 0) {
-      html += '<div class="done-sets-summary">';
-      for (var di = 0; di < doneSets.length; di++) {
-        var ds = doneSets[di];
-        html += '<span class="done-set-chip"><span class="chip-set-num">' + (ds.idx + 1) + '</span> ' + (ds.data.reps || 0) + '분</span>';
-      }
-      html += '</div>';
-
-      // 칩 탭 시 수정할 수 있는 펼침 영역
-      html += '<div class="done-sets-expanded" id="doneSetsExp-' + exIdx + '">';
-      for (var di2 = 0; di2 < doneSets.length; di2++) {
-        var ds2 = doneSets[di2];
-        html +=
-          '<div class="cardio-edit-row">' +
-            '<span class="cardio-edit-label">' + (ds2.idx + 1) + '세트</span>' +
-            '<input type="number" class="cardio-min-input" id="cardioEditMin-' + exIdx + '-' + ds2.idx + '" value="' + (ds2.data.reps || 0) + '" inputmode="numeric">' +
-            '<span class="cardio-label">분</span>' +
-            '<button class="set-check-btn done" onclick="updateCardioDone(' + exIdx + ',' + ds2.idx + ')">✓</button>' +
-          '</div>';
-      }
-      html += '</div>';
-    }
+    html += renderMergedSetsSummary(exIdx, meta.id, false, true);
 
     // 타이머 진행 중
     if (cRunning) {
@@ -1120,10 +1096,7 @@ function renderExerciseCard(exIdx) {
     html += '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">';
     html += '<div class="ex-card-body" id="exBody-' + exIdx + '">';
 
-    html += renderPrevSetsSummary(meta.id, true, false);
-
-    // 완료 세트 요약 (접힘)
-    html += renderDoneSetsSummary(exIdx, true);
+    html += renderMergedSetsSummary(exIdx, meta.id, true, false);
 
     // 미완료 세트 테이블
     var hasUndone = false;
@@ -1156,10 +1129,7 @@ function renderExerciseCard(exIdx) {
     html += '<div class="ex-card' + (allDone ? ' ex-done' : '') + '">';
     html += '<div class="ex-card-body" id="exBody-' + exIdx + '">';
 
-    html += renderPrevSetsSummary(meta.id, false, false);
-
-    // 완료 세트 요약 (접힘)
-    html += renderDoneSetsSummary(exIdx, false);
+    html += renderMergedSetsSummary(exIdx, meta.id, false, false);
 
     // 미완료 세트 테이블
     var hasUndone = false;
@@ -1192,25 +1162,67 @@ function renderExerciseCard(exIdx) {
   return html;
 }
 
-// ══ 직전 세션 세트 요약 (흐리게) ══
-function renderPrevSetsSummary(exerciseId, isBodyweight, isCardio) {
+// ══ 직전+현재 세트 통합 요약 (같은 위치에 교체 표시) ══
+function renderMergedSetsSummary(exIdx, exerciseId, isBodyweight, isCardio) {
+  var exData = _currentSession.exercises[exIdx];
   var lastSets = getLastExerciseSets(exerciseId);
-  if (!lastSets || lastSets.length === 0) return '';
+  var doneSets = [];
+  for (var i = 0; i < exData.sets.length; i++) {
+    if (exData.sets[i].done) doneSets.push({ idx: i, data: exData.sets[i] });
+  }
 
-  var html = '<div class="prev-sets-summary">';
-  for (var i = 0; i < lastSets.length; i++) {
-    var s = lastSets[i];
-    var label = '';
-    if (isCardio) {
-      label = (s.reps || 0) + '분';
-    } else if (isBodyweight) {
-      label = (s.reps || 0) + '회';
-    } else {
-      label = (s.weight || 0) + 'kg×' + (s.reps || 0);
+  // 직전도 없고 현재 완료도 없으면 표시 안 함
+  var lastCount = lastSets ? lastSets.length : 0;
+  var doneCount = doneSets.length;
+  if (lastCount === 0 && doneCount === 0) return '';
+
+  // 총 슬롯 수: 직전과 현재 완료 중 더 큰 쪽
+  var totalSlots = Math.max(lastCount, doneCount);
+
+  // 칩 행 (탭 시 펼침)
+  var html = '<div class="done-sets-summary" onclick="toggleDoneSets(' + exIdx + ')">';
+  for (var i = 0; i < totalSlots; i++) {
+    var current = i < doneCount ? doneSets[i] : null;
+    var prev = lastSets && i < lastCount ? lastSets[i] : null;
+
+    if (current) {
+      // 현재 완료 세트 → 진한 칩
+      var s = current.data;
+      var chipClass = 'done-set-chip' + (s.isPR ? ' has-pr' : '');
+      var label = '';
+      if (isCardio) {
+        label = (s.reps || 0) + '분';
+      } else if (isBodyweight) {
+        label = (s.reps || 0) + '회';
+      } else {
+        label = (s.weight || 0) + 'kg×' + (s.reps || 0);
+      }
+      html += '<span class="' + chipClass + '"><span class="chip-set-num">' + (current.idx + 1) + '</span> ' + label + '</span>';
+    } else if (prev) {
+      // 직전 세트 → 흐린 칩
+      var label = '';
+      if (isCardio) {
+        label = (prev.reps || 0) + '분';
+      } else if (isBodyweight) {
+        label = (prev.reps || 0) + '회';
+      } else {
+        label = (prev.weight || 0) + 'kg×' + (prev.reps || 0);
+      }
+      html += '<span class="prev-set-chip"><span class="chip-set-num">' + (i + 1) + '</span> ' + label + '</span>';
     }
-    html += '<span class="prev-set-chip"><span class="chip-set-num">' + (i + 1) + '</span> ' + label + '</span>';
   }
   html += '</div>';
+
+  // 펼침 영역 (완료 세트가 있을 때만)
+  if (doneCount > 0) {
+    html += '<div class="done-sets-expanded" id="doneSetsExp-' + exIdx + '">';
+    html += '<table class="set-table"><tbody>';
+    for (var i = 0; i < doneSets.length; i++) {
+      html += renderSetRow(exIdx, doneSets[i].idx);
+    }
+    html += '</tbody></table></div>';
+  }
+
   return html;
 }
 
