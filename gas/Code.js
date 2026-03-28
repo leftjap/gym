@@ -115,8 +115,26 @@ function saveData(payload) {
   var lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    _backupDataIfNeeded();
+    // ── 빈 payload 차단 ──
+    if (!payload || !payload.sessions) {
+      console.error('⚠️ saveData 차단: payload 또는 sessions 없음');
+      return { status: 'error', message: 'Integrity check failed: empty payload' };
+    }
+
+    // ── sessions 급감 차단 (50% 미만) ──
+    var newSessions = payload.sessions || [];
     var file = getDataFile();
+    var currentContent = file.getBlob().getDataAsString();
+    var currentDb = {};
+    try { currentDb = JSON.parse(currentContent || '{}'); } catch(e) {}
+    var currentSessions = currentDb.sessions || [];
+
+    if (currentSessions.length >= 5 && newSessions.length < currentSessions.length * 0.5) {
+      console.error('⚠️ saveData 차단: sessions 급감 감지. 기존 ' + currentSessions.length + '건 → 신규 ' + newSessions.length + '건');
+      return { status: 'error', message: 'Integrity check failed: sessions count drop (' + currentSessions.length + ' → ' + newSessions.length + ')' };
+    }
+
+    _backupDataIfNeeded();
     file.setContent(JSON.stringify(payload));
     return { status: 'ok' };
   } catch (e) {
