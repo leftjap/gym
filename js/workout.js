@@ -46,6 +46,28 @@ function isExerciseComplete(exIdx) {
   return true;
 }
 
+// ══ 유산소 종목 완료 여부 판정 ══
+function isCardioComplete(exIdx) {
+  if (!_currentSession) return false;
+  var exData = _currentSession.exercises[exIdx];
+  if (!exData || exData.sets.length === 0) return false;
+
+  var doneCount = 0;
+  for (var i = 0; i < exData.sets.length; i++) {
+    if (exData.sets[i].done) doneCount++;
+  }
+  if (doneCount === 0) return false;
+
+  // 미완료 세트가 있으면: 마지막 세트이고 reps=0인 빈 자동추가 세트뿐이면 완료로 판정
+  for (var i = 0; i < exData.sets.length; i++) {
+    if (!exData.sets[i].done) {
+      // 빈 자동추가 세트가 아니면 미완료
+      if (i !== exData.sets.length - 1 || exData.sets[i].reps > 0) return false;
+    }
+  }
+  return true;
+}
+
 // ══ 화면 진입 ══
 function renderWorkoutScreen() {
   var container = document.getElementById('workoutContent');
@@ -635,10 +657,12 @@ function renderExerciseNav() {
     isFirst = false;
 
     var cls = 'ex-nav-btn';
-    if (i === _currentExerciseIndex) cls += ' active';
-    else if (isExerciseComplete(i)) {
-      var _navMeta = getExercise(ex.exerciseId);
-      if (!_navMeta || _navMeta.equipment !== 'cardio') cls += ' done';
+    if (i === _currentExerciseIndex) {
+      cls += ' active';
+    } else if (meta.equipment === 'cardio') {
+      if (isCardioComplete(i)) cls += ' done';
+    } else if (isExerciseComplete(i)) {
+      cls += ' done';
     }
     html += '<button class="' + cls + '" data-idx="' + i + '" onclick="switchExercise(' + i + ')">' + meta.name + '</button>';
   }
@@ -1642,6 +1666,7 @@ function bindNavLongPress() {
   let startY = 0;
   let dropIdx = -1;
   let autoScrollTimer = null;
+  let hasMoved = false;
 
   // 종목 버튼들만 선택 (+ 버튼 제외)
   function getNavBtns() {
@@ -1652,6 +1677,56 @@ function bindNavLongPress() {
     return parseInt(btn.getAttribute('data-idx'), 10);
   }
 
+  function showNavActionSheet(exIdx) {
+    if (!_currentSession || exIdx < 0 || exIdx >= _currentSession.exercises.length) return;
+
+    var exData = _currentSession.exercises[exIdx];
+    var meta = getExercise(exData.exerciseId);
+    var name = meta ? meta.name : '';
+
+    var doneCount = 0;
+    for (var k = 0; k < exData.sets.length; k++) {
+      if (exData.sets[k].done) doneCount++;
+    }
+
+    var buttons = [];
+
+    if (doneCount > 0) {
+      buttons.push({
+        text: '종목 완료',
+        onClick: function() {
+          showConfirm(name + ' 종목을 완료하시겠습니까?', function(confirmed) {
+            if (confirmed) {
+              completeExercise(exIdx);
+            }
+          });
+        }
+      });
+    }
+
+    if (_currentSession.exercises.length > 1) {
+      var deleteText = doneCount > 0 ? '종목 삭제 (' + doneCount + '세트 기록 포함)' : '종목 삭제';
+      buttons.push({
+        text: deleteText,
+        cls: 'destructive',
+        onClick: function() {
+          showConfirm(name + ' 종목을 삭제하시겠습니까?', function(confirmed) {
+            if (confirmed) {
+              removeExerciseFromSession(exIdx);
+            }
+          });
+        }
+      });
+    }
+
+    if (buttons.length === 0) {
+      showConfirm('완료된 세트가 없습니다.\n세트를 먼저 완료해주세요.', function() {});
+      return;
+    }
+
+    showActionSheet(name, buttons);
+  }
+
   // ── long-press 감지 ──
   scrollEl.addEventListener('touchstart', function(e) {
     const btn = e.target.closest('.ex-nav-btn:not(.ex-nav-add)');
@@ -1659,6 +1734,7 @@ function bindNavLongPress() {
 
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
+    hasMoved = false;
 
     pressTimer = setTimeout(function() {
       // long-press 확정
@@ -1716,6 +1792,7 @@ function bindNavLongPress() {
     if (!isDragging) return;
 
     e.preventDefault();
+    hasMoved = true;
 
     const touchX = e.touches[0].clientX;
     const touchY = e.touches[0].clientY;
@@ -1787,6 +1864,14 @@ function bindNavLongPress() {
     }
 
     scrollEl.style.overflow = '';
+
+    // 이동 없이 제자리에서 손을 뗀 경우 → 바텀시트 표시
+    if (!hasMoved) {
+      showNavActionSheet(dragIdx);
+      dragIdx = -1;
+      dropIdx = -1;
+      return;
+    }
 
     // 순서 변경 실행
     if (dropIdx !== dragIdx && dropIdx !== dragIdx + 1) {
@@ -2511,6 +2596,29 @@ function autoSaveSession() {
   }
   _currentSession.totalVolume = vol;
   _currentSession.totalVolumeExWarmup = volEx;
+
+  // 유산소 타이머 상태를 세션에 동기화 (visibilitychange 시 정확한 값 보존)
+  var ctKeys = Object.keys(_cardioTimers);
+  for (var ci = 0; ci < ctKeys.length; ci++) {
+    var ctIdx = parseInt(ctKeys[ci]);
+    var ct = _cardioTimers[ctKeys[ci]];
+    if (ct && _currentSession.exercises[ctIdx]) {
+      var syncElapsed = ct.elapsed;
+      if (ct.running && ct.startedAt) {
+        syncElapsed += Date.now() - ct.startedAt;
+      }
+      _currentSession.exercises[ctIdx]._cardioTimer = {
+        elapsed: syncElapsed,
+        startedAt: ct.running ? Date.now() : null,
+        running: ct.running || false
+      };
+      // running 중이면 _cardioTimers도 elapsed를 갱신하여 이중 계산 방지
+      if (ct.running && ct.startedAt) {
+        ct.elapsed = syncElapsed;
+        ct.startedAt = Date.now();
+      }
+    }
+  }
 
   // 임시 저장 (진행 중 세션)
   S('wk_current_session', _currentSession);
