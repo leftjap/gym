@@ -12,6 +12,10 @@ function hideLoadingScreen() {
 }
 
 function init() {
+  // iOS Safari 저장공간 보호 요청
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().catch(function() {});
+  }
   // 데이터 마이그레이션 (부위/종목 ID 변환, 1회만 실행)
   migrateData();
 
