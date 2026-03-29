@@ -6,6 +6,7 @@ var _currentYM = getYM(); // 현재 선택된 월
 var _isPopState = false; // popstate 핸들러 실행 중 플래그
 var _bottomSheetOpen = false;
 var _selectedWeekDate = today(); // 주간 캘린더에서 선택된 날짜 (기본: 오늘)
+var _actionSheetOpenTime = 0; // ghost click 방지용 타임스탬프
 
 // ══ 화면 전환 ══
 function showScreen(screenId, historyAction) {
@@ -1041,6 +1042,8 @@ function showActionSheet(title, buttons) {
   var sheet = document.getElementById('actionSheet');
   if (!overlay || !sheet) return;
 
+  _actionSheetOpenTime = Date.now();
+
   var html = '<div class="action-sheet-group">';
   if (title) {
     html += '<div class="action-sheet-title">' + title + '</div>';
@@ -1074,6 +1077,9 @@ function showActionSheet(title, buttons) {
 }
 
 function hideActionSheet() {
+  // ghost click 방지: 열린 직후 400ms 이내 호출은 무시
+  if (Date.now() - _actionSheetOpenTime < 400) return;
+
   var overlay = document.getElementById('actionSheetOverlay');
   var sheet = document.getElementById('actionSheet');
   if (overlay) overlay.classList.remove('visible');
