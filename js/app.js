@@ -61,9 +61,12 @@ document.addEventListener('visibilitychange', function() {
 });
 
 window.addEventListener('beforeunload', function() {
-  if (typeof _currentSession !== 'undefined' && _currentSession && !_isFinishing) {
-    autoSaveSession();
-  }
+  _flushBeforeUnload();
+});
+
+// iOS PWA: pagehide가 beforeunload보다 신뢰도 높음
+window.addEventListener('pagehide', function() {
+  _flushBeforeUnload();
 });
 
 window.onload = function() {

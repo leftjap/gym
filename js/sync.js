@@ -408,3 +408,40 @@ function retrySyncFromBanner() {
     }
   }, false); // 재시도는 수동이므로 silent=false
 }
+
+// ═══ 비상 플러시: 페이지 이탈 시 미동기화 데이터 서버 전송 ═══
+function _flushBeforeUnload() {
+  if (window._beaconFlushed) return;
+  window._beaconFlushed = true;
+
+  // 1. 진행 중인 세션을 LS에 즉시 저장
+  try {
+    if (typeof _currentSession !== 'undefined' && _currentSession && !_isFinishing) {
+      autoSaveSession();
+    }
+  } catch (e) {}
+
+  // 2. sendBeacon으로 서버 push 시도
+  try {
+    var sessions = L(K.sessions);
+    if (!sessions || sessions.length === 0) return;
+    var payload = JSON.stringify({
+      action: 'save',
+      token: GAS_TOKEN,
+      payload: {
+        sessions: sessions,
+        prs: L(K.prs) || {},
+        inbody: L(K.inbody) || [],
+        customExercises: L(K.customExercises) || [],
+        hiddenExercises: L(K.hiddenExercises) || [],
+        exerciseIcons: L(K.exerciseIcons) || {},
+        exerciseOrder: L('wk_exercise_order') || {},
+        partOverrides: L(K.partOverrides) || {},
+        settings: L(K.settings) || {}
+      }
+    });
+    if (payload.length <= 65536) {
+      navigator.sendBeacon(GAS_URL, payload);
+    }
+  } catch (e) {}
+}

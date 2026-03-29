@@ -79,9 +79,9 @@ function _backupDataIfNeeded() {
       folder.createFile(backupName, content, MimeType.PLAIN_TEXT);
     }
 
-    // 7일 이전 백업 삭제
+    // 30일 이전 백업 삭제
     var cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 7);
+    cutoffDate.setDate(cutoffDate.getDate() - 30);
     var cutoffStr = Utilities.formatDate(cutoffDate, 'Asia/Seoul', 'yyyy-MM-dd');
 
     var allFiles = folder.getFiles();

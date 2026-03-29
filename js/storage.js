@@ -20,7 +20,15 @@ function L(key) {
   catch { return null; }
 }
 function S(key, val) {
-  localStorage.setItem(key, JSON.stringify(val));
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch (e) {
+    if (!window._quotaWarned) {
+      window._quotaWarned = true;
+      alert('저장 공간이 부족합니다. 오래된 기록을 정리해주세요.');
+    }
+    console.error('localStorage 저장 실패:', key, e);
+  }
 }
 
 // ── 날짜 유틸 ──
