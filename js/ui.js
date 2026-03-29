@@ -1071,8 +1071,18 @@ function showActionSheet(title, buttons) {
   }
 
   requestAnimationFrame(function() {
+    // ghost click 차단: 열린 직후 터치 이벤트를 받지 않음
+    overlay.style.pointerEvents = 'none';
+    sheet.style.pointerEvents = 'none';
+
     overlay.classList.add('visible');
     sheet.classList.add('visible');
+
+    // 400ms 후 터치 활성화
+    setTimeout(function() {
+      overlay.style.pointerEvents = '';
+      sheet.style.pointerEvents = '';
+    }, 400);
   });
 }
 
