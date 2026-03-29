@@ -5,7 +5,7 @@
 > **공통 규칙**: AI의 응답은 간결한 경어체로 작성합니다.
 > 이 문서는 gym 고유 규칙만 담는다. 코드 구조는 소스를 직접 읽어서 확인한다.
 > 공통 규칙(트랙 판단, 작업지시서 형식, Claude Code 규칙, 디버깅 프로토콜)은
-> https://raw.githubusercontent.com/leftjap/playbook/main/common-rules.md 를 따른다.
+> https://raw.githubusercontent.com/leftjap/opus/main/common-rules.md 를 따른다.
 
 ---
 
