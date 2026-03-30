@@ -14,6 +14,40 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  <!-- Sentry Error Monitoring -->
+  <script>
+    window.sentryOnLoad = function () {
+      Sentry.init({
+        environment: 'production',
+        sampleRate: 1.0,
+        ignoreErrors: [
+          'ResizeObserver loop',
+          'Non-Error promise rejection captured',
+          /Loading chunk .* failed/,
+          'Network request failed',
+          /Failed to fetch/
+        ],
+        beforeSend: function(event) {
+          var key = (event.exception && event.exception.values && event.exception.values[0])
+                    ? event.exception.values[0].type + ':' + event.exception.values[0].value
+                    : 'unknown';
+          if (!window._sentryRateMap) window._sentryRateMap = {};
+          var now = Date.now();
+          if (!window._sentryRateMap[key]) window._sentryRateMap[key] = [];
+          window._sentryRateMap[key].push(now);
+          window._sentryRateMap[key] = window._sentryRateMap[key].filter(function(t) { return now - t < 60000; });
+          if (window._sentryRateMap[key].length > 5) return null;
+          return event;
+        }
+      });
+      Sentry.setTag('app', 'gym');
+    };
+  </script>
+  <script
+    src="https://js.sentry-cdn.com/74d700d2b95307773edffc065bdd2c2d.min.js"
+    crossorigin="anonymous"
+  ></script>
+  <script src="js/debug-utils.js?v=1"></script>
   <link rel="stylesheet" href="style.css?v=20260328b">
 </head>
 <body>
