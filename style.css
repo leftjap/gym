@@ -4424,3 +4424,38 @@ input {
   z-index: 20;
   background: var(--bg-gray);
 }
+
+/* ═══ 잠금 화면 (Google 로그인) ═══ */
+.lock-overlay {
+  position: fixed;
+  inset: 0;
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+.lock-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 32px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+  max-width: 340px;
+  width: 90%;
+}
+.lock-brand {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 8px;
+}
+.lock-desc {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 24px;
+}
+#googleSignInBtn {
+  display: flex;
+  justify-content: center;
+}

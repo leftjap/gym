@@ -47,10 +47,21 @@
     src="https://js.sentry-cdn.com/74d700d2b95307773edffc065bdd2c2d.min.js"
     crossorigin="anonymous"
   ></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="js/debug-utils.js?v=1"></script>
   <link rel="stylesheet" href="style.css?v=20260328b">
 </head>
 <body>
+  <!-- 잠금 화면 (Google 로그인) -->
+  <div id="lockScreen" class="lock-overlay" style="display:none;">
+    <div class="lock-card">
+      <div class="lock-brand">Gym</div>
+      <div class="lock-desc">개인 기록 공간입니다. 로그인해주세요.</div>
+      <div id="googleSignInBtn"></div>
+      <div class="lock-err" id="lockErr" style="color:#e85040;font-size:13px;margin-top:12px;"></div>
+    </div>
+  </div>
+
   <!-- 로딩 화면 -->
   <div id="loadingScreen" class="loading-screen">
     <img src="loding.jpg" alt="" class="loading-avatar">
@@ -131,9 +142,9 @@
   <script src="js/workout.js?v=20260327b"></script>
   <script src="js/stats.js?v=20260325c"></script>
   <script src="js/settings.js?v=20260325c"></script>
-  <script src="js/sync.js?v=20260325c"></script>
+  <script src="js/sync.js?v=20260330a"></script>
   <script src="js/swipe-back.js?v=20260326p"></script>
-  <script src="js/app.js?v=20260325c"></script>
+  <script src="js/app.js?v=20260330a"></script>
 
   <!-- 액션시트 -->
   <div id="actionSheetOverlay" class="action-sheet-overlay" onclick="hideActionSheet()"></div>

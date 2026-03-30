@@ -3,10 +3,13 @@
 /* ═══ sync.js — GAS 서버 동기화 ═══ */
 
 var GAS_URL = 'https://script.google.com/macros/s/AKfycby9cBU92KAnTveGQWtALcbTmpExMKvSbtkvyC6vdWZttt8kEIEmxaTuTHan474rbzA3/exec';
-var GAS_TOKEN = 'gym2026';
 var _syncInProgress = false;
 var _syncRetryCount = 0;
 var _syncRetryTimer = null;
+
+function _getIdToken() {
+  return localStorage.getItem('wk_id_token') || '';
+}
 
 // ══ 서버에 데이터 저장 ══
 function syncToServer(callback, silent) {
@@ -15,7 +18,6 @@ function syncToServer(callback, silent) {
     return;
   }
 
-  // 빈 LS 보호: 서버 복원 전 업로드 차단
   if (window._blockSyncToServer) {
     console.log('syncToServer: 빈 LS 보호 — 서버 복원 전 업로드 차단');
     if (callback) callback(false);
@@ -28,8 +30,13 @@ function syncToServer(callback, silent) {
     return;
   }
 
+  var idToken = _getIdToken();
+  if (!idToken) {
+    if (callback) callback(false);
+    return;
+  }
+
   _syncInProgress = true;
-  // 새 저장 요청이 오면 기존 재시도 취소
   clearTimeout(_syncRetryTimer);
   _syncRetryCount = 0;
 
@@ -49,7 +56,7 @@ function syncToServer(callback, silent) {
   };
 
   var body = JSON.stringify({
-    token: GAS_TOKEN,
+    idToken: idToken,
     action: 'save',
     payload: payload
   });
@@ -69,6 +76,11 @@ function syncToServer(callback, silent) {
       if (callback) callback(true);
     } else {
       console.error('Sync save error:', result.message);
+      if (result.message === 'Unauthorized') {
+        window._syncUnauthorized = true;
+        if (callback) callback(false);
+        return;
+      }
       if (!silent) showSyncToast('error');
       _scheduleSyncRetry(silent);
       if (callback) callback(false);
@@ -110,11 +122,17 @@ function syncFromServer(callback, silent) {
     return;
   }
 
+  var idToken = _getIdToken();
+  if (!idToken) {
+    if (callback) callback(false);
+    return;
+  }
+
   _syncInProgress = true;
   if (!silent) showSyncToast('loading');
 
   var body = JSON.stringify({
-    token: GAS_TOKEN,
+    idToken: idToken,
     action: 'load'
   });
 
@@ -132,7 +150,6 @@ function syncFromServer(callback, silent) {
       var serverSessions = p.sessions || [];
       var localSessions = L(K.sessions) || [];
 
-      // 서버 비어있고 로컬에 데이터 있으면 → 로컬을 서버에 업로드
       if (serverSessions.length === 0 && localSessions.length > 0) {
         saveLastSyncTime();
         if (!silent) showSyncToast('saved');
@@ -140,7 +157,6 @@ function syncFromServer(callback, silent) {
         return;
       }
 
-      // ── 세션 ID 기반 병합 ──
       var localMap = {};
       for (var i = 0; i < localSessions.length; i++) {
         localMap[localSessions[i].id] = localSessions[i];
@@ -149,18 +165,15 @@ function syncFromServer(callback, silent) {
       var merged = [];
       var usedIds = {};
 
-      // 1) 서버 세션 순회: 로컬에도 있으면 endTime 비교, 없으면 추가
       for (var j = 0; j < serverSessions.length; j++) {
         var ss = serverSessions[j];
         if (!ss.id) continue;
         var ls = localMap[ss.id];
         if (ls) {
-          // 양쪽에 존재 → endTime이 큰 쪽 채택
           var sEnd = ss.endTime || 0;
           var lEnd = ls.endTime || 0;
           merged.push(sEnd > lEnd ? ss : ls);
         } else {
-          // 서버에만 존재 → 빈 세션 필터링 후 추가
           if (ss.totalVolume > 0 || ss.durationMin > 0 || ss.totalCalories > 5) {
             merged.push(ss);
           }
@@ -168,14 +181,12 @@ function syncFromServer(callback, silent) {
         usedIds[ss.id] = true;
       }
 
-      // 2) 로컬에만 있는 세션 유지
       for (var k = 0; k < localSessions.length; k++) {
         if (!usedIds[localSessions[k].id]) {
           merged.push(localSessions[k]);
         }
       }
 
-      // 정렬: 날짜 내림차순, 같은 날짜면 startTime 내림차순
       merged.sort(function(a, b) {
         var dc = (b.date || '').localeCompare(a.date || '');
         if (dc !== 0) return dc;
@@ -184,7 +195,6 @@ function syncFromServer(callback, silent) {
 
       S(K.sessions, merged);
 
-      // ── 진행 중 세션 무효화: 서버에 완료 기록이 있으면 로컬 current_session 삭제 ──
       var currentSession = L('wk_current_session');
       if (currentSession && currentSession.id) {
         for (var ci = 0; ci < merged.length; ci++) {
@@ -198,24 +208,20 @@ function syncFromServer(callback, silent) {
         }
       }
 
-      // ── PR: 서버와 로컬 병합 (exerciseId별, 더 높은 기록 유지) ──
       if (p.prs) {
         var localPrs = L(K.prs) || {};
         var serverPrs = p.prs;
         var mergedPrs = {};
-        // 로컬 PR 복사
         var prKeys = Object.keys(localPrs);
         for (var pi = 0; pi < prKeys.length; pi++) {
           mergedPrs[prKeys[pi]] = localPrs[prKeys[pi]];
         }
-        // 서버 PR 병합
         var sPrKeys = Object.keys(serverPrs);
         for (var si = 0; si < sPrKeys.length; si++) {
           var exId = sPrKeys[si];
           if (!mergedPrs[exId]) {
             mergedPrs[exId] = serverPrs[exId];
           } else {
-            // 양쪽에 있으면 서버 항목 중 로컬에 없는 것만 추가
             var localArr = mergedPrs[exId];
             var serverArr = serverPrs[exId];
             if (Array.isArray(serverArr) && Array.isArray(localArr)) {
@@ -235,7 +241,6 @@ function syncFromServer(callback, silent) {
         S(K.prs, mergedPrs);
       }
 
-      // ── 기타 데이터: 서버가 있으면 적용 ──
       if (p.inbody) S(K.inbody, p.inbody);
       if (p.customExercises) S(K.customExercises, p.customExercises);
       if (p.hiddenExercises !== undefined) S(K.hiddenExercises, p.hiddenExercises);
@@ -243,7 +248,6 @@ function syncFromServer(callback, silent) {
       if (p.partOverrides !== undefined) S(K.partOverrides, p.partOverrides);
       if (p.settings) S(K.settings, p.settings);
 
-      // exerciseIcons: 서버와 로컬 병합 (로컬 우선)
       var serverIcons = p.exerciseIcons || {};
       var localIcons = L(K.exerciseIcons) || {};
       var mergedIcons = {};
@@ -261,7 +265,6 @@ function syncFromServer(callback, silent) {
 
       saveLastSyncTime();
 
-      // 병합 후 로컬에만 있던 세션이 있으면 서버에도 반영
       if (merged.length > serverSessions.length) {
         syncToServer(null, true);
       }
@@ -270,6 +273,11 @@ function syncFromServer(callback, silent) {
       if (callback) callback(true);
     } else {
       console.error('Sync load error:', result.message);
+      if (result.message === 'Unauthorized') {
+        window._syncUnauthorized = true;
+        if (callback) callback(false);
+        return;
+      }
       if (!silent) showSyncToast('error');
       if (callback) callback(false);
     }
@@ -283,7 +291,6 @@ function syncFromServer(callback, silent) {
   });
 }
 
-// ══ 마지막 동기화 시각 저장/조회 ══
 function saveLastSyncTime() {
   S('wk_last_sync', new Date().toISOString());
 }
@@ -302,14 +309,12 @@ function formatSyncTime(isoStr) {
   return m + '월 ' + day + '일 ' + h + ':' + min;
 }
 
-// ══ 동기화 토스트 (수동 동기화용 — 하단 토스트) ══
 var _syncToastTimer = null;
 
 function showSyncToast(status) {
   var el = document.getElementById('syncStatus');
   if (!el) return;
 
-  // 기존 타이머 클리어
   if (_syncToastTimer) {
     clearTimeout(_syncToastTimer);
     _syncToastTimer = null;
@@ -321,69 +326,39 @@ function showSyncToast(status) {
 
   switch (status) {
     case 'saving':
-      icon = '↑';
-      text = '서버에 저장 중...';
-      className += ' syncing';
-      break;
+      icon = '↑'; text = '서버에 저장 중...'; className += ' syncing'; break;
     case 'saved':
-      icon = '✓';
-      text = '저장 완료';
-      className += ' success';
-      break;
+      icon = '✓'; text = '저장 완료'; className += ' success'; break;
     case 'loading':
-      icon = '↓';
-      text = '서버에서 불러오는 중...';
-      className += ' syncing';
-      break;
+      icon = '↓'; text = '서버에서 불러오는 중...'; className += ' syncing'; break;
     case 'loaded':
-      icon = '✓';
-      text = '동기화 완료';
-      className += ' success';
-      break;
+      icon = '✓'; text = '동기화 완료'; className += ' success'; break;
     case 'error':
-      icon = '✕';
-      text = '동기화 실패 · 네트워크를 확인하세요';
-      className += ' error';
-      break;
+      icon = '✕'; text = '동기화 실패 · 네트워크를 확인하세요'; className += ' error'; break;
     case 'offline':
-      icon = '⊘';
-      text = '오프라인 상태입니다';
-      className += ' error';
-      break;
+      icon = '⊘'; text = '오프라인 상태입니다'; className += ' error'; break;
     default:
-      el.style.display = 'none';
-      el.className = 'sync-toast';
-      return;
+      el.style.display = 'none'; el.className = 'sync-toast'; return;
   }
 
   el.innerHTML = '<span class="sync-toast-icon">' + icon + '</span><span>' + text + '</span>';
   el.className = className;
   el.style.display = 'flex';
 
-  // show 클래스 추가 (애니메이션용)
-  requestAnimationFrame(function() {
-    el.classList.add('show');
-  });
+  requestAnimationFrame(function() { el.classList.add('show'); });
 
-  // 진행 중이 아닌 상태는 2.5초 후 자동 사라짐
   if (status !== 'saving' && status !== 'loading') {
     _syncToastTimer = setTimeout(function() {
       el.classList.remove('show');
-      setTimeout(function() {
-        el.style.display = 'none';
-      }, 300);
+      setTimeout(function() { el.style.display = 'none'; }, 300);
     }, 2500);
   }
 }
 
-// ══ 자동 동기화 실패 시 홈 인라인 배너 ══
 function showSyncFailBanner() {
-  // 이미 배너가 있으면 중복 생성 방지
   if (document.getElementById('syncFailBanner')) return;
-
   var mainView = document.getElementById('main-view');
   if (!mainView) return;
-
   var banner = document.createElement('div');
   banner.id = 'syncFailBanner';
   banner.className = 'sync-fail-banner';
@@ -391,7 +366,6 @@ function showSyncFailBanner() {
     '<span class="sync-fail-text">동기화 실패</span>' +
     '<button class="sync-fail-retry" onclick="retrySyncFromBanner()">재시도</button>' +
     '<button class="sync-fail-close" onclick="closeSyncFailBanner()">✕</button>';
-
   mainView.insertBefore(banner, mainView.firstChild);
 }
 
@@ -403,31 +377,28 @@ function closeSyncFailBanner() {
 function retrySyncFromBanner() {
   closeSyncFailBanner();
   syncFromServer(function(success) {
-    if (success) {
-      showScreen('home');
-    }
-  }, false); // 재시도는 수동이므로 silent=false
+    if (success) { showScreen('home'); }
+  }, false);
 }
 
-// ═══ 비상 플러시: 페이지 이탈 시 미동기화 데이터 서버 전송 ═══
 function _flushBeforeUnload() {
   if (window._beaconFlushed) return;
   window._beaconFlushed = true;
 
-  // 1. 진행 중인 세션을 LS에 즉시 저장
   try {
     if (typeof _currentSession !== 'undefined' && _currentSession && !_isFinishing) {
       autoSaveSession();
     }
   } catch (e) {}
 
-  // 2. sendBeacon으로 서버 push 시도
   try {
     var sessions = L(K.sessions);
     if (!sessions || sessions.length === 0) return;
+    var idToken = _getIdToken();
+    if (!idToken) return;
     var payload = JSON.stringify({
       action: 'save',
-      token: GAS_TOKEN,
+      idToken: idToken,
       payload: {
         sessions: sessions,
         prs: L(K.prs) || {},

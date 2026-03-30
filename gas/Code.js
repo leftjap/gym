@@ -2,13 +2,67 @@
 
 // ═══ Gym — 운동 기록 GAS 서버 ═══
 
-var AUTH_TOKEN = 'gym2026';
+var ALLOWED_EMAILS = ['leftjap@gmail.com'];
+
+function _verifyGoogleIdToken(idToken) {
+  if (!idToken) return null;
+
+  try {
+    var cache = CacheService.getScriptCache();
+    var cached = cache.get('jwt_' + idToken.substring(idToken.length - 20));
+    if (cached) return JSON.parse(cached);
+  } catch (e) {}
+
+  try {
+    var url = 'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken);
+    var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    var code = response.getResponseCode();
+    if (code !== 200) {
+      console.warn('tokeninfo 실패: HTTP ' + code);
+      return null;
+    }
+    var payload = JSON.parse(response.getContentText());
+
+    var expectedAud = '910366325974-3ollm3pose37r1fvv8ngnd0v09f2p57l.apps.googleusercontent.com';
+    if (payload.aud !== expectedAud) {
+      console.warn('tokeninfo aud 불일치: ' + payload.aud);
+      return null;
+    }
+
+    if (!payload.email) {
+      console.warn('tokeninfo email 없음');
+      return null;
+    }
+
+    var result = { email: payload.email };
+
+    try {
+      cache.put('jwt_' + idToken.substring(idToken.length - 20), JSON.stringify(result), 21600);
+    } catch (e) {}
+
+    return result;
+  } catch (e) {
+    console.error('_verifyGoogleIdToken 에러:', e);
+    return null;
+  }
+}
+
+function _authenticate(data) {
+  var idToken = data.idToken || '';
+  var verified = _verifyGoogleIdToken(idToken);
+  if (!verified || !verified.email) return false;
+  for (var i = 0; i < ALLOWED_EMAILS.length; i++) {
+    if (ALLOWED_EMAILS[i] === verified.email) return true;
+  }
+  console.warn('허용되지 않은 이메일: ' + verified.email);
+  return false;
+}
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents || '{}');
 
-    if (data.token !== AUTH_TOKEN) {
+    if (!_authenticate(data)) {
       return _json({ status: 'error', message: 'Unauthorized' });
     }
 
@@ -38,7 +92,6 @@ function _json(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ── 데이터 파일 관리 ──
 function getDataFile() {
   var folder = getOrCreateFolder(DriveApp.getRootFolder(), 'gym');
   var files = folder.getFilesByName('gorilla_data.json');
@@ -52,7 +105,6 @@ function getOrCreateFolder(parent, name) {
   return parent.createFolder(name);
 }
 
-// ── 다세대 백업 (1일 1회, 7일분 보관) ──
 function _backupDataIfNeeded() {
   try {
     var props = PropertiesService.getScriptProperties();
@@ -60,17 +112,14 @@ function _backupDataIfNeeded() {
     var todayStr = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
     var lastBackupDate = props.getProperty(cooldownKey) || '';
 
-    // 오늘 이미 백업했으면 건너뜀
     if (lastBackupDate === todayStr) return;
 
     var folder = getOrCreateFolder(DriveApp.getRootFolder(), 'gym');
     var file = getDataFile();
     var content = file.getBlob().getDataAsString();
 
-    // 빈 DB는 백업하지 않음
     if (!content || content === '{}') return;
 
-    // 오늘 날짜 백업 파일 생성
     var backupName = 'gorilla_data_backup_' + todayStr + '.json';
     var existingFiles = folder.getFilesByName(backupName);
     if (existingFiles.hasNext()) {
@@ -79,7 +128,6 @@ function _backupDataIfNeeded() {
       folder.createFile(backupName, content, MimeType.PLAIN_TEXT);
     }
 
-    // 30일 이전 백업 삭제
     var cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 30);
     var cutoffStr = Utilities.formatDate(cutoffDate, 'Asia/Seoul', 'yyyy-MM-dd');
@@ -95,7 +143,6 @@ function _backupDataIfNeeded() {
       }
     }
 
-    // 레거시 단일 백업 파일도 삭제
     var legacyFiles = folder.getFilesByName('gorilla_data_backup.json');
     while (legacyFiles.hasNext()) {
       legacyFiles.next().setTrashed(true);
@@ -105,23 +152,19 @@ function _backupDataIfNeeded() {
     props.setProperty(cooldownKey, todayStr);
     console.log('다세대 백업 완료: ' + backupName);
   } catch (e) {
-    // 백업 실패는 저장을 막지 않는다
     console.warn('_backupDataIfNeeded fail (ignored):', e);
   }
 }
 
-// ── 저장 ──
 function saveData(payload) {
   var lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    // ── 빈 payload 차단 ──
     if (!payload || !payload.sessions) {
       console.error('⚠️ saveData 차단: payload 또는 sessions 없음');
       return { status: 'error', message: 'Integrity check failed: empty payload' };
     }
 
-    // ── sessions 급감 차단 (50% 미만) ──
     var newSessions = payload.sessions || [];
     var file = getDataFile();
     var currentContent = file.getBlob().getDataAsString();
@@ -144,7 +187,6 @@ function saveData(payload) {
   }
 }
 
-// ── 불러오기 ──
 function loadData() {
   try {
     var file = getDataFile();
@@ -155,7 +197,6 @@ function loadData() {
   }
 }
 
-// ── 백업 목록 조회 (GAS 편집기에서 수동 실행) ──
 function listBackups() {
   var folder = getOrCreateFolder(DriveApp.getRootFolder(), 'gym');
   var allFiles = folder.getFiles();
@@ -181,8 +222,6 @@ function listBackups() {
   console.log('총 ' + backups.length + '개');
 }
 
-// ── 특정 날짜 백업에서 복원 (GAS 편집기에서 수동 실행) ──
-// 사용법: restoreFromBackup('2026-03-28')
 function restoreFromBackup(dateStr) {
   var folder = getOrCreateFolder(DriveApp.getRootFolder(), 'gym');
   var backupName = 'gorilla_data_backup_' + dateStr + '.json';
@@ -200,11 +239,6 @@ function restoreFromBackup(dateStr) {
   console.log('prs: ' + Object.keys(backupDb.prs || {}).length);
   console.log('inbody: ' + (backupDb.inbody || []).length);
   console.log('customExercises: ' + (backupDb.customExercises || []).length);
-
-  // 안전장치: 확인 후 수동으로 아래 주석을 해제하여 실행
-  // var dataFile = getDataFile();
-  // dataFile.setContent(backupContent);
-  // console.log('★ 복원 완료. 앱에서 새로고침하세요.');
 
   console.log('');
   console.log('복원하려면 이 함수 내부의 주석 3줄을 해제하고 다시 실행하세요.');
