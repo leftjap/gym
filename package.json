@@ -1,0 +1,7 @@
+{
+  "name": "gym-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test __tests__/*.test.js"
+  }
+}
