@@ -1,7 +1,39 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/Users/leftj/Documents/투자 전략/**)"
+      "Edit",
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(npm test)",
+      "Bash(git *)",
+      "Bash(cd *)",
+      "Bash(node *)",
+      "Bash(type *)",
+      "Bash(cat *)",
+      "Bash(dir *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(Get-Content *)",
+      "Bash(Get-ChildItem *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(Remove-Item *)",
+      "Bash(Stop-Process *)",
+      "Bash(taskkill *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));const c=d.tool_input&&d.tool_input.command||'';if(/git\\s+(commit|push|merge|rebase|cherry-pick|am)\\s/.test(c)&&/(--no-verify|-n\\b)/.test(c)){process.stderr.write('BLOCKED: --no-verify is not allowed. Run tests and commit without bypassing hooks.');process.exit(2);}process.exit(0);\""
+          }
+        ]
+      }
     ]
   }
 }
