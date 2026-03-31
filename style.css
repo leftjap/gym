@@ -94,6 +94,7 @@ input {
   position: relative;
 }
 
+/* ══ B-57 PROTECT: iOS PWA 하단 safe-area — padding-bottom 삭제 시 콘텐츠 잘림 ══ */
 .screens-container {
   flex: 1;
   overflow-y: auto;
@@ -103,6 +104,7 @@ input {
 }
 
 /* ── 헤더 ── */
+/* ══ B-57 PROTECT: iOS PWA 상단 safe-area — 헤더 겹침 방지 ══ */
 .workout-header {
   position: fixed;
   top: 0;
@@ -461,6 +463,7 @@ input {
 }
 
 /* ── 운동 화면 ── */
+/* ══ B-57 PROTECT: iOS PWA 운동 콘텐츠 상단 여백 — 헤더 아래 잘림 방지 ══ */
 .workout-content {
   padding: calc(env(safe-area-inset-top, 0px) + 80px) 16px 16px 16px;
 }
@@ -1235,6 +1238,7 @@ input {
 }
 
 /* ── 휴식 타이머 ── */
+/* ══ B-57 PROTECT: iOS PWA 휴식 타이머 하단 위치 — 버튼 겹침 방지 ══ */
 .rest-timer-bar {
   position: fixed;
   bottom: 88px;
@@ -1297,6 +1301,7 @@ input {
   overflow: hidden;
 }
 
+/* ══ B-57 PROTECT: iOS PWA 통계 하단 safe-area ══ */
 .stats-scroll-area {
   flex: 1;
   overflow-y: auto;
@@ -1304,6 +1309,7 @@ input {
   padding-bottom: calc(40px + max(0px, env(safe-area-inset-bottom)));
 }
 
+/* ══ B-57 PROTECT: iOS PWA 통계 상단 safe-area ══ */
 .stats-header {
   display: flex;
   align-items: center;
@@ -1750,6 +1756,7 @@ input {
 }
 
 /* ── 설정 화면 ── */
+/* ══ B-57 PROTECT: iOS PWA 설정 하단 safe-area ══ */
 .settings-content {
   padding-bottom: calc(40px + max(0px, env(safe-area-inset-bottom)));
   background: var(--bg-gray);
@@ -1757,6 +1764,7 @@ input {
   min-height: 100dvh;
 }
 
+/* ══ B-57 PROTECT: iOS PWA 설정 상단 safe-area ══ */
 .settings-header {
   display: flex;
   align-items: center;

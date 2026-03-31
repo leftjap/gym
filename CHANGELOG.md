@@ -14,3 +14,9 @@
 - Golden Path 테스트 영역 3: 동기화 병합 — 세션 merge + PR merge + 빈 세션 필터링(L-05) (B-57)
 - Golden Path 테스트 영역 4: 세트 입력 무결성 — 볼륨 계산/칼로리 추정/주간 통계/연속 운동일/종목 삭제 재계산 (B-57)
 - .claude/settings.json: 자동 Edit 허용, 위험 명령 차단 (B-57)
+- **B-57 Phase 3**: gym 프로젝트 보호 장치 추가
+  - flush-beacon.test.js: sendBeacon 페이로드 보호 테스트 5건
+  - showscreen-state.test.js: showScreen 화면 전환 상태 보호 테스트 6건
+  - style.css: iOS PWA safe-area 보호 주석 8개소 삽입 (`B-57 PROTECT`)
+  - AGENTS.md: safe-area 레이아웃, 휴식 타이머, showScreen, sendBeacon 보호 체크리스트 추가
+  - common-rules.md: gym 변경 금지 CSS 속성 목록 등록
