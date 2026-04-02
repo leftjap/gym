@@ -641,7 +641,6 @@ input {
 
 .ex-nav-btn.done {
   color: var(--border-gray);
-  text-decoration: line-through;
   background: none;
   border: none;
 }

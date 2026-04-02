@@ -4,6 +4,12 @@
 
 ## 2026-04-02
 
+### Fixed
+- 운동 화면 카드 헤더 롱프레스 시 액션시트가 touchend와 함께 닫히는 버그 수정 — showActionSheet 호출 시점을 setTimeout 콜백에서 touchend 핸들러로 이동하여 ghost click 가드 타이밍 문제 해결. [UI.고스트클릭] (js/workout.js)
+
+### Changed
+- 운동 화면 종목 네비게이션 완료 종목 취소선 제거 — 색상 변경만 유지. (style.css)
+
 ### Added
 - GAS deploy.ps1에 스모크 테스트 추가 — 배포 후 GET 요청으로 정상 응답 확인, 실패 시 exit 1. (gas/deploy.ps1)
 - 브라우저 탭 파비콘(favicon-32.png) 및 PWA 192px 아이콘(icon-192.png) 추가. icon.jpg에서 sharp로 리사이즈 생성. (index.html, manifest.json)

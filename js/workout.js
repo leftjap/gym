@@ -1506,7 +1506,7 @@ function bindExHeaderLongPress() {
           timer = null;
           header.classList.remove('long-pressing');
           if (navigator.vibrate) navigator.vibrate(30);
-          showExHeaderSheet();
+          // 시트는 touchend에서 호출 — ghost click 방지
         }, 500);
       }, { passive: true });
 
@@ -1530,6 +1530,7 @@ function bindExHeaderLongPress() {
           e.preventDefault();
           e.stopPropagation();
           triggered = false;
+          showExHeaderSheet();
         }
       }, { passive: false });
 
@@ -1540,30 +1541,34 @@ function bindExHeaderLongPress() {
       }, { passive: true });
 
       // PC 테스트용 마우스 지원
+      var mouseTriggered = false;
       header.addEventListener('mousedown', function(e) {
-        triggered = false;
+        mouseTriggered = false;
         startX = e.clientX;
         startY = e.clientY;
         header.classList.add('long-pressing');
 
         timer = setTimeout(function() {
-          triggered = true;
+          mouseTriggered = true;
           timer = null;
           header.classList.remove('long-pressing');
-          showExHeaderSheet();
+          // 시트는 mouseup에서 호출
         }, 500);
       });
 
       header.addEventListener('mouseup', function() {
         if (timer) { clearTimeout(timer); timer = null; }
         header.classList.remove('long-pressing');
-        triggered = false;
+        if (mouseTriggered) {
+          mouseTriggered = false;
+          showExHeaderSheet();
+        }
       });
 
       header.addEventListener('mouseleave', function() {
         if (timer) { clearTimeout(timer); timer = null; }
         header.classList.remove('long-pressing');
-        triggered = false;
+        mouseTriggered = false;
       });
     })(headers[i]);
   }
