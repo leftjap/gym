@@ -78,10 +78,16 @@ function _json(obj) {
 }
 
 function getDataFile() {
-  var folder = getOrCreateFolder(DriveApp.getRootFolder(), 'gym');
+  var folder = _getGymFolder();
   var files = folder.getFilesByName('gorilla_data.json');
   if (files.hasNext()) return files.next();
   return folder.createFile('gorilla_data.json', '{}', MimeType.PLAIN_TEXT);
+}
+
+// ═══ Drive 경로: apps/gym/ ═══
+function _getGymFolder() {
+  var apps = getOrCreateFolder(DriveApp.getRootFolder(), 'apps');
+  return getOrCreateFolder(apps, 'gym');
 }
 
 function getOrCreateFolder(parent, name) {
@@ -99,7 +105,7 @@ function _backupDataIfNeeded() {
 
     if (lastBackupDate === todayStr) return;
 
-    var folder = getOrCreateFolder(DriveApp.getRootFolder(), 'gym');
+    var folder = _getGymFolder();
     var file = getDataFile();
     var content = file.getBlob().getDataAsString();
 
@@ -183,7 +189,7 @@ function loadData() {
 }
 
 function listBackups() {
-  var folder = getOrCreateFolder(DriveApp.getRootFolder(), 'gym');
+  var folder = _getGymFolder();
   var allFiles = folder.getFiles();
   var backups = [];
   while (allFiles.hasNext()) {
@@ -208,7 +214,7 @@ function listBackups() {
 }
 
 function restoreFromBackup(dateStr) {
-  var folder = getOrCreateFolder(DriveApp.getRootFolder(), 'gym');
+  var folder = _getGymFolder();
   var backupName = 'gorilla_data_backup_' + dateStr + '.json';
   var files = folder.getFilesByName(backupName);
   if (!files.hasNext()) {

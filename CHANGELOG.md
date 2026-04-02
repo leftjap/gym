@@ -2,6 +2,11 @@
 
 형식: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
+## 2026-04-02 (2)
+
+### Changed
+- GAS Drive 경로 변경: getDataFile 기준점을 DriveApp.getRootFolder()/gym에서 apps/gym/으로 이동 — Drive 정리에 맞춘 경로 통일. (gas/Code.js)
+
 ## 2026-04-02
 
 ### Fixed
