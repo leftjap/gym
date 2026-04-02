@@ -7,6 +7,9 @@
 ### Changed
 - GAS Drive 경로 변경: getDataFile 기준점을 DriveApp.getRootFolder()/gym에서 apps/gym/으로 이동 — Drive 정리에 맞춘 경로 통일. (gas/Code.js)
 
+### Added
+- CSS 가드 정적 테스트 추가 — B-57 PROTECT 속성(safe-area, position:fixed, z-index:150)을 근접성 검사로 검증. (__tests__/css-guard.test.js)
+
 ## 2026-04-02
 
 ### Fixed
