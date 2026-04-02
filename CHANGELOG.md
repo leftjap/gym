@@ -2,6 +2,11 @@
 
 형식: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
+## 2026-04-03
+
+### Fixed
+- GAS 배포 코드의 Drive 경로 복구 — `apps/gym/` → `gym/` 변경을 원래대로 복원. Drive 정리 사고로 GAS 코드가 `apps` 폴더를 건너뛰는 상태였음 [경로.폴더참조] (gas/Code.js)
+
 ## 2026-04-02 (2)
 
 ### Changed
