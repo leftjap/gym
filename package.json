@@ -3,5 +3,8 @@
   "private": true,
   "scripts": {
     "test": "node --test __tests__/*.test.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }

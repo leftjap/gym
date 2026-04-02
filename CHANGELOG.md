@@ -2,6 +2,11 @@
 
 형식: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
+## 2026-04-02
+
+### Added
+- 브라우저 탭 파비콘(favicon-32.png) 및 PWA 192px 아이콘(icon-192.png) 추가. icon.jpg에서 sharp로 리사이즈 생성. (index.html, manifest.json)
+
 ## 2026-03-31
 
 ### Added
