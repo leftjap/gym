@@ -5,6 +5,7 @@
 ## 2026-04-02
 
 ### Added
+- GAS deploy.ps1에 스모크 테스트 추가 — 배포 후 GET 요청으로 정상 응답 확인, 실패 시 exit 1. (gas/deploy.ps1)
 - 브라우저 탭 파비콘(favicon-32.png) 및 PWA 192px 아이콘(icon-192.png) 추가. icon.jpg에서 sharp로 리사이즈 생성. (index.html, manifest.json)
 
 ## 2026-03-31
