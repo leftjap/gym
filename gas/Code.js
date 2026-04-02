@@ -96,6 +96,12 @@ function getOrCreateFolder(parent, name) {
   return parent.createFolder(name);
 }
 
+function _getGymBackupFolder() {
+  var root = DriveApp.getRootFolder();
+  var backups = getOrCreateFolder(root, 'backups');
+  return getOrCreateFolder(backups, 'gym');
+}
+
 function _backupDataIfNeeded() {
   try {
     var props = PropertiesService.getScriptProperties();
@@ -106,24 +112,25 @@ function _backupDataIfNeeded() {
     if (lastBackupDate === todayStr) return;
 
     var folder = _getGymFolder();
+    var backupFolder = _getGymBackupFolder();
     var file = getDataFile();
     var content = file.getBlob().getDataAsString();
 
     if (!content || content === '{}') return;
 
     var backupName = 'gorilla_data_backup_' + todayStr + '.json';
-    var existingFiles = folder.getFilesByName(backupName);
+    var existingFiles = backupFolder.getFilesByName(backupName);
     if (existingFiles.hasNext()) {
       existingFiles.next().setContent(content);
     } else {
-      folder.createFile(backupName, content, MimeType.PLAIN_TEXT);
+      backupFolder.createFile(backupName, content, MimeType.PLAIN_TEXT);
     }
 
     var cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 30);
     var cutoffStr = Utilities.formatDate(cutoffDate, 'Asia/Seoul', 'yyyy-MM-dd');
 
-    var allFiles = folder.getFiles();
+    var allFiles = backupFolder.getFiles();
     while (allFiles.hasNext()) {
       var f = allFiles.next();
       var fname = f.getName();
@@ -134,7 +141,7 @@ function _backupDataIfNeeded() {
       }
     }
 
-    var legacyFiles = folder.getFilesByName('gorilla_data_backup.json');
+    var legacyFiles = backupFolder.getFilesByName('gorilla_data_backup.json');
     while (legacyFiles.hasNext()) {
       legacyFiles.next().setTrashed(true);
       console.log('레거시 백업 파일 삭제: gorilla_data_backup.json');
