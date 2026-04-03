@@ -172,9 +172,29 @@ function syncFromServer(callback, silent) {
         S(K.sessions, serverSessions);
       }
 
-      // ── 나머지 키: 서버 데이터로 단순 교체 ──
-      if (p.prs) S(K.prs, p.prs);
-      if (p.inbody) S(K.inbody, p.inbody);
+      // ── prs 급감 가드 ──
+      if (p.prs) {
+        var localPrs = L(K.prs) || {};
+        var localPrCount = Object.keys(localPrs).length;
+        var serverPrCount = Object.keys(p.prs).length;
+        if (localPrCount > 0 && serverPrCount === 0) {
+          console.warn('syncFromServer 급감 가드: prs 로컬 ' + localPrCount + '키 → 서버 0키. 교체 차단.');
+        } else {
+          S(K.prs, p.prs);
+        }
+      }
+
+      // ── inbody 급감 가드 ──
+      if (p.inbody) {
+        var localInbody = L(K.inbody) || [];
+        if (localInbody.length > 0 && (!Array.isArray(p.inbody) || p.inbody.length === 0)) {
+          console.warn('syncFromServer 급감 가드: inbody 로컬 ' + localInbody.length + '건 → 서버 0건. 교체 차단.');
+        } else {
+          S(K.inbody, p.inbody);
+        }
+      }
+
+      // ── 나머지 키: 단순 교체 (소실 시 복구 용이) ──
       if (p.customExercises) S(K.customExercises, p.customExercises);
       if (p.hiddenExercises !== undefined) S(K.hiddenExercises, p.hiddenExercises);
       if (p.exerciseOrder) S('wk_exercise_order', p.exerciseOrder);

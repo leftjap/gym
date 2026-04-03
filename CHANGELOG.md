@@ -8,7 +8,9 @@
 - `syncFromServer()` server‑wins 전환: ID 기반 병합 제거, 서버 데이터로 단순 교체 (js/sync.js)
 
 ### Added
-- 급감 가드: sessions 로컬 >0 && 서버 =0 → 교체 차단 (js/sync.js)
+- 급감 가드 (sessions): 로컬 >0 && 서버 =0 → 교체 차단 (js/sync.js)
+- 급감 가드 (prs): 로컬 >0 && 서버 =0 → 교체 차단 (js/sync.js)
+- 급감 가드 (inbody): 로컬 >0 && 서버 =0 → 교체 차단 (js/sync.js)
 - 세션 가드: 운동 진행 중(_currentSession) → sessions 교체 건너뜀 (js/sync.js)
 - `_syncRetryExhausted` 플래그 추가 (js/sync.js)
 - 🛡️ server‑wins 불변 조건 소스 코멘트 및 AGENTS.md 가드 정의 추가
