@@ -4,6 +4,18 @@
 
 ## 2026-04-03
 
+### Changed
+- `syncFromServer()` server‑wins 전환: ID 기반 병합 제거, 서버 데이터로 단순 교체 (js/sync.js)
+
+### Added
+- 급감 가드: sessions 로컬 >0 && 서버 =0 → 교체 차단 (js/sync.js)
+- 세션 가드: 운동 진행 중(_currentSession) → sessions 교체 건너뜀 (js/sync.js)
+- `_syncRetryExhausted` 플래그 추가 (js/sync.js)
+- 🛡️ server‑wins 불변 조건 소스 코멘트 및 AGENTS.md 가드 정의 추가
+
+### Removed
+- sessions ID 병합, PR sessionId 병합, exerciseIcons 로컬 우선 병합 로직 제거 (js/sync.js)
+
 ### Fixed
 - GAS 배포 코드의 Drive 경로 복구 — `apps/gym/` → `gym/` 변경을 원래대로 복원. Drive 정리 사고로 GAS 코드가 `apps` 폴더를 건너뛰는 상태였음 [경로.폴더참조] (gas/Code.js)
 

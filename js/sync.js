@@ -98,7 +98,8 @@ function syncToServer(callback, silent) {
 function _scheduleSyncRetry(silent) {
   var delays = [5000, 15000, 45000];
   if (_syncRetryCount >= delays.length) {
-    console.warn('syncToServer 재시도 한도 초과 (' + delays.length + '회)');
+    console.warn('syncToServer 재시도 한도 초과 (' + delays.length + '회) — _blockSyncToServer 미해제 유지');
+    window._syncRetryExhausted = true;
     return;
   }
   var delay = delays[_syncRetryCount];
@@ -109,7 +110,7 @@ function _scheduleSyncRetry(silent) {
   }, delay);
 }
 
-// ══ 서버에서 데이터 불러오기 (ID 기반 병합) ══
+// ══ 서버에서 데이터 불러오기 (server‑wins) ══
 function syncFromServer(callback, silent) {
   if (_syncInProgress) {
     if (callback) callback(false);
@@ -147,58 +148,46 @@ function syncFromServer(callback, silent) {
     if (result.status === 'ok' && result.payload) {
       var p = result.payload;
 
+      // 🛡️ server‑wins 불변 조건
+      // - 서버가 유일한 진실. 로컬을 서버 데이터로 교체 (병합 없음)
+      // - 급감 가드: 로컬 >0 && 서버 =0 → 교체 차단 + syncToServer
+      // - 세션 가드: 운동 진행 중(_currentSession) → sessions 교체 건너뜀
+
       var serverSessions = p.sessions || [];
       var localSessions = L(K.sessions) || [];
 
-      if (serverSessions.length === 0 && localSessions.length > 0) {
+      // ── 급감 가드 ──
+      if (localSessions.length > 0 && serverSessions.length === 0) {
+        console.warn('syncFromServer 급감 가드: sessions 로컬 ' + localSessions.length + '건 → 서버 0건. 교체 차단 → syncToServer');
         saveLastSyncTime();
         if (!silent) showSyncToast('saved');
         syncToServer(callback, silent);
         return;
       }
 
-      var localMap = {};
-      for (var i = 0; i < localSessions.length; i++) {
-        localMap[localSessions[i].id] = localSessions[i];
+      // ── 세션 가드: 운동 진행 중이면 sessions만 건너뜀 ──
+      if (typeof _currentSession !== 'undefined' && _currentSession && !_currentSession.endTime) {
+        console.log('syncFromServer: 운동 진행 중 — sessions 교체 건너뜀');
+      } else {
+        S(K.sessions, serverSessions);
       }
 
-      var merged = [];
-      var usedIds = {};
+      // ── 나머지 키: 서버 데이터로 단순 교체 ──
+      if (p.prs) S(K.prs, p.prs);
+      if (p.inbody) S(K.inbody, p.inbody);
+      if (p.customExercises) S(K.customExercises, p.customExercises);
+      if (p.hiddenExercises !== undefined) S(K.hiddenExercises, p.hiddenExercises);
+      if (p.exerciseOrder) S('wk_exercise_order', p.exerciseOrder);
+      if (p.partOverrides !== undefined) S(K.partOverrides, p.partOverrides);
+      if (p.settings) S(K.settings, p.settings);
+      if (p.exerciseIcons) S(K.exerciseIcons, p.exerciseIcons);
 
-      for (var j = 0; j < serverSessions.length; j++) {
-        var ss = serverSessions[j];
-        if (!ss.id) continue;
-        var ls = localMap[ss.id];
-        if (ls) {
-          var sEnd = ss.endTime || 0;
-          var lEnd = ls.endTime || 0;
-          merged.push(sEnd > lEnd ? ss : ls);
-        } else {
-          if (ss.totalVolume > 0 || ss.durationMin > 0 || ss.totalCalories > 5) {
-            merged.push(ss);
-          }
-        }
-        usedIds[ss.id] = true;
-      }
-
-      for (var k = 0; k < localSessions.length; k++) {
-        if (!usedIds[localSessions[k].id]) {
-          merged.push(localSessions[k]);
-        }
-      }
-
-      merged.sort(function(a, b) {
-        var dc = (b.date || '').localeCompare(a.date || '');
-        if (dc !== 0) return dc;
-        return (b.startTime || 0) - (a.startTime || 0);
-      });
-
-      S(K.sessions, merged);
-
+      // ── 진행 중 세션 정합성 확인 ──
       var currentSession = L('wk_current_session');
       if (currentSession && currentSession.id) {
-        for (var ci = 0; ci < merged.length; ci++) {
-          if (merged[ci].id === currentSession.id && merged[ci].endTime) {
+        var loadedSessions = L(K.sessions) || [];
+        for (var ci = 0; ci < loadedSessions.length; ci++) {
+          if (loadedSessions[ci].id === currentSession.id && loadedSessions[ci].endTime) {
             localStorage.removeItem('wk_current_session');
             if (typeof _currentSession !== 'undefined') {
               _currentSession = null;
@@ -208,67 +197,7 @@ function syncFromServer(callback, silent) {
         }
       }
 
-      if (p.prs) {
-        var localPrs = L(K.prs) || {};
-        var serverPrs = p.prs;
-        var mergedPrs = {};
-        var prKeys = Object.keys(localPrs);
-        for (var pi = 0; pi < prKeys.length; pi++) {
-          mergedPrs[prKeys[pi]] = localPrs[prKeys[pi]];
-        }
-        var sPrKeys = Object.keys(serverPrs);
-        for (var si = 0; si < sPrKeys.length; si++) {
-          var exId = sPrKeys[si];
-          if (!mergedPrs[exId]) {
-            mergedPrs[exId] = serverPrs[exId];
-          } else {
-            var localArr = mergedPrs[exId];
-            var serverArr = serverPrs[exId];
-            if (Array.isArray(serverArr) && Array.isArray(localArr)) {
-              var localSessIds = {};
-              for (var li = 0; li < localArr.length; li++) {
-                localSessIds[localArr[li].sessionId || ''] = true;
-              }
-              for (var sj = 0; sj < serverArr.length; sj++) {
-                if (!localSessIds[serverArr[sj].sessionId || '']) {
-                  localArr.push(serverArr[sj]);
-                }
-              }
-              mergedPrs[exId] = localArr;
-            }
-          }
-        }
-        S(K.prs, mergedPrs);
-      }
-
-      if (p.inbody) S(K.inbody, p.inbody);
-      if (p.customExercises) S(K.customExercises, p.customExercises);
-      if (p.hiddenExercises !== undefined) S(K.hiddenExercises, p.hiddenExercises);
-      if (p.exerciseOrder) S('wk_exercise_order', p.exerciseOrder);
-      if (p.partOverrides !== undefined) S(K.partOverrides, p.partOverrides);
-      if (p.settings) S(K.settings, p.settings);
-
-      var serverIcons = p.exerciseIcons || {};
-      var localIcons = L(K.exerciseIcons) || {};
-      var mergedIcons = {};
-      var iconKeys = Object.keys(serverIcons);
-      for (var ik = 0; ik < iconKeys.length; ik++) {
-        mergedIcons[iconKeys[ik]] = serverIcons[iconKeys[ik]];
-      }
-      var localIconKeys = Object.keys(localIcons);
-      for (var ik2 = 0; ik2 < localIconKeys.length; ik2++) {
-        if (localIcons[localIconKeys[ik2]]) {
-          mergedIcons[localIconKeys[ik2]] = localIcons[localIconKeys[ik2]];
-        }
-      }
-      S(K.exerciseIcons, mergedIcons);
-
       saveLastSyncTime();
-
-      if (merged.length > serverSessions.length) {
-        syncToServer(null, true);
-      }
-
       if (!silent) showSyncToast('loaded');
       if (callback) callback(true);
     } else {
