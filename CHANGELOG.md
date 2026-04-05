@@ -2,6 +2,11 @@
 
 형식: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
+## 2026-04-05
+
+### Fixed
+- 로딩 이미지 파일명 오타 수정 — loding.jpg → loading.jpg. [경로.오타] (loding.jpg, index.html)
+
 ## 2026-04-03
 
 ### Changed
